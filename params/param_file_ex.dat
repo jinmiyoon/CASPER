@@ -1,0 +1,10 @@
+name,(J-K)0,(H-K)0,(g-r)0,EBV,RV,SN_CA,SN_CH,SN_C2,class,mode,MCMC_iter
+KPNO21_2011.fits, 0.695, 0.145, NaN, 0.0668, -232.33, Nan, Nan, Nan, GIANT, HALO, 500
+KPNO21_2100.fits, 0.802, 0.197, NaN, 0.0230, -80.73,  Nan, Nan, Nan, GIANT, HALO, 800
+KPNO4_0636.fits,  0.797, 0.176, NaN, 0.0239, 120.99,  Nan, Nan, Nan, GIANT, HALO, 800
+KPNO4_1082.fits,  0.695, 0.177, Nan, 0.0332, -150.0,  Nan, Nan, Nan, GIANT, HALO, 500
+CS30314-067.fits, 0.720, 0.143, Nan, 0.0268, -240.95, Nan, Nan, Nan, GIANT, HALO, 500
+HE1116-0634.fit,  0.647, 0.099, Nan, 0.0553, 116.32,  Nan, Nan, Nan, GIANT, HALO, 500
+HE1310-0536.fits, 0.621, 0.152, Nan, 0.0426, 116.32,  Nan, Nan, Nan, GIANT, HALO, 500 
+
+
