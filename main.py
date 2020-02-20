@@ -2,7 +2,8 @@
 ### Email: dwhitten@nd.edu
 ### Institute: University of Notre Dame
 
-### CCSLab_main.py
+### CASPER
+### Chemical Abundance Stellar Parameter Estimation Routine
 
 ####
 spectra_path  = 'inputs/spectra/'
