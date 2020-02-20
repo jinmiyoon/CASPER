@@ -7,7 +7,7 @@
 
 This script package is designed for the determination of the temperature, metallicity, and carbon abundance for cool Carbon-enhanced Metal-Poor stars using medium-resolution spectral matching.
 
-![Logo](https://github.com/DevinWhitten/CCSLab/blob/master/images/CCSLab_Logo.png)
+![Logo](https://github.com/DevinWhitten/CASPER/blob/master/images/CASPER_logo.png)
 ![UMP Design](https://github.com/DevinWhitten/CCSLab/blob/master/images/UMP_Methodology_v3.png)
 ![Arch Design](https://github.com/DevinWhitten/CCSLab/blob/master/images/arch_dir_schem.png)
 
