@@ -116,7 +116,7 @@ def archetype_classify_MC(spectrum):
 
 
 
-def mcmc_determination(spectrum, mode='COARSE'):
+def mcmc_determination(spectrum, mode='COARSE', pool=20):
 
     ### Precondition: must have run archetype_classification
     ### spectrum: spectrum.Spectrum() object
@@ -177,9 +177,15 @@ def mcmc_determination(spectrum, mode='COARSE'):
 
     ### Select the correct likelihood function
     LL_FUNCTION = LL_FUNCTION_DICT[mode][spectrum.get_carbon_mode()]
-    cpu_cores = cpu_count()
-    pool = Pool(cpu_cores)
-    print("\t running on ", cpu_cores, " cores")
+
+    #if pool == 'MAX':
+        #cpu_cores = cpu_count()
+
+    #else:
+    #    cpu_cores = pool
+
+    #print("\t running on ", cpu_cores, " cores")
+    #pool_init = Pool(cpu_cores)
 
     pos = initial + initial * (2e-2*np.random.rand(25, len(initial)))
     nwalkers, ndim = pos.shape
@@ -191,7 +197,7 @@ def mcmc_determination(spectrum, mode='COARSE'):
 
     sampler = emcee.EnsembleSampler(nwalkers, ndim,
                                     LL_FUNCTION,
-                                    args=(ARGS), pool=pool)
+                                    args=(ARGS))
     ####
 
     _ = sampler.run_mcmc(pos, spectrum.get_MCMC_iterations())

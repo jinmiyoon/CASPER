@@ -31,9 +31,10 @@ def ln_chi_square_sigma(flux, synth, xi):
 
     dof = len(flux) - 1
     chi = np.square(np.divide(flux - synth, xi*synth)).sum()
-
-    return (0.5 * dof - 1) * np.log(chi) - 0.5*chi
-
+    if chi > 0.:
+        return (0.5 * dof - 1) * np.log(chi) - 0.5*chi
+    else:
+        return -np.inf
 
 
 

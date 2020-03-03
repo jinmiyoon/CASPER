@@ -21,7 +21,11 @@ def ln_chi_square_sigma(flux, synth, sigma):
     dof = len(flux) - 1
     chi = np.square(np.divide(flux - synth, sigma*synth)).sum()
 
-    return (0.5 * dof - 1) * np.log(chi) - 0.5*chi
+    if chi > 0:
+        return (0.5 * dof - 1) * np.log(chi) - 0.5*chi
+
+    else:
+        return -np.inf
 
 
 def teff_lnprior(X, mean, sigma):
@@ -30,9 +34,14 @@ def teff_lnprior(X, mean, sigma):
 
 def sigma_lnprior(sigma, alpha_value, beta_value):
 
+    ### probably want a beta function with more precision.....
+    ### here's a quick fix, real fix is to develop a beta.pdf function that incorporates the log.
+    prob = beta.pdf(abs(sigma), alpha_value, beta_value)
 
-    return np.log(beta.pdf(abs(sigma), alpha_value, beta_value))
+    if prob >0.0:
+        return np.log(prob)
 
+    return -np.inf
 
 
 def default_param_edges(teff, feh, carbon, sigma_array):

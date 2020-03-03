@@ -8,7 +8,7 @@ import numpy as np
 #import h5py
 from scipy.interpolate import interp1d
 import matplotlib.pyplot as plt
-import GISIC
+import GISIC as GISIC_C
 
 ### Trying to make the h5py work
 print("... reading arch_base.hdf5")

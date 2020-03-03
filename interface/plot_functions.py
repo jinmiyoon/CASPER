@@ -20,7 +20,7 @@ def produce_title(spectrum):
     ## just returns a nice looking string for the plot title
     MCMC_DICT = spectrum.get_mcmc_dict(mode='BOTH')
 
-    return spectrum.get_name() + "  " + spectrum.get_arch_group() + '   Teff : %.0F  [Fe/H] : %.2F   [C/Fe] : %.2F   A(C) : %.2F' % (MCMC_DICT[0]['TEFF'][0] , MCMC_DICT[1]['FEH'][0], MCMC_DICT[1]['CFE'][0], MCMC_DICT[1]['AC'][0]) + "MODE:  " + spectrum.get_carbon_mode()
+    return spectrum.get_name() + "  " + spectrum.get_arch_group() + '   Teff : %.0F  [Fe/H] : %.2F   [C/Fe] : %.2F   A(C) : %.2F' % (MCMC_DICT[0]['TEFF'][0] , MCMC_DICT[1]['FEH'][0], MCMC_DICT[1]['CFE'][0], MCMC_DICT[1]['AC'][0]) + "   MODE:  " + spectrum.get_carbon_mode()
 
 
 def plot_spectra(spectra_batch):
@@ -33,13 +33,13 @@ def plot_spectra(spectra_batch):
     rows, columns = 8, 5
 
     pages = int(np.ceil(spectra_batch.length/(rows * columns)))
-
+    
     pp = PdfPages('output/' + spectra_batch.io_params['output_name'] + '_spec.pdf')
     count = 0
 
     for i, spec in enumerate(spectra_batch.spectra_array):  ### loop through pages
         if i % rows == 0: ## if new page required
-            fig, ax = plt.subplots(rows, columns, figsize=(8.5, 11), dpi=100)
+            fig, ax = plt.subplots(rows, columns, figsize=(8.5, 11), dpi=200)
             fig.subplots_adjust(hspace=0.5)
 
 
@@ -90,8 +90,7 @@ def plot_spectra(spectra_batch):
         ### CaII Plot
 
         ax[index, 2].axhline(1.00, linewidth=0.75, linestyle='--', color='red')
-        ax[index, 2].plot(spec.frame['wave'][spec.frame['wave'].between(3925, 3944, inclusive=True)],
-                                             spec.frame['norm'][spec.frame['wave'].between(3925, 3944, inclusive=True)],
+        ax[index, 2].plot(spec.frame['wave'],spec.frame['norm'],
                                              linewidth=0.75, color='black')
 
         ### CH Plot
@@ -116,21 +115,16 @@ def plot_spectra(spectra_batch):
                                            synth_function(CA_WAVE) * (1. + spec.MCMC_COARSE['XI_CA'][0]),
                                                       color='purple', alpha=0.25)
 
-        ax[index, 2].plot(spec.frame['wave'][spec.frame['wave'].between(3925, 3944, inclusive=True)],
-                                             spec.frame['norm'][spec.frame['wave'].between(3925, 3944, inclusive=True)],
-                                             linewidth=0.75, color='black')
-
+        [ax[index, 2].axvline(edge, linestyle='dotted', linewidth=0.75, alpha=0.8) for edge in CA_WAVE[[0,-1]]]
+        
         #CH
         CH_WAVE = np.linspace(*list(spec.regions['CH']['wave'].iloc[[0,-1]]), 30)
-        ax[index, 2].fill_between(CH_WAVE, synth_function(CA_WAVE) * (1. - spec.MCMC_COARSE['XI_CA'][0]),
-                                           synth_function(CA_WAVE) * (1. + spec.MCMC_COARSE['XI_CA'][0]),
+        ax[index, 3].fill_between(CH_WAVE, synth_function(CH_WAVE) * (1. - spec.MCMC_COARSE['XI_CH'][0]),
+                                           synth_function(CH_WAVE) * (1. + spec.MCMC_COARSE['XI_CH'][0]),
                                                       color='purple', alpha=0.25)
 
-        ax[index, 2].plot(spec.frame['wave'][spec.frame['wave'].between(3925, 3944, inclusive=True)],
-                                             spec.frame['norm'][spec.frame['wave'].between(3925, 3944, inclusive=True)],
-                                             linewidth=0.75, color='black')
 
-        [ax[index, 2].axvline(edge, linestyle='dotted', linewidth=0.75, alpha=0.8) for edge in CA_WAVE[[0,-1]]]
+        #[ax[index, 3].axvline(edge, linestyle='dotted', linewidth=0.75, alpha=0.8) for edge in CA_WAVE[[0,-1]]]
 
 
         ###

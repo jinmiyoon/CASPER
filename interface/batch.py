@@ -4,12 +4,12 @@ import os
 import interface_main, spectrum
 from astropy.io import fits
 from collections import namedtuple
-
+import numpy as np
 from matplotlib.backends.backend_pdf import PdfPages
 import temp_calibrations
 import plot_functions
 import pandas as pd
-import GISIC
+import GISIC_C as GISIC
 import EW
 
 
@@ -38,14 +38,17 @@ class Batch():
 
         return
 
-    def load_spectra(self):
+    def load_spectra(self, fits=True):
         print("... loading spectra:  ", self.spectra_path)
 
 
         ### I only want the spectra in the param file
         self.spectra_names = self.param_file['name'].tolist()
-        self.spectra_array = [spectrum.Spectrum(fits.open(self.spectra_path + current),name=current, fits=True) for current in self.spectra_names]
+        if fits == True:
+            self.spectra_array = [spectrum.Spectrum(fits.open(self.spectra_path + current),name=current, fits=fits) for current in self.spectra_names]
 
+        else:
+            self.spectra_array = [spectrum.Spectrum(pd.read_csv(self.spectra_path + current),name=current, fits=False) for current in self.spectra_names]
         self.length = len(self.spectra_array)
 
         return
@@ -66,8 +69,9 @@ class Batch():
             CLASS = row['class'].strip()
             MODE  = row['mode'].strip()
             ITER  = row['MCMC_iter']
-
-            spec.set_params(CLASS = CLASS, JK = JK, MODE=MODE, iter=ITER)
+            T_SIGMA = row['T_SIGMA']
+            HARD_TEFF = row['TEFF_SET']
+            spec.set_params(CLASS = CLASS, JK = JK, MODE=MODE, iter=ITER, T_SIGMA=T_SIGMA, HARD_TEFF=HARD_TEFF)
 
 
         return
@@ -105,7 +109,7 @@ class Batch():
         if default:
             for spec in self.spectra_array:
 
-                wave, norm, cont = GISIC.normalize(spec.get_frame_wave(), spec.get_frame_flux())
+                wave, norm, cont = GISIC.normalize(spec.get_frame_wave(), spec.get_frame_flux(), k=1)
                 spec.set_frame_norm(norm)
                 spec.set_frame_cont(cont)
                 print('{:20s}'.format(spec.name), ":  okay")
@@ -116,13 +120,13 @@ class Batch():
 
         return
 
-    def calibrate_temperatures(self, default=True):
+    def calibrate_temperatures(self, default=True, teff_sigma=250):
         ## Here is where we will use the (J-K)0 values from the param_file
         ## along with the surface gravity class, if known
         ## We'll eventually want to update to override sigma, I'l come back to that
 
         print("... determining photometric temperature")
-        print("\t setting photometric temperature sigma: 250")
+
         ### I don't think the spectra_array and the param_file are sorted the same
         ### so I need to be careful
 
@@ -131,13 +135,16 @@ class Batch():
             spec = self.spectra_array[i]
 
             assert spec.name == row['name'], 'Parameter error in calibrate_temperatures()'
-
+            print("\t setting photometric temperature sigma: ", spec.T_SIGMA)
             JK = row['(J-K)0']
             CLASS = row['class'].strip()
 
             #### remember that there is a class definition here too
-            spec.set_temperature(temp_calibrations.calibrate_temperatures(float(JK), CLASS = CLASS), sigma=250)
-
+            if np.isfinite(spec.HARD_TEFF):
+                print("\t setting hard Teff:   ", spec.HARD_TEFF)
+                spec.set_temperature(spec.HARD_TEFF, spec.T_SIGMA, hard=True)
+            else:
+                spec.set_temperature(temp_calibrations.calibrate_temperatures(float(JK), CLASS = CLASS), sigma=spec.T_SIGMA)
         return
 
     def set_KP_bounds(self):
@@ -174,14 +181,14 @@ class Batch():
         return
 
 
-    def mcmc_determination(self):
+    def mcmc_determination(self, pool=20):
         ### Main iterative method for the mcmc_determination
         interface_main.span_window()
         print('... performing MCMC determinations')
 
         [spec.prepare_regions() for spec in self.spectra_array]
 
-        [interface_main.mcmc_determination(spec, mode='COARSE')  for spec in self.spectra_array]
+        [interface_main.mcmc_determination(spec, mode='COARSE', pool=pool)  for spec in self.spectra_array]
 
         print("... performing kde determinations")
         [interface_main.generate_kde_params(spec, mode="COARSE") for spec in self.spectra_array]
@@ -189,7 +196,7 @@ class Batch():
         interface_main.span_window()
 
         print("... running refined mcmc")
-        [interface_main.mcmc_determination(spec, mode='REFINE')  for spec in self.spectra_array]
+        [interface_main.mcmc_determination(spec, mode='REFINE', pool=pool)  for spec in self.spectra_array]
 
         print("... finalizing kde determinations")
         [interface_main.generate_kde_params(spec, mode='REFINE') for spec in self.spectra_array]
@@ -221,5 +228,8 @@ class Batch():
         print("... generating outputs")
 
         final = pd.concat([spec.get_output_row() for spec in self.spectra_array])
+        try:
+            final.to_csv("output/" + self.io_params['output_name'] + "_out.csv", index=False)
 
-        final.to_csv("output/" + self.io_params['output_name'] + "_out.csv", index=False)
+        except:
+            final.to_csv("output/" + self.io_params['output_name'] + "1_out.csv", index=False)

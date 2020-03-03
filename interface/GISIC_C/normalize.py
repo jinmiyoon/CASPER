@@ -12,7 +12,7 @@ from GISIC.spectrum import Spectrum
 
 
 
-def normalize(wavelength, flux, sigma=30, k=3, s=5, cahk=False, band_check=True, flux_min=70, boost=True, return_points=False):
+def normalize(wavelength, flux, sigma=30, k=3, s=10, cahk=False, band_check=True, flux_min=70, boost=True, return_points=False):
     spec = Spectrum(wavelength, flux)
     spec.generate_inflection_segments(sigma=sigma, cahk=cahk, band_check = band_check, flux_min=flux_min)
     spec.assess_segment_variation()

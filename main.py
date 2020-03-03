@@ -2,19 +2,18 @@
 ### Email: dwhitten@nd.edu
 ### Institute: University of Notre Dame
 
-### CASPER
-### Chemical Abundance Stellar Parameter Estimation Routine
+### CCSLab_main.py
 
 ####
-spectra_path  = 'inputs/spectra/'
-param_path    = 'params/param_file.dat'
+spectra_path  = 'inputs/test/giant/'
+param_path    = 'params/giant_param.dat'
 io_param_path = 'params/io_param.py'
 ####
 
 import os, sys
 
 sys.path.append("interface")
-import GISIC
+import GISIC_C as GISIC
 import interface_main
 import archetype_interface
 import plot_functions
@@ -30,13 +29,13 @@ spec_batch = Batch(spectra_path, param_path, io_param_path)
 
 ### load spectra
 spec_batch.load_params()
-spec_batch.load_spectra()
+spec_batch.load_spectra(fits=True)
 spec_batch.set_params()
 
 
 interface_main.span_window()
 
-spec_batch.radial_correct()
+#spec_batch.radial_correct()
 spec_batch.build_frames()
 
 
@@ -57,7 +56,7 @@ spec_batch.calibrate_temperatures()
 ##### big functions
 spec_batch.archetype_classification()
 
-spec_batch.mcmc_determination()
+spec_batch.mcmc_determination(pool=20)
 
 ##### generate output files
 

@@ -85,9 +85,12 @@ class Spectrum():
 ################################################################################
 
         else:
+            print("\t csv file")
             self.spec = spec
-            self.wavelength = np.array(self.spec['wl'], dtype=np.float)
-
+            self.flux = self.spec['flux']
+            self.wavelength = np.array(self.spec['wave'], dtype=np.float)
+            self.original_wavelength = self.wavelength
+        
         #### Defined in generate_segments
         self.segments = None
         ####
@@ -160,11 +163,13 @@ class Spectrum():
 
     #################################################
     ### Total mutators
-    def set_params(self,CLASS, JK, MODE, iter):
+    def set_params(self,CLASS, JK, MODE, iter, T_SIGMA, HARD_TEFF):
         self.gravity_class = str(CLASS)
         self.JK = JK
         self.MODE = str(MODE)
         self.MCMC_iterations = iter
+        self.T_SIGMA = float(T_SIGMA)
+        self.HARD_TEFF = float(HARD_TEFF)
 
         assert (self.gravity_class == 'GIANT') or (self.gravity_class == 'DWARF'), "Invalid gravity class: {}".format(self.gravity_class)
         assert (self.MODE == 'UFD') or (self.MODE == 'HALO'), "Invalid Environment"
@@ -199,13 +204,19 @@ class Spectrum():
 
 
 
-    def set_temperature(self, input_dict, sigma):
+    def set_temperature(self, input_dict, sigma, hard=False):
         ### for use with the calibrate_temperatures function
         ### input_dict:  {"Casagrande":, "Hernandez":, "Bergeat": }
 
-        self.temp_dict = input_dict
-        self.teff_irfm = np.mean([self.temp_dict[key] for key in self.temp_dict])
-        self.teff_irfm_unc = sigma
+        if hard == True:
+            self.teff_irfm = input_dict
+            self.teff_irfm_unc = sigma
+            return
+
+        else:
+            self.temp_dict = input_dict
+            self.teff_irfm = np.mean([self.temp_dict[key] for key in self.temp_dict])
+            self.teff_irfm_unc = sigma
         return
 
     def prepare_regions(self):
@@ -386,15 +397,15 @@ class Spectrum():
                         "MODE"     : [self.get_carbon_mode()],
                         'GROUP'    : [self.get_arch_group()],
                         'TEFF'     : [round(self.MCMC_COARSE['TEFF'][0], 0)],
-                        'TEFF_ERR' : [round(self.MCMC_COARSE['TEFF'][1], 0)],
+                        'TEFF_ERR' : [round(self.MCMC_COARSE['TEFF'][1], 2)],
                         'TEFF_IRFM': [self.teff_irfm],
                         'TEFF_IRFM': [self.teff_irfm_unc],
                         'FEH'      : [round(self.MCMC_REFINE['FEH'][0], 2)],
-                        'FEH_ERR'  : [round(self.MCMC_REFINE['FEH'][1], 2)],
+                        'FEH_ERR'  : [round(max([self.MCMC_REFINE['FEH'][1], self.MCMC_COARSE['FEH'][1]]), 4)],
                         'CFE'      : [round(self.MCMC_REFINE['CFE'][0], 2)],
-                        'CFE_ERR'  : [round(self.MCMC_REFINE['CFE'][1], 2)],
+                        'CFE_ERR'  : [round(max([self.MCMC_REFINE['CFE'][1], self.MCMC_COARSE['CFE'][1]]), 4)],
                         'AC'       : [round(self.MCMC_REFINE['AC'][0], 2)],
-                        'AC_ERR'   : [round(self.MCMC_REFINE['AC'][1], 2)]
+                        'AC_ERR'   : [round(max([self.MCMC_REFINE['AC'][1], self.MCMC_COARSE['AC'][1]]), 4)]
                     })
 
     ###### PRINT METHODS
