@@ -8,11 +8,11 @@
 
 import pandas as pd
 import numpy as np
-import GISIC.norm_functions as norm_functions
+import GISIC_C.norm_functions as norm_functions
 import scipy.interpolate as interp
 from astropy.table import Table
 from scipy.ndimage.filters import gaussian_filter
-from GISIC.segment import Segment
+from GISIC_C.segment import Segment
 
 
 ################################

@@ -8,7 +8,7 @@ import sys, os
 #from spectrum import Spectrum
 from astropy.io import fits
 
-from GISIC.spectrum import Spectrum
+from GISIC_C.spectrum import Spectrum
 
 
 
