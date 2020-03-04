@@ -323,7 +323,7 @@ def span_window(char="-"):
 
 def print_greeting():
     span_window("#")
-    print("\t\tCCSLab")
+    print("\t\tCASPER")
     print("Authors: Devin D. Whitten")
     print("Institute: University of Notre Dame")
     print("Please direct questions to: dwhitten@nd.edu")
