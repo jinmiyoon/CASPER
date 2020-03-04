@@ -1,5 +1,5 @@
 {
 "plot" : True,
 "normalize" : True,
-"output_name" : "validation"
+"output_name" : "giant_test_CH"
 }

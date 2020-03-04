@@ -5,8 +5,8 @@
 ### CCSLab_main.py
 
 ####
-spectra_path  = 'inputs/test/giant/'
-param_path    = 'params/giant_param.dat'
+spectra_path  = 'inputs/spectra/'
+param_path    = 'params/param_file_test.dat'
 io_param_path = 'params/io_param.py'
 ####
 
@@ -29,7 +29,7 @@ spec_batch = Batch(spectra_path, param_path, io_param_path)
 
 ### load spectra
 spec_batch.load_params()
-spec_batch.load_spectra(fits=True)
+spec_batch.load_spectra(is_fits=True)
 spec_batch.set_params()
 
 

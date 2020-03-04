@@ -35,7 +35,7 @@ def obtain_flux(data):
         return data[0].flatten()
 
 class Spectrum():
-    def __init__(self, spec, name, wl_range=[3800, 6200], fits=False):
+    def __init__(self, spec, name, wl_range=[3800, 6200], is_fits=True):
 
         self.name = name
         print("... initializing:  ", name)
@@ -43,7 +43,7 @@ class Spectrum():
         #self.spec = spec[spec[0].between(wl_range[0], wl_range[-1], inclusive=True)]
         #self.wavelength = np.power(10. , (self.fits[0].header['CRVAL1'] + np.arange(0, self.fits[0].header['NAXIS1'])*self.fits[0].header['CD1_1']))
 ################################################################################
-        if fits:
+        if is_fits:
             ## This is a cumbersome attempt to accomadate multiple fits data formats..
             print("fits file")
             self.fits = spec
@@ -90,7 +90,7 @@ class Spectrum():
             self.flux = self.spec['flux']
             self.wavelength = np.array(self.spec['wave'], dtype=np.float)
             self.original_wavelength = self.wavelength
-        
+
         #### Defined in generate_segments
         self.segments = None
         ####
