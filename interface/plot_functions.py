@@ -27,13 +27,14 @@ def plot_spectra(spectra_batch):
     ## to visualize normalizations
     ## I want multiple pages of 4x2
     CA_XLIM = [3910, 3950]
+    LINEW   = 0.5
 
     print("... generating continuum plots")
     print("\t saving as:   ", spectra_batch.io_params['output_name'])
     rows, columns = 8, 5
 
     pages = int(np.ceil(spectra_batch.length/(rows * columns)))
-    
+
     pp = PdfPages('output/' + spectra_batch.io_params['output_name'] + '_spec.pdf')
     count = 0
 
@@ -79,31 +80,31 @@ def plot_spectra(spectra_batch):
 
 
         ### Continuum Plot
-        ax[index, 0].plot(spec.frame['wave'], spec.frame['flux'], linewidth=0.75, color='black')
-        ax[index, 0].plot(spec.frame['wave'], spec.frame['cont'])
+        ax[index, 0].plot(spec.frame['wave'], spec.frame['flux'], linewidth=LINEW, color='black')
+        ax[index, 0].plot(spec.frame['wave'], spec.frame['cont'], linewidth=LINEW)
 
 
         ### Normalization Plot
         ax[index, 1].axhline(1.00, linewidth=0.75, linestyle='--', color='red')
-        ax[index, 1].plot(spec.frame['wave'], spec.frame['norm'], linewidth=0.75, color='black')
+        ax[index, 1].plot(spec.frame['wave'], spec.frame['norm'], linewidth=LINEW, color='black')
 
         ### CaII Plot
 
         ax[index, 2].axhline(1.00, linewidth=0.75, linestyle='--', color='red')
         ax[index, 2].plot(spec.frame['wave'],spec.frame['norm'],
-                                             linewidth=0.75, color='black')
+                                             linewidth=LINEW, color='black')
 
         ### CH Plot
         ax[index, 3].axhline(1.00, linewidth=0.75, linestyle='--', color='red')
         ax[index, 3].plot(spec.frame['wave'][spec.frame['wave'].between(4150, 4500, inclusive=True)],
                                              spec.frame['norm'][spec.frame['wave'].between(4150, 4500, inclusive=True)],
-                                             linewidth=0.75, color='black')
+                                             linewidth=LINEW, color='black')
 
         ### C2 Plot
         ax[index, 4].axhline(1.00, linewidth=0.75, linestyle='--', color='red')
         ax[index, 4].plot(spec.frame['wave'][spec.frame['wave'].between(4650, 4850, inclusive=True)],
                                              spec.frame['norm'][spec.frame['wave'].between(4650, 4850, inclusive=True)],
-                                             linewidth=0.75, color='black')
+                                             linewidth=LINEW, color='black')
 
         ###### SIGMA SHADING SECTION
         ############################
@@ -116,7 +117,7 @@ def plot_spectra(spectra_batch):
                                                       color='purple', alpha=0.25)
 
         [ax[index, 2].axvline(edge, linestyle='dotted', linewidth=0.75, alpha=0.8) for edge in CA_WAVE[[0,-1]]]
-        
+
         #CH
         CH_WAVE = np.linspace(*list(spec.regions['CH']['wave'].iloc[[0,-1]]), 30)
         ax[index, 3].fill_between(CH_WAVE, synth_function(CH_WAVE) * (1. - spec.MCMC_COARSE['XI_CH'][0]),
@@ -133,7 +134,7 @@ def plot_spectra(spectra_batch):
 
 
         #elif spec.get_carbon_mode() == "CH+C2":
-        [label.plot(spec.synth_spectrum['wave'], spec.synth_spectrum['norm'], color='purple', linewidth=0.75, alpha=0.75) for label in ax[index, 1:]]
+        [label.plot(spec.synth_spectrum['wave'], spec.synth_spectrum['norm'], color='purple', linewidth=LINEW, alpha=0.75) for label in ax[index, 1:]]
 
         ax[index,1].set_xlim([spec.frame['wave'].iloc[0], spec.frame['wave'].iloc[-1]])
 

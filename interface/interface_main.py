@@ -116,7 +116,7 @@ def archetype_classify_MC(spectrum):
 
 
 
-def mcmc_determination(spectrum, mode='COARSE', pool=20):
+def mcmc_determination(spectrum, mode='COARSE', pool=4):
 
     ### Precondition: must have run archetype_classification
     ### spectrum: spectrum.Spectrum() object
