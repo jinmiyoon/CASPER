@@ -30,7 +30,7 @@ def kde_param(distribution, x0):
 def get_beta_params(spectrum, bounds):
 
     ## just return the proper values for alpha and beta for the given spectra.
-    ## Poisson uncertainty is assumed for flux bins.ß
+    ## Poisson uncertainty is assumed for flux bins.
     ## alpha/beta determine the center and width of the beta function prior used for the S/N estimate.
 
 
