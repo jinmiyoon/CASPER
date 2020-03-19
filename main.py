@@ -6,7 +6,7 @@
 
 ####
 spectra_path  = 'inputs/spectra/'
-param_path    = 'params/param_file_test.dat'
+param_path    = 'params/param_file_trun.dat'
 io_param_path = 'params/io_param.py'
 ####
 
@@ -15,6 +15,7 @@ import os, sys
 sys.path.append("interface")
 import GISIC_C as GISIC
 import interface_main
+import io_functions
 import archetype_interface
 import plot_functions
 from batch import Batch
@@ -22,7 +23,7 @@ from batch import Batch
 
 
 
-interface_main.print_greeting()
+io_functions.print_greeting()
 
 print("... initializing spectra batch")
 spec_batch = Batch(spectra_path, param_path, io_param_path)
@@ -33,14 +34,14 @@ spec_batch.load_spectra(is_fits=True)
 spec_batch.set_params()
 
 
-interface_main.span_window()
+io_functions.span_window()
 
 #spec_batch.radial_correct()
 spec_batch.build_frames()
 
 
 ### normalize with GISIC
-interface_main.span_window()
+io_functions.span_window()
 
 
 spec_batch.normalize()
@@ -50,6 +51,9 @@ spec_batch.set_KP_bounds()
 spec_batch.set_carbon_mode()
 
 spec_batch.estimate_sn()
+spec_batch.ebv_correction()
+
+
 spec_batch.calibrate_temperatures()
 
 

@@ -17,6 +17,9 @@ import scipy.interpolate as interp
 from astropy.table import Table
 from scipy.ndimage.filters import gaussian_filter
 
+### import structures
+from data_structures import *
+
 print('spectrum loaded')
 ################################
 #Spectrum Class Definition
@@ -108,6 +111,30 @@ class Spectrum():
         return
 
 
+    def ebv_correct(self, row):
+
+        ## Basically if the EBV is finite,
+        ## assume that photometry needs to be corrected
+
+        self.PHOTO_0 = {key: float(row[key]) for key in ['J-K', 'H-K', 'H-K', 'g-r']}
+
+        if float(row['EBV_SFD']) > 0:
+            ### Then perform the correction
+            print("\t corrected :", self.get_name())
+    
+
+            self.PHOTO_0['J-K'] = float(row['J-K']) - (float(A_EBV["A_J"]) - float(A_EBV['A_K'])) * float(row['EBV_SFD'])
+
+            self.PHOTO_0['H-K'] = float(row['H-K']) - (float(A_EBV["A_H"]) - float(A_EBV['A_K'])) * float(row['EBV_SFD'])
+
+            self.PHOTO_0['g-r'] = float(row['g-r']) - (float(A_EBV["A_g"]) - float(A_EBV['A_r'])) * float(row['EBV_SFD'])
+
+        else:
+            ## THEN ASSUME COLORS ARE ALREADY CORRECTED
+            print("\t already corrected:  ", self.get_name())
+
+
+
     ############################################################
     def trim_frame(self, bounds= [3000, 5000]):
 
@@ -159,8 +186,6 @@ class Spectrum():
         return
 
 
-
-
     #################################################
     ### Total mutators
     def set_params(self,CLASS, JK, MODE, iter, T_SIGMA, HARD_TEFF):
@@ -176,6 +201,9 @@ class Spectrum():
 
 
         return
+
+
+
 
 
     def set_KP_bounds(self, input_bounds):
@@ -195,7 +223,7 @@ class Spectrum():
 
         GROUP = ['GI', 'GII', 'GIII'][LLs.index(max(LLs))]
 
-        print('\t ' + self.get_name().ljust(20) + ": ", GROUP, ["%.2F" % val for val in LLs])
+        #print('\t ' + self.get_name().ljust(20) + ": ", GROUP, ["%.2F" % val for val in LLs])
 
         self.ARCH_GROUP = GROUP
 
@@ -204,19 +232,20 @@ class Spectrum():
 
 
 
-    def set_temperature(self, input_dict, sigma, hard=False):
+    def set_temperature(self, input_temp, sigma, hard=False):
         ### for use with the calibrate_temperatures function
         ### input_dict:  {"Casagrande":, "Hernandez":, "Bergeat": }
 
         if hard == True:
-            self.teff_irfm = input_dict
+            self.teff_irfm = input_temp
             self.teff_irfm_unc = sigma
             return
 
         else:
-            self.temp_dict = input_dict
-            self.teff_irfm = np.mean([self.temp_dict[key] for key in self.temp_dict])
+            self.teff_irfm = input_temp
             self.teff_irfm_unc = sigma
+
+
         return
 
     def prepare_regions(self):
@@ -229,6 +258,11 @@ class Spectrum():
             ### then add the C2 cut
             self.regions['C2'] =  self.frame[self.frame['wave'].between(4710, 4750, inclusive=True).copy()]
 
+        return
+
+
+    def set_temp_frame(self, TEMP_FRAME):
+        self.TEMP_FRAME = TEMP_FRAME
         return
 
 

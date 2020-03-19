@@ -6,8 +6,10 @@ from astropy.io import fits
 from collections import namedtuple
 import numpy as np
 from matplotlib.backends.backend_pdf import PdfPages
-import temp_calibrations
+from texttable import Texttable
+import temp_calibrations as TC
 import plot_functions
+import io_functions
 import pandas as pd
 import GISIC_C as GISIC
 import EW
@@ -65,7 +67,7 @@ class Batch():
 
             assert spec.name == row['name'], 'Parameter error in calibrate_temperatures()'
 
-            JK = row['(J-K)0']
+            JK = row['J-K']
             CLASS = row['class'].strip()
             MODE  = row['mode'].strip()
             ITER  = row['MCMC_iter']
@@ -102,23 +104,52 @@ class Batch():
 
     def normalize(self, default=True):
         print("... normalizing spectra batch")
+        print("... iterating convolution sigma")
         ### Default specfies whether any GISIC values should be taken from the param_file
         ## for now I'm just going to write the default case
         #for spectrum in self.spectrum:
 
         if default:
             for spec in self.spectra_array:
+                cont_array = []
+                for SIGMA in np.linspace(15, 30, 10):
 
-                wave, norm, cont = GISIC.normalize(spec.get_frame_wave(), spec.get_frame_flux(), k=1)
+                    wave, norm, cont = GISIC.normalize(spec.get_frame_wave(), spec.get_frame_flux(), sigma = SIGMA, k=1)
+
+                    cont_array.append(cont)
+
+                ########
+                ### average the sigma runs together
+                cont = np.median(np.array(cont_array), axis=0)
+
+                norm = np.divide(spec.get_frame_flux(), cont)
+
+                if len(norm[norm < 0.0])>1:
+
+                    norm[norm < 0.0] = 1.
+
+                if len(norm[norm >2.0]) >1:
+
+                    norm[norm >2.0] = 1.
+
                 spec.set_frame_norm(norm)
                 spec.set_frame_cont(cont)
-                print('{:20s}'.format(spec.name), ":  okay")
+                print('\t {:20s}'.format(spec.name), ":  okay")
 
         else:
             print("\t Sorry - can't customize GISIC normalization yet...")
 
 
         return
+
+    def ebv_correction(self):
+        print("... correcting photometry")
+        for i, row in self.param_file.iterrows():
+            spec = self.spectra_array[i]
+            spec.ebv_correct(row)
+
+
+
 
     def calibrate_temperatures(self, default=True, teff_sigma=250):
         ## Here is where we will use the (J-K)0 values from the param_file
@@ -132,19 +163,51 @@ class Batch():
 
         for i, row in self.param_file.iterrows():
 
+            io_functions.span_window()
+
+
+
             spec = self.spectra_array[i]
 
             assert spec.name == row['name'], 'Parameter error in calibrate_temperatures()'
             print("\t setting photometric temperature sigma: ", spec.T_SIGMA)
-            JK = row['(J-K)0']
+
             CLASS = row['class'].strip()
 
             #### remember that there is a class definition here too
             if np.isfinite(spec.HARD_TEFF):
-                print("\t setting hard Teff:   ", spec.HARD_TEFF)
+                print("\t setting hard teff:   ", spec.HARD_TEFF)
                 spec.set_temperature(spec.HARD_TEFF, spec.T_SIGMA, hard=True)
+
             else:
-                spec.set_temperature(temp_calibrations.calibrate_temperatures(float(JK), CLASS = CLASS), sigma=spec.T_SIGMA)
+                spec.set_temp_frame(TC.calibrate_temp_frame(float(spec.PHOTO_0['J-K']),
+                                          float(spec.PHOTO_0['g-r']),
+                                          CLASS = CLASS))
+
+                spec.set_temperature(spec.TEMP_FRAME.loc['ADOPTED', 'VALUE'], sigma=spec.T_SIGMA)
+
+
+        #### NOW ASSEMBLE THE OUTPUT TABLE
+
+        HEADER = ['NAME', 'Bergeat', 'Hernandez', 'Casagrande', 'Fukugita', 'ADOPTED']
+
+        if len(self.spectra_array) < 30:
+
+            output_table = HEADER
+
+            for spec in self.spectra_array:
+                row = np.concatenate([[spec.get_name().split(".fits")[0]],
+                                        [spec.TEMP_FRAME.loc[CURRENT].values[0] for CURRENT in HEADER[1:]]
+                                        ])
+
+                output_table = np.vstack([output_table, row])
+
+            table = Texttable()
+
+            table.add_rows(output_table)
+            print(" ------  PHOTOMETRIC TEMPERATURES -------")
+            print(table.draw())
+
         return
 
     def set_KP_bounds(self):
@@ -173,17 +236,36 @@ class Batch():
 
     ##### the big ones
     def archetype_classification(self):
-        interface_main.span_window()
+        io_functions.span_window()
         print('... determining archetype classification')
 
         [interface_main.archetype_classify_MC(spec) for spec in self.spectra_array]
+
+        ### prepare output table if it's reasonable
+        if len(self.spectra_array) < 30:
+
+            output_table = ['NAME', "GI", "GII", "GIII"]
+
+            for spec in self.spectra_array:
+                row = np.concatenate([[spec.get_name()], [spec.LL_DICT[key][0].round(0) for key in ["GI", "GII", "GIII"]]])
+
+                output_table = np.vstack([output_table, row])
+
+            table = Texttable()
+
+            table.add_rows(output_table)
+            print(" ------  ARCHETYPE LIKELIHOODS -------")
+            print(table.draw())
+
+
+
 
         return
 
 
     def mcmc_determination(self, pool=20):
         ### Main iterative method for the mcmc_determination
-        interface_main.span_window()
+        io_functions.span_window()
         print('... performing MCMC determinations')
 
         [spec.prepare_regions() for spec in self.spectra_array]
@@ -193,7 +275,7 @@ class Batch():
         print("... performing kde determinations")
         [interface_main.generate_kde_params(spec, mode="COARSE") for spec in self.spectra_array]
 
-        interface_main.span_window()
+        io_functions.span_window()
 
         print("... running refined mcmc")
         [interface_main.mcmc_determination(spec, mode='REFINE', pool=pool)  for spec in self.spectra_array]
@@ -201,9 +283,9 @@ class Batch():
         print("... finalizing kde determinations")
         [interface_main.generate_kde_params(spec, mode='REFINE') for spec in self.spectra_array]
 
-        interface_main.span_window()
+        io_functions.span_window()
         print("... complete")
-        interface_main.span_window()
+        io_functions.span_window()
         return
 
 
@@ -216,7 +298,7 @@ class Batch():
         return
 
     def generate_plots(self):
-        interface_main.span_window()
+        io_functions.span_window()
         print("... generating plots")
 
         plot_functions.plot_spectra(self)
@@ -224,7 +306,7 @@ class Batch():
         return
 
     def generate_output_files(self):
-        interface_main.span_window()
+        io_functions.span_window()
         print("... generating outputs")
 
         final = pd.concat([spec.get_output_row() for spec in self.spectra_array])

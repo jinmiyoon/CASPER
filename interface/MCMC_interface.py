@@ -4,12 +4,14 @@ import numpy as np
 import pandas as pd
 from scipy.interpolate import interp1d
 import scipy
+from scipy.interpolate import LinearNDInterpolator
+import pickle as pkl
 from statsmodels.nonparametric.kde import KDEUnivariate
 import MLE_priors
 import MAD
 import ac
 
-
+INTERPOLATOR     = pkl.load(open("interface/libraries/MASTER_spec_interp.pkl", 'rb'))
 
 
 def kde_param(distribution, x0):
@@ -113,10 +115,10 @@ def beta_param_spec(spectrum, hard_var = None):
 
 
 
-def chi_likelihood(theta, spec_regions, interp, synth_wave,
+def chi_likelihood(theta, spec_regions, synth_wave,
                    photo_teff,
                    photo_teff_unc,
-                   SN_DICT,
+                   SN_DICT, G_CLASS,
                    bounds = 'default'):
 
     ### This is an important point, that the likelihood needs to accomodate fitting and not fitting the C2 band,
@@ -129,7 +131,7 @@ def chi_likelihood(theta, spec_regions, interp, synth_wave,
     XI_CH    = theta[4]
 
     synth_function = interp1d(synth_wave,
-                              interp([teff, feh, carbon])[0],
+                              INTERPOLATOR[G_CLASS]([teff, feh, carbon])[0],
                               kind = 'linear')
 
 
@@ -148,10 +150,10 @@ def chi_likelihood(theta, spec_regions, interp, synth_wave,
         return -np.inf
 
 
-def chi_likelihood_C2(theta, spec_regions, interp, synth_wave,
+def chi_likelihood_C2(theta, spec_regions, synth_wave,
                    photo_teff,
                    photo_teff_unc,
-                   SN_DICT,
+                   SN_DICT, G_CLASS,
                    bounds = 'default'):
 
     ## This will get run when/if the AC is above 8
@@ -165,7 +167,7 @@ def chi_likelihood_C2(theta, spec_regions, interp, synth_wave,
 
 
     synth_function = interp1d(synth_wave,
-                              interp([teff, feh, carbon])[0],
+                              INTERPOLATOR[G_CLASS]([teff, feh, carbon])[0],
                               kind = 'linear')
 
 
@@ -186,8 +188,8 @@ def chi_likelihood_C2(theta, spec_regions, interp, synth_wave,
 
 
 
-def chi_ll_refine(theta, spec_regions, interp, synth_wave,
-                  PARAMS,
+def chi_ll_refine(theta, spec_regions, synth_wave,
+                  PARAMS, G_CLASS,
                   bounds = 'default'):
     ## simply [Fe/H] and [C/Fe]
     ## assume the teff, and sigma values are well determined from previous
@@ -203,7 +205,7 @@ def chi_ll_refine(theta, spec_regions, interp, synth_wave,
 
 
     synth_function = interp1d(synth_wave,
-                              interp([teff, feh, carbon])[0],
+                              INTERPOLATOR[G_CLASS]([teff, feh, carbon])[0],
                               kind = 'linear')
 
     ### prior needs to change
@@ -220,8 +222,8 @@ def chi_ll_refine(theta, spec_regions, interp, synth_wave,
         return -np.inf
 
 
-def chi_ll_refine_C2(theta, spec_regions, interp, synth_wave,
-                     PARAMS,
+def chi_ll_refine_C2(theta, spec_regions, synth_wave,
+                     PARAMS, G_CLASS,
                      bounds = 'default'):
     ## simply [Fe/H] and [C/Fe]
     ## assume the teff, and sigma values are well determined from previous
@@ -238,7 +240,7 @@ def chi_ll_refine_C2(theta, spec_regions, interp, synth_wave,
 
 
     synth_function = interp1d(synth_wave,
-                              interp([teff, feh, carbon])[0],
+                              INTERPOLATOR[G_CLASS]([teff, feh, carbon])[0],
                               kind = 'linear')
 
     ### prior needs to change

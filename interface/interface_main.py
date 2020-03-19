@@ -123,11 +123,6 @@ def mcmc_determination(spectrum, mode='COARSE', pool=4):
 
     print('\t ' + spectrum.get_name().ljust(20) + ":  " + spectrum.get_gravity_class() + " : " + spectrum.get_carbon_mode() + " : " + spectrum.print_KP_bounds())
 
-    try:
-        interp = INTERPOLATOR[spectrum.get_gravity_class()]
-    except:
-        print("Error in mcmc_determination with gravity class:  ", spectrum.get_gravity_class())
-
 
 
     ## FOR initial FEH and CFE values, for temp use photo
@@ -142,8 +137,8 @@ def mcmc_determination(spectrum, mode='COARSE', pool=4):
         photo_teff = spectrum.get_photo_temp()
         initial = [photo_teff[0], PARAMS['FEH'], PARAMS['CFE']]
 
-        ARGS = (spectrum.regions, interp, SYNTH_WAVE, photo_teff[0], photo_teff[1],
-                spectrum.get_SN_dict())
+        ARGS = (spectrum.regions, SYNTH_WAVE, photo_teff[0], photo_teff[1],
+                spectrum.get_SN_dict(), spectrum.get_gravity_class())
 
         initial = np.concatenate([initial,
                                  [spectrum.SN_DICT['CA']['XI_AVG'],
@@ -152,7 +147,7 @@ def mcmc_determination(spectrum, mode='COARSE', pool=4):
 
 
         if spectrum.get_carbon_mode() == "CH+C2":
-            print("\t running with carbon mode: C2")
+            print("\t running with carbon mode: CH+C2")
 
             ### add the beta params
             initial = np.concatenate([initial,
@@ -163,8 +158,8 @@ def mcmc_determination(spectrum, mode='COARSE', pool=4):
         ### In this case we want to use the params determined from the COARSE run
         PARAMS_0 = spectrum.get_mcmc_dict(mode = 'COARSE')
 
-        ARGS = (spectrum.regions, interp, SYNTH_WAVE,
-                PARAMS_0)
+        ARGS = (spectrum.regions, SYNTH_WAVE,
+                PARAMS_0, spectrum.get_gravity_class())
 
         initial = [spectrum.MCMC_COARSE['FEH'][0], spectrum.MCMC_COARSE['CFE'][0]]
 
@@ -315,16 +310,3 @@ def generate_kde_params(spectrum, mode, burnin=0.25):
 
 
     return
-
-
-def span_window(char="-"):
-    print(char * os.get_terminal_size().columns)
-    return
-
-def print_greeting():
-    span_window("#")
-    print("\t\tCASPER")
-    print("Authors: Devin D. Whitten")
-    print("Institute: University of Notre Dame")
-    print("Please direct questions to: dwhitten@nd.edu")
-    span_window("#")

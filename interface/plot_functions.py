@@ -11,16 +11,22 @@ from matplotlib.backends.backend_pdf import PdfPages
 ### This is just useful for many of the functions. Wanna keep format consistent
 
 #####
+
+plt.ion()
+
 plt.style.use('classic')
 plt.rcParams['font.family'] = 'Times New Roman'
 plt.rcParams['xtick.labelsize'] = 7
 plt.rcParams['ytick.labelsize'] = 7
+plt.rcParams['axes.linewidth'] = 0.75
 
 def produce_title(spectrum):
     ## just returns a nice looking string for the plot title
     MCMC_DICT = spectrum.get_mcmc_dict(mode='BOTH')
 
-    return spectrum.get_name() + "  " + spectrum.get_arch_group() + '   Teff : %.0F  [Fe/H] : %.2F   [C/Fe] : %.2F   A(C) : %.2F' % (MCMC_DICT[0]['TEFF'][0] , MCMC_DICT[1]['FEH'][0], MCMC_DICT[1]['CFE'][0], MCMC_DICT[1]['AC'][0]) + "   MODE:  " + spectrum.get_carbon_mode()
+    return spectrum.get_name() + "  " + spectrum.get_arch_group() + \
+    '   Teff : %.0F  [Fe/H] : %.2F   [C/Fe] : %.2F   A(C) : %.2F' % (MCMC_DICT[0]['TEFF'][0] , MCMC_DICT[1]['FEH'][0], MCMC_DICT[1]['CFE'][0], MCMC_DICT[1]['AC'][0]) + \
+    "   MODE:  " + spectrum.get_carbon_mode() + "   CLASS: " + spectrum.get_gravity_class()
 
 
 def plot_spectra(spectra_batch):
@@ -60,6 +66,8 @@ def plot_spectra(spectra_batch):
             ## C2
             [label.set_xlim([4650, 4750]) for label in ax[:, 4]]
             [label.set_xticks(np.arange(4650, 4775,25)) for label in ax[:, 4]]
+
+            [plt.setp(label.get_yticklabels(), visible=False) for label in ax[:, 0]]
 
 
             ## FILL BETWEENS
@@ -134,7 +142,8 @@ def plot_spectra(spectra_batch):
 
 
         #elif spec.get_carbon_mode() == "CH+C2":
-        [label.plot(spec.synth_spectrum['wave'], spec.synth_spectrum['norm'], color='purple', linewidth=LINEW, alpha=0.75) for label in ax[index, 1:]]
+        [label.plot(spec.synth_spectrum['wave'], spec.synth_spectrum['norm'],
+                    color='purple', linewidth=LINEW, alpha=0.75) for label in ax[index, 1:]]
 
         ax[index,1].set_xlim([spec.frame['wave'].iloc[0], spec.frame['wave'].iloc[-1]])
 

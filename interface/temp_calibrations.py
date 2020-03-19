@@ -13,12 +13,12 @@ def Hernandez(JK, FEH=-3.5, CLASS= None):
     #### Updated to Nov 2019
 
     if CLASS == 'GIANT':
-        print("\t using giant calibration in Hernandez")
+        print("\t using GIANT calibration in Hernandez")
         #A0 = [0.6517, 0.6312, 0.0168, -0.0381, 0.0256, 0.0013]
         A0 = [0.6517, 0.6312, 0.0168, -0.0381, 0.0256, 0.0013]
 
     elif CLASS == 'DWARF':
-        print("\t using dwarf calibration in Hernandez")
+        print("\t using DWARF calibration in Hernandez")
         #A0 = [0.6524, 0.5813, 0.1225, –0.0646, 0.0370, 0.0016]
         A0 = [0.6524, 0.5813, 0.1225, -0.0646, 0.0370, 0.0016]
 
@@ -164,11 +164,48 @@ def Bergeat_Frame(Frame):
 
     return np.power(10, [logT_VK, logT_JK, logT_HK])
 
-###### -------------------------------------------------------------------------
 
-def calibrate_temperatures(JK, FEH = -3.5, CLASS=None):
+### Fukugita et al. 2011
+def Fukugita(gr):
+ try:
+     return 1.09*10000/(gr + 1.47)
+ except:
+     print("\t skipping (g-r)")
+     return np.nan
+
+######-------------------------------------------------------------------------
+def determine_effective(TEMP_FRAME):
+    print("\t setting effective temperature:")
+
+    TEMP_FRAME = TEMP_FRAME.sort_values(by=['VALUE'])
+
+    FINITE_FRAME = TEMP_FRAME[np.isfinite(TEMP_FRAME['VALUE'])]
+
+    INDEX = int(len(FINITE_FRAME)/2)
+
+    print("\t adopting : ", FINITE_FRAME.index.values[INDEX])
+    value = float(FINITE_FRAME.iloc[INDEX]["VALUE"])
+    #print(value)
+
+    assert np.isfinite(value), "\t ERROR, PHOTO TEMP NOT FINITE"
+    TEMP_FRAME = TEMP_FRAME.append(pd.DataFrame(data = [value],
+                                   columns = ['VALUE'], index=['ADOPTED']))
+
+    #print(TEMP_FRAME)
+    return TEMP_FRAME
 
 
-    return {'Casagrande': Casagrande(JK, FEH, CLASS),
-            'Hernandez': Hernandez(JK, FEH, CLASS),
-            'Bergeat': Bergeat(JK)}
+def calibrate_temp_frame(JK, gr, FEH = -3.5, CLASS=None):
+    ### Just run as many of them as you want
+    print("\t calibrating temperature frame")
+    TEMP_DICT = {'Casagrande': Casagrande(JK, FEH, CLASS),
+                 'Hernandez': Hernandez(JK, FEH, CLASS),
+                 'Bergeat': Bergeat(JK),
+                 'Fukugita' : Fukugita(gr)}
+
+    ### It's easier to handle a dataframe..
+    TEMP_FRAME = pd.DataFrame(data = list(TEMP_DICT.values()), columns = ["VALUE"], index = TEMP_DICT.keys())
+
+    TEMP_FRAME = determine_effective(TEMP_FRAME)
+
+    return TEMP_FRAME

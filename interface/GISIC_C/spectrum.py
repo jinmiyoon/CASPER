@@ -249,7 +249,7 @@ class Spectrum():
 
         ### Create the spline interpolation
 
-        tck = interp.splrep(self.midpoints, self.fluxpoints,k=k, s=s)
+        tck = interp.splrep(self.midpoints, self.fluxpoints,k=k, s=s, quiet = True)
 
 
         self.continuum = interp.splev(self.wavelength, tck)
