@@ -5,8 +5,11 @@
 ### CCSLab_main.py
 
 ####
+#spectra_path  = 'inputs/spectra/gmos-ft2017a-reduced/'
 spectra_path  = 'inputs/spectra/'
-param_path    = 'params/param_file_trun.dat'
+#param_path    = 'params/param_file_trun.dat'
+#param_path    = 'params/gmos-ft2017a-casper-input.csv'
+param_path    = 'params/param_file_jy1706_colors.dat'
 io_param_path = 'params/io_param.py'
 ####
 
@@ -19,12 +22,10 @@ import io_functions
 import archetype_interface
 import plot_functions
 from batch import Batch
-
-
-
-
+import time
 io_functions.print_greeting()
 
+start_time = time.time()
 print("... initializing spectra batch")
 spec_batch = Batch(spectra_path, param_path, io_param_path)
 
@@ -69,3 +70,5 @@ spec_batch.generate_synthetic()
 spec_batch.generate_plots()
 
 spec_batch.generate_output_files()
+
+print("The total time for this CASPER run is {:.2f}s".format(time.time()-start_time))
