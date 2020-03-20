@@ -177,6 +177,11 @@ class Batch():
             #### remember that there is a class definition here too
             if np.isfinite(spec.HARD_TEFF):
                 print("\t setting hard teff:   ", spec.HARD_TEFF)
+                spec.set_temp_frame(TC.calibrate_temp_frame(float(spec.PHOTO_0['J-K']),
+                                          float(spec.PHOTO_0['g-r']),
+                                          CLASS = CLASS))
+                spec.TEMP_FRAME.loc['ADOPTED', 'VALUE'] = spec.HARD_TEFF
+
                 spec.set_temperature(spec.HARD_TEFF, spec.T_SIGMA, hard=True)
 
             else:
