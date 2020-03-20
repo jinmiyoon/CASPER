@@ -9,7 +9,7 @@ import pandas as pd
 
 ### Hernandez et al 2009 - infrared flux method
 
-def Hernandez(JK, FEH=-3.5, CLASS= None):
+def Hernandez(JK, FEH=-2.5, CLASS= None):
     #### Updated to Nov 2019
 
     if CLASS == 'GIANT':
@@ -38,7 +38,7 @@ def Hernandez(JK, FEH=-3.5, CLASS= None):
     return T_JK
 
 
-def Casagrande(JK, FEH=-3.5, CLASS=None):
+def Casagrande(JK, FEH=-2.5, CLASS=None):
     #### Updated to Nov 2019
     if (JK >= 0.07 and JK <=0.95):
         Teff = 0.6393 + (JK*0.6104) + (0.0920*np.power(JK, 2)) + (-0.0330*JK*FEH) + (0.0291*FEH) + (0.0020*np.power(FEH,2))
@@ -195,17 +195,31 @@ def determine_effective(TEMP_FRAME):
     return TEMP_FRAME
 
 
-def calibrate_temp_frame(JK, gr, FEH = -3.5, CLASS=None):
+def calibrate_temp_frame(JK, gr, FEH = -2.5, CLASS=None):
     ### Just run as many of them as you want
     print("\t calibrating temperature frame")
-    TEMP_DICT = {'Casagrande': Casagrande(JK, FEH, CLASS),
-                 'Hernandez': Hernandez(JK, FEH, CLASS),
-                 'Bergeat': Bergeat(JK),
-                 'Fukugita' : Fukugita(gr)}
+    if np.isfinite(JK):
+        TEMP_DICT = {'Casagrande': Casagrande(JK, FEH, CLASS),
+                    'Hernandez': Hernandez(JK, FEH, CLASS),
+                    'Bergeat': Bergeat(JK)}
+
+    else:
+        TEMP_DICT = {'Casagrande': np.nan,
+                    'Hernandez': np.nan,
+                    'Bergeat': np.nan}
+
+
+    if np.isfinite(gr):
+        TEMP_DICT['Fukugita'] = Fukugita(gr)
+    else:
+        TEMP_DICT['Fukugita'] = np.nan
 
     ### It's easier to handle a dataframe..
     TEMP_FRAME = pd.DataFrame(data = list(TEMP_DICT.values()), columns = ["VALUE"], index = TEMP_DICT.keys())
 
-    TEMP_FRAME = determine_effective(TEMP_FRAME)
+    try:
+        TEMP_FRAME = determine_effective(TEMP_FRAME)
+    except:
+        TEMP_FRAME['ADOPTED'] = np.nan
 
     return TEMP_FRAME
