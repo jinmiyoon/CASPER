@@ -1,6 +1,6 @@
 ### CASPER
 ### Chemical Abudance Stellar Parameter Estimation Routine
-### Authors: Devin D. Whitten, Dmitrii Gudin, Joseph Zepeda
+### Authors: Devin D. Whitten, Jinmi Yoon
 ### PI: Jinmi Yoon, Timothy C. Beers
 ### Email: dwhitten@nd.edu
 ### University of Notre Dame
