@@ -32,7 +32,7 @@ def produce_title(spectrum):
 def plot_spectra(spectra_batch):
     ## to visualize normalizations
     ## I want multiple pages of 4x2
-    CA_XLIM = [3910, 3950]
+    CA_XLIM = [3910, 3980]
     LINEW   = 0.5
 
     print("... generating continuum plots")
