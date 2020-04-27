@@ -158,11 +158,106 @@ def plot_spectra(spectra_batch):
     return
 
 ##########
+def plot_corner_array(spec_batch):
 
-def plot_corners(spectra_batch):
-    #### 1 page per corner plot, with additional refined corner if available.
+    pp = PdfPages('output/' + spec_batch.io_params['output_name'] + '_corner.pdf')
+
+    fig_handle = []
+
+    for item in spec_batch.spectra_array:
+        fig_handle.append(plot_single_corner(item, spec_batch.io_params['output_name']))
+
+    plt.close()
+    [pp.savefig(fig) for fig in fig_handle]
+
+    pp.close()
 
     return
+
+
+def plot_single_corner(spectrum, io_path, burnin=0.25):
+
+    ## for now sampler is sampler.chain
+    ### There are three conditions, based on ndim
+    ### get number of dimensions
+
+    sampler = spectrum.MCMC_COARSE_sampler
+
+    try:
+        ndim = sampler.shape[2]
+        iter = sampler.shape[1]
+
+    except:
+        ndim = sampler.chain.shape[2]
+        iter = sampler.chain.shape[1]
+        sampler = sampler.chain
+
+    samples = sampler[:, int(burnin * iter):, :].reshape((-1, ndim))
+
+
+    if ndim == 6:
+        labels = [r'$T_{\rm eff}', '[Fe/H]', '[C/Fe]', r'S/N$_{\rm CaII}$', r'S/N$_{\rm CH}$', r'S/N$_{\rm C2}$']  #r'$\xi_{\rm CaII}$', r'$\xi_{\rm CH}$', r'$\xi_{\rm C2}$'
+        #for i in range(3, ndim):
+        #    samples[:, i] = np.divide(1., samples[:, i])
+
+    elif ndim == 5:
+        labels = [r'$T_{\rm eff}$', '[Fe/H]', '[C/Fe]', r'S/N$_{\rm CaII}$', r'S/N$_{\rm CH}$']
+        #for i in range(3, ndim):
+        #    samples[:, i] = np.divide(1., samples[:, i])
+
+    elif ndim == 2:
+        ### Fine parameters case
+        labels = ['[Fe/H]', '[C/Fe]']
+
+
+
+    fig = corner.corner(samples,
+                        labels=labels,
+                        color='black', hist_kwargs={'density': True})
+
+    name = spectrum.get_name()
+    fig.suptitle(name, fontsize=15)
+
+
+
+    MEDIAN = np.median(samples, axis=0)
+
+    #### MEDIAN is depreciated here, since I use a different estimate in kde_param
+    value2 = [MCMC_interface.kde_param(row, x0 = x0)['result'] for row, x0 in zip(samples.T, MEDIAN)]
+    kde_array = [MCMC_interface.kde_param(row, x0 = x0)['kde'] for row, x0 in zip(samples.T, MEDIAN)]
+
+    std =    np.std(samples, axis=0)
+
+
+    axes = np.array(fig.axes).reshape((ndim, ndim))
+
+    ### This the parameter case.
+
+    for yi in range(ndim):
+        for xi in range(yi):
+            ax = axes[yi, xi]
+            ax.axvline(value2[xi], color="r")
+            ax.axhline(value2[yi], color="r")
+            ax.plot(value2[xi], value2[yi], "sr")
+
+
+    for i in range(ndim):
+        span = np.linspace(min(samples.T[i]), max(samples.T[i]), 30)
+        axes[i,i].axvline(value2[i], color='r', alpha=0.75)
+        axes[i,i].plot(span, kde_array[i].evaluate(span))
+
+    [label.tick_params(direction='in', right=True, top=True) for label in axes.flatten()]
+
+    plt.close()
+    return fig
+
+
+
+
+
+
+
+
 
 
 

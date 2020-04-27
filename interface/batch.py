@@ -309,6 +309,11 @@ class Batch():
 
         plot_functions.plot_spectra(self)
 
+        print("... generating corner plots")
+        plot_functions.plot_corner_array(self)
+
+
+
         return
 
     def generate_output_files(self):
