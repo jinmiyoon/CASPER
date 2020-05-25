@@ -1,5 +1,11 @@
+################################################################################
+### Author: Devin Whitten
+### Email: devin.d.whitten@gmail.com
+### Institute: University of Notre Dame
+################################################################################
 #### this is the class definition for the Batch class.
 #### just bundling the Spectrum objects and normalization/analysis routines
+
 import os
 import interface_main, spectrum
 from astropy.io import fits

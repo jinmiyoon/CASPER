@@ -1,3 +1,9 @@
+################################################################################
+### Author: Devin Whitten
+### Email: devin.d.whitten@gmail.com
+### Institute: University of Notre Dame
+################################################################################
+
 #### New interface for the MLE MCMC
 
 import emcee

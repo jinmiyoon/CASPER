@@ -1,5 +1,10 @@
-#Author: Devin Whitten
-#Date: Nov 12, 2016
+################################################################################
+### Author: Devin Whitten
+### Email: devin.d.whitten@gmail.com
+### Institute: University of Notre Dame
+### Date: Nov 12, 2016
+################################################################################
+
 ## For now just the plotting functions
 
 

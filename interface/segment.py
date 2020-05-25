@@ -1,8 +1,11 @@
+################################################################################
 ### Author: Devin Whitten
+### Email: devin.d.whitten@gmail.com
+### Institute: University of Notre Dame
+################################################################################
 ### Segment class definition for basic continuum point creation.
+
 import numpy as np
-
-
 
 
 class Segment():

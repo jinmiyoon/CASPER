@@ -1,3 +1,9 @@
+################################################################################
+### Author: Devin Whitten
+### Email: devin.d.whitten@gmail.com
+### Institute: University of Notre Dame
+################################################################################
+
 import matplotlib.pyplot as plt
 import pandas as pd
 import numpy as np
