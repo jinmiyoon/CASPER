@@ -7,9 +7,9 @@
 ####
 #spectra_path  = 'inputs/spectra/gmos-ft2017a-reduced/'
 spectra_path  = 'inputs/spectra/'
-#param_path    = 'params/param_file_trun.dat'
+param_path    = 'params/param_file_trun.dat'
 #param_path    = 'params/gmos-ft2017a-casper-input.csv'
-param_path    = 'params/param_file_jy1706_colors.dat'
+
 io_param_path = 'params/io_param.py'
 ####
 

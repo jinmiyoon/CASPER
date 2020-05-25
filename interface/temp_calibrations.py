@@ -1,11 +1,12 @@
+################################################################################
+### Author: Devin Whitten
+### Email: devin.d.whitten@gmail.com
+### Institute: University of Notre Dame
+################################################################################
+# This script will serve as the interface for the various temperature calibrations
+
 import numpy as np
 import pandas as pd
-
-#This script will serve as the interface for the various temperature calibrations
-
-
-
-
 
 ### Hernandez et al 2009 - infrared flux method
 
