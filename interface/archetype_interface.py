@@ -1,5 +1,6 @@
-#### Author: Devin Whitten
-
+### Author: Devin Whitten
+### Email: devin.d.whitten@gmail.com
+### University of Notre Dame
 ### This is the interface for the archetype assessment routines
 
 import os, sys
@@ -9,10 +10,6 @@ import numpy as np
 from scipy.interpolate import interp1d
 import matplotlib.pyplot as plt
 import GISIC as GISIC_C
-
-### Trying to make the h5py work
-print("... reading arch_base.hdf5")
-
 
 ### This is unnormalized..
 #arch_base = h5py.File("inputs/archetypes/arch_base.hdf5", 'r')
@@ -64,7 +61,7 @@ def assess(spec):
 
 
 def determine_class(chi_frame):
-    ### Determins best
+    ### Determines best
     ##
     medians = []
     for key in chi_frame.keys():
@@ -73,7 +70,6 @@ def determine_class(chi_frame):
 
     #return group, value
     print('Suggested Group/Class:    ' , list(chi_frame.keys())[np.argsort(medians)[0]])
-    #return list(chi_frame.keys())[np.argsort(medians)[0]], medians[np.argsort(medians)[0]]
 
     return list(chi_frame.keys())[np.argsort(medians)[0]], medians[np.argsort(medians)[0]], np.argsort(medians)[0]
 

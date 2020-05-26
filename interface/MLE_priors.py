@@ -1,3 +1,9 @@
+################################################################################
+### Author: Devin Whitten
+### Email: devin.d.whitten@gmail.com
+### Institute: University of Notre Dame
+################################################################################
+
 ### Prior functions for the updated MLE procedure
 
 import numpy as np
