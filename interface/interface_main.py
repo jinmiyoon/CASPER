@@ -1,8 +1,10 @@
-### Name: Devin D. Whitten
-### Email: dwhitten@nd.edu
+################################################################################
+### Author: Devin Whitten
+### Email: devin.d.whitten@gmail.com
 ### Institute: University of Notre Dame
+################################################################################
+## Main parameter determination procedures
 
-### CCSLab_interface.py
 from astropy.io import fits
 from scipy.interpolate import LinearNDInterpolator as NDLinear
 from scipy.interpolate import interp1d

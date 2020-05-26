@@ -1,4 +1,8 @@
-#Author: Devin Whitten
+################################################################################
+### Author: Devin Whitten
+### Email: devin.d.whitten@gmail.com
+### Institute: University of Notre Dame
+################################################################################
 #Date: Nov 12, 2016
 # This is will serve as the interface for the normalization function.
 # So just defining some functions in here.
@@ -121,7 +125,7 @@ class Spectrum():
         if float(row['EBV_SFD']) > 0:
             ### Then perform the correction
             print("\t corrected :", self.get_name())
-    
+
 
             self.PHOTO_0['J-K'] = float(row['J-K']) - (float(A_EBV["A_J"]) - float(A_EBV['A_K'])) * float(row['EBV_SFD'])
 

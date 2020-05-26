@@ -1,6 +1,8 @@
+################################################################################
 ### Author: Devin Whitten
-## interface for matplotlib figures in CCS_kivy
-
+### Email: devin.d.whitten@gmail.com
+### Institute: University of Notre Dame
+################################################################################
 import kivy
 import matplotlib
 matplotlib.use('module://kivy.garden.matplotlib.backend_kivy')

@@ -1,4 +1,10 @@
-#### Main interface for the updated procedure
+################################################################################
+### Author: Devin Whitten
+### Email: devin.d.whitten@gmail.com
+### Institute: University of Notre Dame
+################################################################################
+
+#### Main interface for the MCMC procedure
 
 import numpy as np
 import pandas as pd

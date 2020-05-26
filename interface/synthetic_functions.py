@@ -1,5 +1,10 @@
+################################################################################
+### Author: Devin Whitten
+### Email: devin.d.whitten@gmail.com
+### Institute: University of Notre Dame
+################################################################################
+
 #### Here are the functions for the synthetic minimization
-#### Author: Devin Whitten
 
 import numpy as np
 import scipy.interpolate as interp

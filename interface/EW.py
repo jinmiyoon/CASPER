@@ -1,3 +1,10 @@
+################################################################################
+### Author: Devin Whitten
+### Email: devin.d.whitten@gmail.com
+### Institute: University of Notre Dame
+################################################################################
+## Functions related to the equivalent-width determinations
+
 import numpy as np
 import matplotlib.pyplot as plt
 import scipy.integrate as integrate
