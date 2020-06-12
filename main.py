@@ -6,20 +6,20 @@
 
 ### CASPER
 
-####
-<<<<<<< HEAD
+####<<<<<<< HEAD
 #spectra_path  = 'inputs/spectra/gmos-ft2017a-reduced/'
 #spectra_path  = 'inputs/spectra/'
-spectra_path  = 'inputs/spectra/mods-phase1-reduced/'
+spectra_path  = 'inputs/spectra/bf-survey-data/'
 #param_path    = 'params/param_file_trun.dat'
-param_path    = 'params/mods-phase1-casper-input.csv'
+param_path    = 'params/test.csv'
 #param_path    = 'params/param_file_jy1706_colors.dat'
-=======
-spectra_path  = 'inputs/spectra/'
-param_path    = 'params/param_file_trun.dat'
+
+#=======
+#spectra_path  = 'inputs/spectra/'
+#param_path    = 'params/param_file_trun.dat'
 
 
->>>>>>> upstream/master
+#>>>>>>> upstream/master
 io_param_path = 'params/io_param.py'
 ####
 
@@ -33,7 +33,9 @@ import archetype_interface
 import plot_functions
 from batch import Batch
 import time
-io_functions.print_greeting()
+
+print(" Started CASPER and logging!")
+sys.stdout=open('casper-output-log.txt', 'wt')
 
 start_time = time.time()
 print("... initializing spectra batch")
