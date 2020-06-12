@@ -1,9 +1,9 @@
 ### CASPER
 ### Chemical Abudance Stellar Parameter Estimation Routine (CASPER)
-### Main Developers: Devin D. Whitten, Jinmi Yoon
-### Collaborators : Joseph Zepeda
-### Email: dwhitten@nd.edu
-### University of Notre Dame
+#### Main Developers: Devin D. Whitten, Jinmi Yoon
+#### Collaborators : Joseph Zepeda
+#### Email: dwhitten@nd.edu
+#### University of Notre Dame
 
 This script package, CASPER, is designed to determine reliable stellar parameters (temperature, metallicity, surface gravity, and carbon abundance) of low/medium-resolution stellar spectra for cool Carbon-Enhanced Metal-Poor (CEMP) stars (Teff < 5000K). This package is under development for public use and thus needs more testings and refinements (Whitten, Yoon, et al. in prep). The description of the CASPER methodology can be found in Yoon, Whitten, et al. 2020 (The Astrophysical Journal, 894,7). The detailed documentation, along with the codes, will be available for public use in the near future.
 
