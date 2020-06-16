@@ -15,7 +15,7 @@ If you want to use this package for your scientific use and/or help to complete 
 
 ### Publications used this package :
 - [Placco, ..., Whitten, et al. ApJ accepted](https://ui.adsabs.harvard.edu/abs/2020arXiv200604538P/abstract)
-- [Yoon, Devin, et al. 2020, ApJ, 894, 7](https://ui.adsabs.harvard.edu/abs/2020ApJ...894....7Y/abstract)
+- [Yoon, Whitten, Beers, Lee, Masseron, and Placco, 2020, ApJ, 894, 7](https://ui.adsabs.harvard.edu/abs/2020ApJ...894....7Y/abstract)
 
 ![Logo](https://github.com/DevinWhitten/CASPER/blob/master/images/CASPER_logo.png)
 ![UMP Design](https://github.com/DevinWhitten/CCSLab/blob/master/images/UMP_Methodology_v3.png)
