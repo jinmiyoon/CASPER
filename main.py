@@ -7,6 +7,8 @@
 ### CASPER
 
 ####<<<<<<< HEAD
+#spectra_path  = 'inputs/spectra/bf-survey-data/'
+#param_path    = 'params/g77-61-input.csv'
 
 #=======
 spectra_path  = 'inputs/spectra/'
