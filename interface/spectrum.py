@@ -42,7 +42,8 @@ def obtain_flux(data):
         return data[0].flatten()
 
 class Spectrum():
-    def __init__(self, spec, name, wl_range=[3800, 6200], is_fits=True):
+    def __init__(self, spec, name, wl_range=[3000, 6000], is_fits=True):
+        # changed from wl_range=[3800,6200] J. Yoon 06-17-2020
 
         self.name = name
         print("... initializing:  ", name)
@@ -149,8 +150,7 @@ class Spectrum():
 
 
     ############################################################
-    def trim_frame(self, bounds= [3000, 5000]):
-
+    def trim_frame(self, bounds= [3500, 5000]): # changed from [3000,5000] J. Yoon 06-17-2020
         self.frame = self.frame[self.frame['wave'].between(bounds[0], bounds[1], inclusive=True)]
         return
 

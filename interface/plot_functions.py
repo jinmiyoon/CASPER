@@ -22,9 +22,9 @@ plt.ion()
 
 plt.style.use('classic')
 plt.rcParams['font.family'] = 'Times New Roman'
-plt.rcParams['xtick.labelsize'] = 7
-plt.rcParams['ytick.labelsize'] = 7
-plt.rcParams['axes.linewidth'] = 0.75
+plt.rcParams['xtick.labelsize'] = 5.5  # change from 7, J. Yoon 06-17-2020
+plt.rcParams['ytick.labelsize'] = 5.5  # change from 7, J. Yoon 06-17-2020
+plt.rcParams['axes.linewidth'] = 0.5   # change from 0.7, J. Yoon 06-17-2020
 
 def produce_title(spectrum):
     ## just returns a nice looking string for the plot title
@@ -39,7 +39,8 @@ def plot_spectra(spectra_batch):
     ## to visualize normalizations
     ## I want multiple pages of 4x2
     CA_XLIM = [3910, 3980]
-    LINEW   = 0.5
+    LINEW   = 0.3
+    LINEW_zoom = 0.5 # added a new linewidth variable, J. Yoon 06-17-2020
 
     print("... generating continuum plots")
     print("\t saving as:   ", spectra_batch.io_params['output_name'])
@@ -63,7 +64,7 @@ def plot_spectra(spectra_batch):
             ## CaII
             [label.ticklabel_format(axis='both', useOffset=False) for label in ax[:, 2]]
             [label.set_xlim(CA_XLIM) for label in ax[:, 2]]
-            [label.set_xticks([3915, 3930, 3945]) for label in ax[:, 2]]
+            [label.set_xticks([3915, 3930, 3945, 3960, 3975]) for label in ax[:, 2]]
 
             ## CH
             [label.set_xlim([4225, 4325]) for label in ax[:, 3]]
@@ -90,8 +91,8 @@ def plot_spectra(spectra_batch):
         [label.set_xticks(np.linspace(min(spec.frame['wave']), max(spec.frame['wave']),5)) for label in ax[index,0:2]]
 
         ### Set title
-        ax[index, 2].set_title(produce_title(spec), fontsize=10)
-
+        ax[index, 2].set_title(produce_title(spec), fontsize=8)
+        ## fontsize =10 originally
 
         ### Continuum Plot
         ax[index, 0].plot(spec.frame['wave'], spec.frame['flux'], linewidth=LINEW, color='black')
@@ -106,19 +107,19 @@ def plot_spectra(spectra_batch):
 
         ax[index, 2].axhline(1.00, linewidth=0.75, linestyle='--', color='red')
         ax[index, 2].plot(spec.frame['wave'],spec.frame['norm'],
-                                             linewidth=LINEW, color='black')
+                                             linewidth=LINEW_zoom, color='black')
 
         ### CH Plot
         ax[index, 3].axhline(1.00, linewidth=0.75, linestyle='--', color='red')
         ax[index, 3].plot(spec.frame['wave'][spec.frame['wave'].between(4150, 4500, inclusive=True)],
                                              spec.frame['norm'][spec.frame['wave'].between(4150, 4500, inclusive=True)],
-                                             linewidth=LINEW, color='black')
+                                             linewidth=LINEW_zoom, color='black')
 
         ### C2 Plot
         ax[index, 4].axhline(1.00, linewidth=0.75, linestyle='--', color='red')
         ax[index, 4].plot(spec.frame['wave'][spec.frame['wave'].between(4650, 4850, inclusive=True)],
                                              spec.frame['norm'][spec.frame['wave'].between(4650, 4850, inclusive=True)],
-                                             linewidth=LINEW, color='black')
+                                             linewidth=LINEW_zoom, color='black')
 
         ###### SIGMA SHADING SECTION
         ############################
@@ -202,7 +203,7 @@ def plot_single_corner(spectrum, io_path, burnin=0.25):
 
 
     if ndim == 6:
-        labels = [r'$T_{\rm eff}', '[Fe/H]', '[C/Fe]', r'S/N$_{\rm CaII}$', r'S/N$_{\rm CH}$', r'S/N$_{\rm C2}$']  #r'$\xi_{\rm CaII}$', r'$\xi_{\rm CH}$', r'$\xi_{\rm C2}$'
+        labels = [r'$T_{\rm eff}$', '[Fe/H]', '[C/Fe]', r'S/N$_{\rm CaII}$', r'S/N$_{\rm CH}$', r'S/N$_{\rm C2}$']  #r'$\xi_{\rm CaII}$', r'$\xi_{\rm CH}$', r'$\xi_{\rm C2}$'
         #for i in range(3, ndim):
         #    samples[:, i] = np.divide(1., samples[:, i])
 
@@ -256,11 +257,6 @@ def plot_single_corner(spectrum, io_path, burnin=0.25):
 
     plt.close()
     return fig
-
-
-
-
-
 
 
 
