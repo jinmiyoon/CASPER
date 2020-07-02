@@ -1,5 +1,5 @@
 ### CASPER
-### Chemical Abudance Stellar Parameter Estimation Routine (CASPER)
+### Chemical Abundance Stellar Parameter Estimation Routine (CASPER)
 #### Main Developers: Devin D. Whitten, Jinmi Yoon
 #### Collaborators : Joseph Zepeda
 #### Email: devin.d.whitten@gmail.com, jinmi.yoon@gmail.com
