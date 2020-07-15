@@ -8,6 +8,8 @@
 # So just defining some functions in here.
 
 ## Modifying to operate on synthetic spectra
+## Jul 15 2020 by Jinmi Yoon
+## This routine is under CASPER/interface/
 
 
 import pandas as pd

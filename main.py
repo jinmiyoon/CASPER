@@ -1,21 +1,21 @@
 ################################################################################
-### Author: Devin Whitten
-### Email: devin.d.whitten@gmail.com
+### Author: Devin Whitten, revised by Jinmi Yoon
+### Email: devin.d.whitten@gmail.com, jinmi.yoon@gmail.com
 ### Institute: University of Notre Dame
 ################################################################################
 
-### CASPER
+#### To run CASPER, you need to set up paths for spectra and parameters below.
+#### Further, you can change output name in io_param.py
 
-####<<<<<<< HEAD
-#spectra_path  = 'inputs/spectra/bf-survey-data/'
-#param_path    = 'params/g77-61-input.csv'
+### Example path set up for CASPER
+#spectra_path  = 'inputs/spectra/'
+#param_path    = 'params/param_file_trun.dat'
 
-#=======
-spectra_path  = 'inputs/spectra/'
-param_path    = 'params/param_file_trun.dat'
+### set up for spectra and input file for my program stars
+spectra_path  = 'inputs/spectra/bf-survey-data/'
+param_path    = 'params/g77-61-input.csv'
 
-
-#>>>>>>> upstream/master
+### io_param_path lets you prepend the output name for parameter file as .csv, casper fit as .pdf file, and cornerplot for mcmc calculations for the best parameters.
 io_param_path = 'params/io_param.py'
 ####
 
@@ -31,7 +31,7 @@ from batch import Batch
 import time
 
 print(" Started CASPER and logging!")
-sys.stdout=open('casper-output-log.txt', 'wt')
+sys.stdout=open('output/g77-61/casper-output-log-g77-61-gisic-flux_min80-sigma15_25.txt', 'wt')
 
 start_time = time.time()
 print("... initializing spectra batch")
