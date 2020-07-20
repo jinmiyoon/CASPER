@@ -31,7 +31,7 @@ from batch import Batch
 import time
 
 print(" Started CASPER and logging!")
-sys.stdout=open('output/g77-61/casper-output-log-g77-61-gisic-flux_min80-sigma15_25.txt', 'wt')
+#sys.stdout=open('output/g77-61/casper-output-log-g77-61-gisic-flux_min80-sigma15_25_CH_EW40-mcmc1000_result-2.txt', 'wt')
 
 start_time = time.time()
 print("... initializing spectra batch")
