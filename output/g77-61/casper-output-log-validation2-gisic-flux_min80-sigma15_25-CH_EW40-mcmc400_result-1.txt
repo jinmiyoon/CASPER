@@ -1,0 +1,246 @@
+... initializing spectra batch
+loading params:   params/bf-validation-stars-input.csv
+loading io_params:   params/io_param.py
+... loading spectra:   inputs/spectra/bf-survey-data/
+... initializing:   hd198269_m1b_casper.fits
+fits file
+linear wavelength
+... correcting endian mismatch
+... initializing:   hd198269_m2b_casper.fits
+fits file
+linear wavelength
+... correcting endian mismatch
+... initializing:   he0017_m1b_casper.fits
+fits file
+linear wavelength
+... correcting endian mismatch
+... initializing:   smss1738_m1b_casper.fits
+fits file
+linear wavelength
+... correcting endian mismatch
+... initializing:   smss1738_m2b_casper.fits
+fits file
+linear wavelength
+... correcting endian mismatch
+... initializing:   jy2552_m1b_casper.fits
+fits file
+linear wavelength
+... correcting endian mismatch
+... initializing:   jy2552_m2b_casper.fits
+fits file
+linear wavelength
+... correcting endian mismatch
+... setting spectra parameters
+--------------------------------------------------------------------------------------------------
+... build dataframes
+--------------------------------------------------------------------------------------------------
+... normalizing spectra batch
+... iterating convolution sigma
+	 hd198269_m1b_casper.fits :  okay
+	 hd198269_m2b_casper.fits :  okay
+	 he0017_m1b_casper.fits :  okay
+	 smss1738_m1b_casper.fits :  okay
+	 smss1738_m2b_casper.fits :  okay
+	 jy2552_m1b_casper.fits :  okay
+	 jy2552_m2b_casper.fits :  okay
+... setting KP bandwidth
+	 recommending K18 bounds
+	 recommending K18 bounds
+	 recommending K12 bounds
+	 recommending K12 bounds
+	 recommending K12 bounds
+	 recommending K6 bounds
+	 recommending K6 bounds
+... setting carbon mode
+flux_bounds_max =  1.0507529241276046
+EW_subtract=   0.0
+	 recommending CH procedure
+flux_bounds_max =  1.03471923944104
+EW_subtract=   0.0
+	 recommending CH procedure
+flux_bounds_max =  1.1087592266199262
+EW_subtract=   0.0
+	 recommending CH procedure
+flux_bounds_max =  1.0183663376586511
+EW_subtract=   0.0
+	 recommending CH procedure
+flux_bounds_max =  0.9883238763315236
+EW_subtract=   1.1676123668476368
+	 recommending CH procedure
+flux_bounds_max =  1.0368245581390898
+EW_subtract=   0.0
+	 recommending CH procedure
+flux_bounds_max =  1.0462659090799704
+EW_subtract=   0.0
+	 recommending CH procedure
+... estimating S/N
+... correcting photometry
+	 corrected : hd198269_m1b_casper.fits
+	 corrected : hd198269_m2b_casper.fits
+	 corrected : he0017_m1b_casper.fits
+	 corrected : smss1738_m1b_casper.fits
+	 corrected : smss1738_m2b_casper.fits
+	 corrected : jy2552_m1b_casper.fits
+	 corrected : jy2552_m2b_casper.fits
+... determining photometric temperature
+--------------------------------------------------------------------------------------------------
+	 setting photometric temperature sigma:  250.0
+	 setting hard teff:    4716.0
+	 calibrating temperature frame
+	 using GIANT calibration in Hernandez
+	 setting effective temperature:
+	 adopting :  Hernandez
+--------------------------------------------------------------------------------------------------
+	 setting photometric temperature sigma:  250.0
+	 setting hard teff:    4716.0
+	 calibrating temperature frame
+	 using GIANT calibration in Hernandez
+	 setting effective temperature:
+	 adopting :  Hernandez
+--------------------------------------------------------------------------------------------------
+	 setting photometric temperature sigma:  250.0
+	 setting hard teff:    4336.0
+	 calibrating temperature frame
+	 using GIANT calibration in Hernandez
+	 setting effective temperature:
+	 adopting :  Casagrande
+--------------------------------------------------------------------------------------------------
+	 setting photometric temperature sigma:  250.0
+	 setting hard teff:    4429.05
+	 calibrating temperature frame
+	 using GIANT calibration in Hernandez
+	 setting effective temperature:
+	 adopting :  Hernandez
+--------------------------------------------------------------------------------------------------
+	 setting photometric temperature sigma:  250.0
+	 setting hard teff:    4429.05
+	 calibrating temperature frame
+	 using GIANT calibration in Hernandez
+	 setting effective temperature:
+	 adopting :  Hernandez
+--------------------------------------------------------------------------------------------------
+	 setting photometric temperature sigma:  200.0
+	 setting hard teff:    5324.0
+	 calibrating temperature frame
+	 using GIANT calibration in Hernandez
+	 setting effective temperature:
+	 adopting :  Hernandez
+--------------------------------------------------------------------------------------------------
+	 setting photometric temperature sigma:  200.0
+	 setting hard teff:    5324.0
+	 calibrating temperature frame
+	 using GIANT calibration in Hernandez
+	 setting effective temperature:
+	 adopting :  Hernandez
+ ------  PHOTOMETRIC TEMPERATURES -------
++--------------------+----------+-----------+------------+----------+----------+
+|        NAME        | Bergeat  | Hernandez | Casagrande | Fukugita | ADOPTED  |
++====================+==========+===========+============+==========+==========+
+| hd198269_m1b_caspe | 4229.588 | 4794.764  | 4835.204   | nan      | 4716     |
+| r                  |          |           |            |          |          |
++--------------------+----------+-----------+------------+----------+----------+
+| hd198269_m2b_caspe | 4229.588 | 4794.764  | 4835.204   | nan      | 4716     |
+| r                  |          |           |            |          |          |
++--------------------+----------+-----------+------------+----------+----------+
+| he0017_m1b_casper  | 3981.492 | 4351.966  | 4347.414   | nan      | 4336     |
++--------------------+----------+-----------+------------+----------+----------+
+| smss1738_m1b_caspe | 4246.958 | 4827.956  | 4871.631   | nan      | 4429.050 |
+| r                  |          |           |            |          |          |
++--------------------+----------+-----------+------------+----------+----------+
+| smss1738_m2b_caspe | 4246.958 | 4827.956  | 4871.631   | nan      | 4429.050 |
+| r                  |          |           |            |          |          |
++--------------------+----------+-----------+------------+----------+----------+
+| jy2552_m1b_casper  | 4683.415 | 5777.412  | 5904.154   | 5332.248 | 5324     |
++--------------------+----------+-----------+------------+----------+----------+
+| jy2552_m2b_casper  | 4683.415 | 5777.412  | 5904.154   | 5332.248 | 5324     |
++--------------------+----------+-----------+------------+----------+----------+
+--------------------------------------------------------------------------------------------------
+... determining archetype classification
+ ------  ARCHETYPE LIKELIHOODS -------
++--------------------------+----------+---------+---------+
+|           NAME           |    GI    |   GII   |  GIII   |
++==========================+==========+=========+=========+
+| hd198269_m1b_casper.fits | -865922  | -531502 | -446346 |
++--------------------------+----------+---------+---------+
+| hd198269_m2b_casper.fits | -1958081 | -642170 | -731877 |
++--------------------------+----------+---------+---------+
+| he0017_m1b_casper.fits   | -4961    | -15686  | -3940   |
++--------------------------+----------+---------+---------+
+| smss1738_m1b_casper.fits | -418523  | -4011   | -297779 |
++--------------------------+----------+---------+---------+
+| smss1738_m2b_casper.fits | -688795  | -4918   | -477779 |
++--------------------------+----------+---------+---------+
+| jy2552_m1b_casper.fits   | -84803   | -32894  | -27030  |
++--------------------------+----------+---------+---------+
+| jy2552_m2b_casper.fits   | -105117  | -50404  | -40078  |
++--------------------------+----------+---------+---------+
+--------------------------------------------------------------------------------------------------
+... performing MCMC determinations
+	 hd198269_m1b_casper.fits:  GIANT : CH : 3924.7 - 3942.7
+	 initializing with archetype parameters:  {'FEH': -4.3, 'CFE': 2.87, 'AC': 7.0}
+	 running for  400  iterations...
+
+	 hd198269_m2b_casper.fits:  GIANT : CH : 3924.7 - 3942.7
+	 initializing with archetype parameters:  {'FEH': -3.5, 'CFE': 0.97, 'AC': 5.9}
+	 running for  400  iterations...
+
+	 he0017_m1b_casper.fits:  GIANT : CH : 3927.7 - 3939.7
+	 initializing with archetype parameters:  {'FEH': -4.3, 'CFE': 2.87, 'AC': 7.0}
+	 running for  400  iterations...
+
+	 smss1738_m1b_casper.fits:  GIANT : CH : 3927.7 - 3939.7
+	 initializing with archetype parameters:  {'FEH': -3.5, 'CFE': 0.97, 'AC': 5.9}
+	 running for  400  iterations...
+
+	 smss1738_m2b_casper.fits:  GIANT : CH : 3927.7 - 3939.7
+	 initializing with archetype parameters:  {'FEH': -3.5, 'CFE': 0.97, 'AC': 5.9}
+	 running for  400  iterations...
+
+	 jy2552_m1b_casper.fits:  GIANT : CH : 3930.7 - 3936.7
+	 initializing with archetype parameters:  {'FEH': -4.3, 'CFE': 2.87, 'AC': 7.0}
+	 running for  400  iterations...
+
+	 jy2552_m2b_casper.fits:  GIANT : CH : 3930.7 - 3936.7
+	 initializing with archetype parameters:  {'FEH': -4.3, 'CFE': 2.87, 'AC': 7.0}
+	 running for  400  iterations...
+
+... performing kde determinations
+------------------------------------------------------------------------------------------------------------------------------------
+... running refined mcmc
+	 hd198269_m1b_casper.fits:  GIANT : CH : 3924.7 - 3942.7
+	 initializing with archetype parameters:  {'FEH': -4.3, 'CFE': 2.87, 'AC': 7.0}
+	 running for  400  iterations...
+
+	 hd198269_m2b_casper.fits:  GIANT : CH : 3924.7 - 3942.7
+	 initializing with archetype parameters:  {'FEH': -3.5, 'CFE': 0.97, 'AC': 5.9}
+	 running for  400  iterations...
+
+	 he0017_m1b_casper.fits:  GIANT : CH : 3927.7 - 3939.7
+	 initializing with archetype parameters:  {'FEH': -4.3, 'CFE': 2.87, 'AC': 7.0}
+	 running for  400  iterations...
+
+	 smss1738_m1b_casper.fits:  GIANT : CH : 3927.7 - 3939.7
+	 initializing with archetype parameters:  {'FEH': -3.5, 'CFE': 0.97, 'AC': 5.9}
+	 running for  400  iterations...
+
+	 smss1738_m2b_casper.fits:  GIANT : CH : 3927.7 - 3939.7
+	 initializing with archetype parameters:  {'FEH': -3.5, 'CFE': 0.97, 'AC': 5.9}
+	 running for  400  iterations...
+
+	 jy2552_m1b_casper.fits:  GIANT : CH : 3930.7 - 3936.7
+	 initializing with archetype parameters:  {'FEH': -4.3, 'CFE': 2.87, 'AC': 7.0}
+	 running for  400  iterations...
+
+	 jy2552_m2b_casper.fits:  GIANT : CH : 3930.7 - 3936.7
+	 initializing with archetype parameters:  {'FEH': -4.3, 'CFE': 2.87, 'AC': 7.0}
+	 running for  400  iterations...
+
+... finalizing kde determinations
+------------------------------------------------------------------------------------------------------------------------------------
+... complete
+------------------------------------------------------------------------------------------------------------------------------------
+... generating synthetic spectra
+------------------------------------------------------------------------------------------------------------------------------------
+... generating plots
+... generating continuum plots
+	 saving as:    validation2/validation2-gisic-flux_min80-sigma15_25-CH_EW40-mcmc400-result-1
