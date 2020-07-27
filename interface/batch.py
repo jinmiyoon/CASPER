@@ -120,9 +120,13 @@ class Batch():
                 cont_array = []
                 ###     July 15 2020 J. Yoon      ###
                 #for SIGMA in np.linspace(15, 30, 10):
-                #for SIGMA in np.linspace(25, 35, 10): #
-                for SIGMA in np.linspace(15, 25, 10):  #Currently best choice with flux_min=80 I think,
-                #for SIGMA in np.linspace(10, 20, 10): # this choice is not recommended because it does not capture continuum points well. It even makes C2 band continuum.
+                #for SIGMA in np.linspace(25, 35, 10):
+                #for SIGMA in np.linspace(10, 20, 10): This choice is not
+                #recommended because it does not capture continuum points well.
+                #It even makes C2 band continuum.
+
+                #Currently best choice with flux_min=80 I think.
+                for SIGMA in np.linspace(15, 25, 10):
                     wave, norm, cont = GISIC.normalize(spec.get_frame_wave(), spec.get_frame_flux(), sigma = SIGMA, k=1)
 
                     cont_array.append(cont)

@@ -125,8 +125,9 @@ class Spectrum():
 
         ##-- Jinmi Yoon 06-12-2020
         ## MAke sure the colors used in CASPER are from UKIRT colors.
-        ## If you have 2MASS colors, convert them to the UKIRT colors by following
-        ## a transformation equation found at https://www.astro.caltech.edu/~jmc/2mass/v3/transformations/
+        ## If you have 2MASS colors, convert them to the UKIRT colors
+        ## by following a transformation equation found at
+        ## https://www.astro.caltech.edu/~jmc/2mass/v3/transformations/
         ## (Ks)2MASS     =    KUKIRT + (0.003 ± 0.004) + (0.004 ± 0.006)(J-K)UKIRT
         ## (J-H)2MASS    =    (1.075 ± 0.013)(J-H)UKIRT + (-0.032 ± 0.006)
         ## (J-Ks)2MASS   =    (1.070 ± 0.008)(J-K)UKIRT + (-0.015 ± 0.006)
@@ -216,8 +217,6 @@ class Spectrum():
 
 
         return
-
-
 
 
 
