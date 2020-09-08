@@ -53,9 +53,11 @@ class Batch():
         ### I only want the spectra in the param file
         self.spectra_names = self.param_file['name'].tolist()
         if is_fits == True:
+            print("input spectra files are of fits format!")
             self.spectra_array = [spectrum.Spectrum(fits.open(self.spectra_path + current),name=current, is_fits=fits) for current in self.spectra_names]
 
         else:
+            print("input spectra files are of csv format")
             self.spectra_array = [spectrum.Spectrum(pd.read_csv(self.spectra_path + current),name=current, fits=False) for current in self.spectra_names]
         self.length = len(self.spectra_array)
 
