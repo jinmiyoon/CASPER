@@ -1,5 +1,5 @@
 ################################################################################
-### Author: Devin Whitten, revised by Jinmi Yoon
+### Author: Devin Whitten, Jinmi Yoon
 ### Email: devin.d.whitten@gmail.com, jinmi.yoon@gmail.com
 ### Institute: University of Notre Dame
 ################################################################################
@@ -64,7 +64,9 @@ spec_batch.ebv_correction()
 
 ################################################################################
 #### Main procedures
-spec_batch.calibrate_temperatures()
+
+# does this procedure is done for once for initial param for archetype_classification? 
+spec_batch.calibrate_temperatures()  
 
 spec_batch.archetype_classification()
 

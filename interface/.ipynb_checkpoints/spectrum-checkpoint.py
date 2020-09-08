@@ -112,7 +112,8 @@ class Spectrum():
 
     def radial_correction(self, velocity=0):
         ### corrects the wavelength shift for given radial velocity
-
+        
+        # Later, I would use astropy constant for speed of light, Sep 02 2020, J. Yoon
         self.wavelength = self.original_wavelength / ((velocity/2.99792e5) + 1)
 
         return
@@ -434,7 +435,7 @@ class Spectrum():
         else:
             print("Bad mode:  ", mode)
             return np.nan
-
+        
     def get_MCMC_iterations(self):
         return self.MCMC_iterations
 
