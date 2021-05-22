@@ -1,7 +1,6 @@
 ################################################################################
-### Author: Devin Whitten
-### Email: devin.d.whitten@gmail.com
-### Institute: University of Notre Dame
+### Author: Devin Whitten, Jinmi Yoon
+### Email: devin.d.whitten@gmail.com, jinmi.yoon@gmail.com
 ################################################################################
 ## Main parameter determination procedures
 
@@ -21,7 +20,8 @@ from os.path import isfile, join
 from statsmodels.nonparametric.kde import KDEUnivariate
 
 from collections import namedtuple
-import GISIC
+#import GISIC   # Devin's original code
+import GISIC_C as GISIC
 #custom class defs
 import MCMC_interface
 import spectrum
