@@ -9,7 +9,8 @@ import numpy as np
 #import h5py
 from scipy.interpolate import interp1d
 import matplotlib.pyplot as plt
-import GISIC as GISIC_C
+#import GISIC as GISIC_C
+#import GISIC
 
 ### This is unnormalized..
 #arch_base = h5py.File("inputs/archetypes/arch_base.hdf5", 'r')
