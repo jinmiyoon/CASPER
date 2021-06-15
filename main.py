@@ -4,21 +4,16 @@
 ### Institute: University of Notre Dame
 ################################################################################
 
-#### To run CASPER, you need to set up paths for spectra and parameters below.
-#### Further, you can change output name in io_param.py
+### you can change output name in io_param.py
 
-### Example path set up for CASPER
-#spectra_path  = 'inputs/spectra/'
-#param_path    = 'params/param_file_trun.dat'
 
-### set up for spectra and input file for my program stars
-spectra_path  = 'inputs/spectra/bf-full-survey-data/'
-#param_path    = 'params/bf-full-survey-casper-input.csv'
-param_path    = 'inputs/params/test-carbon-mode-input.csv'
+###
+# To run CASPER, you need to set up paths for input spectra and parameters and
+# output directory and the ouput files.
+# io_paths lets you prepend the output name for parameter file as .csv,
+# casper fit as .pdf file, and cornerplot for mcmc calculations for the best parameters.
+io_paths = 'interface/io_paths.py'
 
-### io_param_path lets you prepend the output name for parameter file as .csv, casper fit as .pdf file, and cornerplot for mcmc calculations for the best parameters.
-io_param_path = 'interface/io_param.py'
-####
 
 import os, sys
 
@@ -36,7 +31,9 @@ print(" Started CASPER and logging!")
 
 start_time = time.time()
 print("... initializing spectra batch")
-spec_batch = Batch(spectra_path, param_path, io_param_path)
+
+spec_batch = Batch(io_paths)
+spec_batch.set_io_paths()
 
 ################################################################################
 ### load spectra + params

@@ -24,19 +24,30 @@ import EW
 
 class Batch():
     #### Main Batch Class
-    def __init__(self, spectra_path, param_path, io_path):
-        ## pretty much just load the param_file
-        ## set the spectra_path
+    #def __init__(self, spectra_path, param_path, io_path):
+    def __init__(self, io_paths):
+        ## load io_path which set inputs and outputs directories and
+        ## the file names along with the location where spectra live
+        self.io_paths      = io_paths
 
-        self.spectra_path = spectra_path
-        self.param_path   = param_path
-        self.io_path      = io_path
+        return
 
+    def set_io_paths(self):
+        print("loading io_paths:  ", self.io_paths)
+        self.io_params   = eval(open(self.io_paths, 'r').read())
+
+        print("setting io_paths:  ")
+        self.param_path  = self.io_params['param_path']
+        self.spectra_path  = self.io_params['spectra_dir_path']
+        self.output_name  = self.io_params['output_dir_path'] + self.io_params['output_file_name']
+        print("                  > input setting parameter    :  ", self.param_path)
+        print("                  > input spectra directory    :  ", self.spectra_path)
+        print("                  > output directory + filename:  ", self.output_name)
 
         return
 
     def load_params(self):
-        print("loading params:  ", self.param_path)
+        print("loading input params:  ", self.param_path)
         self.param_file  = pd.read_csv(self.param_path)
         print(list(self.param_file.columns))
         # 09-08-2020 J. Yoon
@@ -51,10 +62,9 @@ class Batch():
         # 06-11-2021 J. yoon
         #self.param_file['sequence'] = self.param_file['sequence'].astype(int)
 
-        print("loading io_params:  ", self.io_path)
-        self.io_params   = eval(open(self.io_path, 'r').read())
 
         return
+
 
     def load_spectra(self, is_fits=True):
         print("... loading spectra:  ", self.spectra_path)
@@ -355,7 +365,7 @@ class Batch():
 
         final = pd.concat([spec.get_output_row() for spec in self.spectra_array])
         try:
-            final.to_csv("output/" + self.io_params['output_name'] + "_out.csv", index=False)
+            final.to_csv( self.output_name + "_out.csv", index=False)
 
         except:
-            final.to_csv("output/" + self.io_params['output_name'] + "1_out.csv", index=False)
+            final.to_csv(self.output_name + "1_out.csv", index=False)
