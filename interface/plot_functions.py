@@ -43,12 +43,12 @@ def plot_spectra(spectra_batch):
     LINEW_zoom = 0.5 # added a new linewidth variable, J. Yoon 06-17-2020
 
     print("... generating continuum plots")
-    print("\t saving as:   ", spectra_batch.io_params['output_name'])
+    print("\t saving as:   ", spectra_batch.output_name)
     rows, columns = 8, 5
 
     pages = int(np.ceil(spectra_batch.length/(rows * columns)))
 
-    pp = PdfPages('output/' + spectra_batch.io_params['output_name'] + '_spec.pdf')
+    pp = PdfPages(spectra_batch.output_name + '_spec.pdf')
     count = 0
 
     for i, spec in enumerate(spectra_batch.spectra_array):  ### loop through pages
@@ -167,12 +167,12 @@ def plot_spectra(spectra_batch):
 ##########
 def plot_corner_array(spec_batch):
 
-    pp = PdfPages('output/' + spec_batch.io_params['output_name'] + '_corner.pdf')
+    pp = PdfPages(spec_batch.output_name + '_corner.pdf')
 
     fig_handle = []
 
     for item in spec_batch.spectra_array:
-        fig_handle.append(plot_single_corner(item, spec_batch.io_params['output_name']))
+        fig_handle.append(plot_single_corner(item, spec_batch.output_name))
 
     plt.close()
     [pp.savefig(fig) for fig in fig_handle]
