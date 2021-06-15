@@ -12,11 +12,12 @@
 #param_path    = 'params/param_file_trun.dat'
 
 ### set up for spectra and input file for my program stars
-spectra_path  = 'inputs/spectra/bf-survey-data/'
-param_path    = 'params/bf-validation-stars-modified-RV-input.csv'
+spectra_path  = 'inputs/spectra/bf-full-survey-data/'
+#param_path    = 'params/bf-full-survey-casper-input.csv'
+param_path    = 'inputs/params/test-carbon-mode-input.csv'
 
 ### io_param_path lets you prepend the output name for parameter file as .csv, casper fit as .pdf file, and cornerplot for mcmc calculations for the best parameters.
-io_param_path = 'params/io_param.py'
+io_param_path = 'interface/io_param.py'
 ####
 
 import os, sys
@@ -65,8 +66,8 @@ spec_batch.ebv_correction()
 ################################################################################
 #### Main procedures
 
-# does this procedure is done for once for initial param for archetype_classification? 
-spec_batch.calibrate_temperatures()  
+# does this procedure is done for once for initial param for archetype_classification?
+spec_batch.calibrate_temperatures()
 
 spec_batch.archetype_classification()
 

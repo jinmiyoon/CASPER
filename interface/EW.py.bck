@@ -185,39 +185,6 @@ def set_CH_procedure(spectrum):
     # the normalization though it is likely to be a minor difference.
     
     print("CH_EW= %5.2f" %CH_EW)
-
-    ##########################################################################
-    #  09/09/2020, J. Yoon
-    # I modified this procedure because I want to have freedom to
-    # set carbon_mode in input file for diagnosis of carbon mode. 
-    # If carbon_mode is missing in input files,
-    # then it will use the CH_EW value for setting carbon_mode.
-    ###########################################################################
-
-    if spectrum.INPUT_CARBON_MODE =='CH': 
-        print("\t using the input {0} carbon_mode".format(spectrum.INPUT_CARBON_MODE))
-        spectrum.set_carbon_mode('CH')
-
-    elif spectrum.INPUT_CARBON_MODE =='CH+C2':
-        print("\t using the input {0} carbon_mode: ".format(spectrum.INPUT_CARBON_MODE))
-        spectrum.set_carbon_mode('CH+C2')
-        
-    else :
-    
-        #if CH_EW > 55.: 
-        if CH_EW > 40.: 
-            print("\t recommending CH+C2 procedure")
-            spectrum.set_carbon_mode('CH+C2')
-
-        else:
-            print("\t recommending CH procedure")
-            spectrum.set_carbon_mode('CH')
-      
-    return
-
-            
-'''
-# original code part when the extra param (carbon_mode) was not used.
     if CH_EW > 40.: 
         print("\t recommending CH+C2 procedure")
         spectrum.set_carbon_mode('CH+C2')
@@ -226,7 +193,7 @@ def set_CH_procedure(spectrum):
         print("\t recommending CH procedure")
         spectrum.set_carbon_mode('CH')
 
-'''
+    return
 
 
 def CAII_KP(wave, flux):
