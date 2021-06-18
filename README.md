@@ -26,16 +26,9 @@ If you want to use this package for your scientific use and/or help to complete 
 style="display:block;margin: 0 auto;">
 
 
-<<<<<<< HEAD
-### install python packages
 
-anaconda3
-conda install -c astropy emcee
-conda install -c astropy corner
-=======
-### Installation of packages needed
+### Required python packages
 If you installed anaconda3, you will need to install these packages.
 - conda install -c astropy emcee
 - conda install -c astropy corner
 - conda install -c conda-forge texttable
->>>>>>> casper-dev
