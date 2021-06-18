@@ -1,11 +1,7 @@
 ################################################################################
 ### Author: Devin Whitten, Jinmi Yoon
 ### Email: devin.d.whitten@gmail.com, jinmi.yoon@gmail.com
-### Institute: University of Notre Dame
 ################################################################################
-
-### you can change output name in io_param.py
-
 
 ###
 # To run CASPER, you need to set up paths for input spectra and parameters and
@@ -25,9 +21,6 @@ import archetype_interface
 import plot_functions
 from batch import Batch
 import time
-
-print(" Started CASPER and logging!")
-#sys.stdout=open('output/validation/validation2/rv_correction_test_result-1.txt', 'wt')
 
 start_time = time.time()
 print("... initializing spectra batch")

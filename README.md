@@ -1,10 +1,15 @@
-### CASPER
 ###  CEMP Group Assignment and Stellar Parameter Estimation Routine (CASPER)
 #### Main Developers: Devin D. Whitten, Jinmi Yoon
 #### Collaborators : Joseph Zepeda
 #### Email: devin.d.whitten@gmail.com, jinmi.yoon@gmail.com
 
 This script package, CASPER, is designed to determine reliable stellar parameters (temperature, metallicity, surface gravity, and carbon abundance) of low/medium-resolution stellar spectra for cool Carbon-Enhanced Metal-Poor (CEMP) stars (Teff < 5000K). This package is under development for public use and thus needs more testings and refinements (Whitten, Yoon, et al. in prep). The description of the CASPER methodology can be found in Yoon, Whitten, et al. 2020 (The Astrophysical Journal, 894,7). The detailed documentation, along with the codes, will be available for public use in the near future.
+
+### Required python packages
+If you installed anaconda3, you will need to install these packages.
+- conda install -c astropy emcee
+- conda install -c astropy corner
+- conda install -c conda-forge texttable
 
 ### Collaboration, Scientific Use
 If you want to use this package for your scientific use and/or help to complete the development, please contact first both Devin Whitten (devin.d.whitten@gmail.com) and Jinmi Yoon (jinmi.yoon@gmail.com).
@@ -24,6 +29,7 @@ If you want to use this package for your scientific use and/or help to complete 
 
 <img src="https://github.com/DevinWhitten/CCSLab/blob/master/images/continuum_animation.gif" width="80%"
 style="display:block;margin: 0 auto;">
+<<<<<<< HEAD
 
 
 
@@ -32,3 +38,5 @@ If you installed anaconda3, you will need to install these packages.
 - conda install -c astropy emcee
 - conda install -c astropy corner
 - conda install -c conda-forge texttable
+=======
+>>>>>>> casper-dev
