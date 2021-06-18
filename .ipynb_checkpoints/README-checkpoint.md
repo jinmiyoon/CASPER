@@ -1,5 +1,5 @@
 ### CASPER
-###  CEMP Group Assignment and Stellar Parameter Estimation Routine (CASPER)
+### Chemical Abundance Stellar Parameter Estimation Routine (CASPER)
 #### Main Developers: Devin D. Whitten, Jinmi Yoon
 #### Collaborators : Joseph Zepeda
 #### Email: devin.d.whitten@gmail.com, jinmi.yoon@gmail.com
@@ -12,7 +12,7 @@ If you want to use this package for your scientific use and/or help to complete 
 ### Stellar Parameters Space for CASPER
 [Fe/H] = [-4.5, -1.0], Teff = [4000, 5500] K, [C/Fe] = [-0.5. 4.5] , logg =[0.0, 5.5]
 
-### Publications used this methodology :
+### Publications used this package :
 - [Placco, ..., Whitten, et al., 2020, ApJ, 897, 78 ](https://ui.adsabs.harvard.edu/abs/2020ApJ...897...78P/abstract)
 - [Yoon, Whitten, Beers, Lee, Masseron, and Placco, 2020, ApJ, 894, 7](https://ui.adsabs.harvard.edu/abs/2020ApJ...894....7Y/abstract)
 
@@ -26,16 +26,8 @@ If you want to use this package for your scientific use and/or help to complete 
 style="display:block;margin: 0 auto;">
 
 
-<<<<<<< HEAD
-### install python packages
-
-anaconda3
-conda install -c astropy emcee
-conda install -c astropy corner
-=======
-### Installation of packages needed
+### Installation of packages needed 
 If you installed anaconda3, you will need to install these packages.
-- conda install -c astropy emcee
-- conda install -c astropy corner
-- conda install -c conda-forge texttable
->>>>>>> casper-dev
+-conda install -c astropy emcee
+-conda install -c astropy corner
+-conda install -c conda-forge texttable

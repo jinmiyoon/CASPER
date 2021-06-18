@@ -1,6 +1,6 @@
 ################################################################################
-### Author: Devin Whitten, Jinmi Yoon
-### Email: devin.d.whitten@gmail.com, jinmi.yoon@gmail.com
+### Author: Devin Whitten
+### Email: devin.d.whitten@gmail.com
 ### Institute: University of Notre Dame
 ################################################################################
 #Date: Nov 12, 2016
@@ -55,7 +55,7 @@ class Spectrum():
 ################################################################################
         if is_fits:
             ## This is a cumbersome attempt to accomadate multiple fits data formats..
-            print("fits file, ")
+            print("fits file")
             self.fits = spec
 
             if 'CD1_1' in spec[0].header:
@@ -95,7 +95,7 @@ class Spectrum():
 ################################################################################
 
         else:
-            print("\t csv file, ")
+            print("\t csv file")
             self.spec = spec
             self.flux = self.spec['flux']
             self.wavelength = np.array(self.spec['wave'], dtype=np.float)
@@ -108,9 +108,11 @@ class Spectrum():
 
         return
 
-    def radial_correction(self, velocity=0.):
-        ### corrects the wavelength shift for given radial velocity
 
+
+    def radial_correction(self, velocity=0):
+        ### corrects the wavelength shift for given radial velocity
+        
         # Later, I would use astropy constant for speed of light, Sep 02 2020, J. Yoon
         self.wavelength = self.original_wavelength / ((velocity/2.99792e5) + 1)
 
@@ -124,14 +126,13 @@ class Spectrum():
 
         ##-- Jinmi Yoon 06-12-2020
         ## MAke sure the colors used in CASPER are from UKIRT colors.
-        ## If you have 2MASS colors, convert them to the UKIRT colors
-        ## by following a transformation equation found at
-        ## https://www.astro.caltech.edu/~jmc/2mass/v3/transformations/
+        ## If you have 2MASS colors, convert them to the UKIRT colors by following
+        ## a transformation equation found at https://www.astro.caltech.edu/~jmc/2mass/v3/transformations/
         ## (Ks)2MASS     =    KUKIRT + (0.003 ± 0.004) + (0.004 ± 0.006)(J-K)UKIRT
         ## (J-H)2MASS    =    (1.075 ± 0.013)(J-H)UKIRT + (-0.032 ± 0.006)
         ## (J-Ks)2MASS   =    (1.070 ± 0.008)(J-K)UKIRT + (-0.015 ± 0.006)
         ## (H-Ks)2MASS   =    (1.071 ± 0.026)(H-K)UKIRT + (0.014 ± 0.005)
-
+        
         self.PHOTO_0 = {key: float(row[key]) for key in ['J-K', 'H-K', 'H-K', 'g-r']}
 
         if float(row['EBV_SFD']) > 0:
@@ -152,7 +153,7 @@ class Spectrum():
 
 
     ############################################################
-    def trim_frame(self, bounds= [3000, 5000]):
+    def trim_frame(self, bounds= [3500, 5000]): # changed from [3000,5000] J. Yoon 06-17-2020
         self.frame = self.frame[self.frame['wave'].between(bounds[0], bounds[1], inclusive=True)]
         return
 
@@ -203,20 +204,21 @@ class Spectrum():
 
     #################################################
     ### Total mutators
-    def set_params(self,CLASS, JK, MODE, INPUT_CARBON_MODE, iter, T_SIGMA, HARD_TEFF):
-    #def set_params(self,CLASS, JK, MODE, iter, T_SIGMA, HARD_TEFF):
+    def set_params(self,CLASS, JK, MODE, iter, T_SIGMA, HARD_TEFF):
         self.gravity_class = str(CLASS)
         self.JK = JK
         self.MODE = str(MODE)
-        self.INPUT_CARBON_MODE = str(INPUT_CARBON_MODE)
         self.MCMC_iterations = iter
         self.T_SIGMA = float(T_SIGMA)
         self.HARD_TEFF = float(HARD_TEFF)
+
         assert (self.gravity_class == 'GIANT') or (self.gravity_class == 'DWARF'), "Invalid gravity class: {}".format(self.gravity_class)
         assert (self.MODE == 'UFD') or (self.MODE == 'HALO'), "Invalid Environment"
-        #assert (self.INPUT_CARBON_MODE =='CH') or (self.INPUT_CARBON_MODE =='CH+C2'), "Invalid Enviornment: {}".format(self.carbon_mode)
+
 
         return
+
+
 
 
 
@@ -433,7 +435,7 @@ class Spectrum():
         else:
             print("Bad mode:  ", mode)
             return np.nan
-
+        
     def get_MCMC_iterations(self):
         return self.MCMC_iterations
 

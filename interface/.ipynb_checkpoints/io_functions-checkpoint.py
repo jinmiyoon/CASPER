@@ -8,6 +8,7 @@ def span_window(char="-"):
 def print_greeting():
     span_window("#")
     print("\t\tCASPER")
-    print("Authors: Devin D. Whitten and Jinmi Yoon")
-    print("Please direct questions to: devin.d.whitten@gmail.com and jinmi.yoon@gmail.com")
+    print("Authors: Devin D. Whitten")
+    print("Institute: University of Notre Dame")
+    print("Please direct questions to: dwhitten@nd.edu")
     span_window("#")

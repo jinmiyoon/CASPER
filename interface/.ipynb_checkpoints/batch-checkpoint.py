@@ -1,6 +1,7 @@
 ################################################################################
-### Author: Devin Whitten,  Jinmi Yoon
+### Author: Devin Whitten, revised by Jinmi Yoon
 ### Email: devin.d.whitten@gmail.com, jinmi.yoon@gmail.com
+### Institute: University of Notre Dame
 ################################################################################
 #### this is the class definition for the Batch class.
 #### just bundling the Spectrum objects and normalization/analysis routines
@@ -24,47 +25,26 @@ import EW
 
 class Batch():
     #### Main Batch Class
-    #def __init__(self, spectra_path, param_path, io_path):
-    def __init__(self, io_paths):
-        ## load io_path which set inputs and outputs directories and
-        ## the file names along with the location where spectra live
-        self.io_paths      = io_paths
+    def __init__(self, spectra_path, param_path, io_path):
+        ## pretty much just load the param_file
+        ## set the spectra_path
 
-        return
+        self.spectra_path = spectra_path
+        self.param_path   = param_path
+        self.io_path      = io_path
 
-    def set_io_paths(self):
-        print("loading io_paths:  ", self.io_paths)
-        self.io_params   = eval(open(self.io_paths, 'r').read())
-
-        print("setting io_paths:  ")
-        self.param_path  = self.io_params['param_path']
-        self.spectra_path  = self.io_params['spectra_dir_path']
-        self.output_name  = self.io_params['output_dir_path'] + self.io_params['output_file_name']
-        print("                  > input setting parameter    :  ", self.param_path)
-        print("                  > input spectra directory    :  ", self.spectra_path)
-        print("                  > output directory + filename:  ", self.output_name)
 
         return
 
     def load_params(self):
-        print("loading input params:  ", self.param_path)
+        print("loading params:  ", self.param_path)
         self.param_file  = pd.read_csv(self.param_path)
-        print(list(self.param_file.columns))
-        # 09-08-2020 J. Yoon
-        #'mode' indicate galactic environment, 'HALO' or 'UFD' # I need to change "UFD" to "dSph"
         self.param_file['mode'] = self.param_file['mode'].astype(str)
-        # 09-08-2020 J. Yoon
-        #'class' indicates luminosity (gravity) clas, 'GIANT' or 'DWARF'
         self.param_file['class'] = self.param_file['class'].astype(str)
-        # 09-09-2020 J. Yoon
-        # I add one more parameter called 'carbon_mode' to freely change its mode for validation.
-        self.param_file['carbon_mode'] = self.param_file['carbon_mode'].astype(str) # uncomment when this change needed.
-        # 06-11-2021 J. yoon
-        #self.param_file['sequence'] = self.param_file['sequence'].astype(int)
-
+        print("loading io_params:  ", self.io_path)
+        self.io_params   = eval(open(self.io_path, 'r').read())
 
         return
-
 
     def load_spectra(self, is_fits=True):
         print("... loading spectra:  ", self.spectra_path)
@@ -98,15 +78,10 @@ class Batch():
             JK = row['J-K']
             CLASS = row['class'].strip()
             MODE  = row['mode'].strip()
-            INPUT_CARBON_MODE = row['carbon_mode'].strip()  # 09-09-2020 J. Yoon
-            #print("DEBUG!", INPUT_CARBON_MODE)
             ITER  = row['MCMC_iter']
             T_SIGMA = row['T_SIGMA']
             HARD_TEFF = row['TEFF_SET']
-            #spec.set_params(CLASS = CLASS, JK = JK, MODE=MODE, iter=ITER, T_SIGMA=T_SIGMA, HARD_TEFF=HARD_TEFF)
-            # 09-09-2020 J. yoon
-            spec.set_params(CLASS = CLASS, JK = JK, MODE=MODE, INPUT_CARBON_MODE=INPUT_CARBON_MODE, iter=ITER, T_SIGMA=T_SIGMA, HARD_TEFF=HARD_TEFF)
-
+            spec.set_params(CLASS = CLASS, JK = JK, MODE=MODE, iter=ITER, T_SIGMA=T_SIGMA, HARD_TEFF=HARD_TEFF)
 
 
         return
@@ -122,7 +97,7 @@ class Batch():
             spec.radial_correction(float(self.param_file[self.param_file['name'] == name]['RV']))
             print('For {:20}'.format(spec.name), ":  okay")
             print('    correcting RV= %7.3f km/s:  done' %float(self.param_file[self.param_file['name'] == name]['RV']))
-
+            
 
     def build_frames(self, bounds = [3000, 5000]):
         ### I'd rather not modify the original wavelength and flux arrays
@@ -147,27 +122,12 @@ class Batch():
             for spec in self.spectra_array:
                 cont_array = []
                 ###     July 15 2020 J. Yoon      ###
-<<<<<<< HEAD
                 #for SIGMA in np.linspace(15, 30, 10):
-                #for SIGMA in np.linspace(25, 35, 10):
-                #for SIGMA in np.linspace(10, 20, 10): This choice is not
-                #recommended because it does not capture continuum points well.
-                #It even makes C2 band continuum.
-
-                #Currently best choice with flux_min=80 I think.
-                for SIGMA in np.linspace(15, 25, 10):
-=======
-                #for SIGMA in np.linspace(15, 30, 10): # Devin's original set up
-
-                # Currently best choice with flux_min=80 (GISIC_S.normalize()) I think.
-                # but need to be further tested, 09/09/2020 J. Yoon
-                for SIGMA in np.linspace(15, 25, 10):
-
                 #for SIGMA in np.linspace(25, 35, 10): #
-                #for SIGMA in np.linspace(10, 20, 10):
-                # this choice is not recommended because it does not capture continuum points well.
+                for SIGMA in np.linspace(15, 25, 10):  #Currently best choice with flux_min=80 I think,
+                #for SIGMA in np.linspace(10, 20, 10): 
+                # this choice is not recommended because it does not capture continuum points well. 
                 #It even makes C2 band continuum.
->>>>>>> casper-dev
                     wave, norm, cont = GISIC.normalize(spec.get_frame_wave(), spec.get_frame_flux(), sigma = SIGMA, k=1)
 
                     cont_array.append(cont)
@@ -376,7 +336,7 @@ class Batch():
 
         final = pd.concat([spec.get_output_row() for spec in self.spectra_array])
         try:
-            final.to_csv( self.output_name + "_out.csv", index=False)
+            final.to_csv("output/" + self.io_params['output_name'] + "_out.csv", index=False)
 
         except:
-            final.to_csv(self.output_name + "1_out.csv", index=False)
+            final.to_csv("output/" + self.io_params['output_name'] + "1_out.csv", index=False)
