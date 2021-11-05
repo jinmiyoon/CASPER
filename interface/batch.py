@@ -240,22 +240,24 @@ class Batch():
 
         HEADER = ['NAME', 'Bergeat', 'Hernandez', 'Casagrande', 'Fukugita', 'ADOPTED']
 
-        if len(self.spectra_array) < 30:
 
-            output_table = HEADER
+        output_table = HEADER
 
-            for spec in self.spectra_array:
-                row = np.concatenate([[spec.get_name().split(".fits")[0]],
+        for spec in self.spectra_array:
+            row = np.concatenate([[spec.get_name().split(".fits")[0]],
                                         [spec.TEMP_FRAME.loc[CURRENT].values[0] for CURRENT in HEADER[1:]]
-                                        ])
+                                    ])
 
-                output_table = np.vstack([output_table, row])
+            output_table = np.vstack([output_table, row])
 
-            table = Texttable()
+        table = Texttable()
 
-            table.add_rows(output_table)
-            print(" ------  PHOTOMETRIC TEMPERATURES -------")
-            print(table.draw())
+        table.add_rows(output_table)
+
+        print(" ------  PHOTOMETRIC TEMPERATURES -------")
+        if len(self.spectra_array) < 30: print(table.draw())
+        # save into a file
+        print(table.draw(), file=open("outputs/temp_cal_table.txt", "a"))
 
         return
 
@@ -291,21 +293,22 @@ class Batch():
         [interface_main.archetype_classify_MC(spec) for spec in self.spectra_array]
 
         ### prepare output table if it's reasonable
-        if len(self.spectra_array) < 30:
+        #if len(self.spectra_array) < 30:
 
-            output_table = ['NAME', "GI", "GII", "GIII"]
+        output_table = ['NAME', "GI", "GII", "GIII"]
 
-            for spec in self.spectra_array:
-                row = np.concatenate([[spec.get_name()], [spec.LL_DICT[key][0].round(0) for key in ["GI", "GII", "GIII"]]])
+        for spec in self.spectra_array:
+            row = np.concatenate([[spec.get_name()], [spec.LL_DICT[key][0].round(0) for key in ["GI", "GII", "GIII"]]])
 
-                output_table = np.vstack([output_table, row])
+            output_table = np.vstack([output_table, row])
 
-            table = Texttable()
+        table = Texttable()
 
-            table.add_rows(output_table)
-            print(" ------  ARCHETYPE LIKELIHOODS -------")
-            print(table.draw())
-
+        table.add_rows(output_table)
+        print(" ------  ARCHETYPE LIKELIHOODS -------")
+        if len(self.spectra_array) < 30: print(table.draw())
+        # save into a file
+        print(table.draw(), file=open("outputs/archetype_table.txt", "a"))
 
 
 

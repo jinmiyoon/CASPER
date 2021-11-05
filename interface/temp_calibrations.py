@@ -214,7 +214,7 @@ def calibrate_temp_frame(JK, gr, FEH = -2.5, CLASS=None):
         TEMP_DICT['Fukugita'] = Fukugita(gr)
     else:
         TEMP_DICT['Fukugita'] = np.nan
-
+    #TEMP_DICT['HARD_TEFF'] = self.param_file['Teff_SET']
     ### It's easier to handle a dataframe..
     TEMP_FRAME = pd.DataFrame(data = list(TEMP_DICT.values()), columns = ["VALUE"], index = TEMP_DICT.keys())
 

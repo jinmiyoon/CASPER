@@ -1,3 +1,7 @@
+###### THIS IS NOT USED IN CASPER. Devin WROTE THIS FOR OTHER CHECKING IN The
+###### PROCESS OF DEVELOPING CAPER. PERHAPS SOME OF THE FUNCTIONS CAN BE USED
+###### FOR SOME TESTINGS.  ####
+
 ## Author : Devin Whitten
 ## University of Notre Dame
 

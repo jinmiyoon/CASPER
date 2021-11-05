@@ -3,6 +3,9 @@
 ### Email: devin.d.whitten@gmail.com, jinmi.yoon@gmail.com
 ################################################################################
 
+### you can change output name in io_param.py
+
+
 ###
 # To run CASPER, you need to set up paths for input spectra and parameters and
 # output directory and the ouput files.
@@ -21,6 +24,20 @@ import archetype_interface
 import plot_functions
 from batch import Batch
 import time
+
+# Create directory
+dirName = 'outputs/logs'
+try:
+    # Create target Directory
+    os.mkdir(dirName)
+    print("Directory " , dirName ,  " Created ")
+except FileExistsError:
+    print("Directory " , dirName ,  " already exists")
+
+#print(" Started CASPER and logging!")
+
+#sys.stdout=open('outputs/logs/bf-full-survey-print-statements.txt', 'wt')
+
 
 start_time = time.time()
 print("... initializing spectra batch")
@@ -70,4 +87,7 @@ spec_batch.generate_plots()
 spec_batch.generate_output_files()
 
 print("The total time for this CASPER run is {:.2f}s".format(time.time()-start_time))
-print('\007')
+#print('\007')
+
+#make a sound when the script run is finished.
+os.system("say beep")
