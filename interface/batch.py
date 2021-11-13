@@ -53,6 +53,7 @@ class Batch():
         # 09-08-2020 J. Yoon
         #'mode' indicate galactic environment, 'HALO' or 'UFD' # I need to change "UFD" to "dSph"
         self.param_file['sequence'] = self.param_file['sequence'].astype(str)
+        self.sequence = self.param_file['sequence'].tolist()
         self.param_file['mode'] = self.param_file['mode'].astype(str)
         # 09-08-2020 J. Yoon
         #'class' indicates luminosity (gravity) clas, 'GIANT' or 'DWARF'
@@ -61,7 +62,6 @@ class Batch():
         # I add one more parameter called 'carbon_mode' to freely change its mode for validation.
         self.param_file['carbon_mode'] = self.param_file['carbon_mode'].astype(str) # uncomment when this change needed.
         # 06-11-2021 J. yoon
-        #self.param_file['sequence'] = self.param_file['sequence'].astype(int)
 
 
         return
@@ -96,8 +96,8 @@ class Batch():
 
             spec = self.spectra_array[i]
 
-            assert spec.name == row['name'], 'Parameter error in calibrate_temperatures()'
-
+            assert spec.name == row['name'].strip(), 'Parameter error in calibrate_temperatures()'
+            SEQUENCE = row['sequence']
             JK = row['J-K']
             CLASS = row['class'].strip()
             MODE  = row['mode'].strip()
@@ -107,8 +107,9 @@ class Batch():
             T_SIGMA = row['T_SIGMA']
             HARD_TEFF = row['TEFF_SET']
             #spec.set_params(CLASS = CLASS, JK = JK, MODE=MODE, iter=ITER, T_SIGMA=T_SIGMA, HARD_TEFF=HARD_TEFF)
-            # 09-09-2020 J. yoon
-            spec.set_params(CLASS = CLASS, JK = JK, MODE=MODE, INPUT_CARBON_MODE=INPUT_CARBON_MODE, iter=ITER, T_SIGMA=T_SIGMA, HARD_TEFF=HARD_TEFF)
+            # 09-09-2020, 11-13-2021 J. yoon
+            spec.set_params(SEQUENCE = SEQUENCE, CLASS = CLASS, JK = JK, MODE=MODE,
+                INPUT_CARBON_MODE=INPUT_CARBON_MODE, iter=ITER, T_SIGMA=T_SIGMA, HARD_TEFF=HARD_TEFF)
 
 
 
@@ -117,12 +118,12 @@ class Batch():
 
     def radial_correct(self):
         print("\n... correcting radial velocities")
-        self.sequence = self.param_file['sequence'].tolist()
+        #self.sequence = self.param_file['sequence'].tolist()
         for sequence, spec in zip(self.sequence, self.spectra_array):
 
             radial_velocity = float(self.param_file[self.param_file['sequence'] == sequence]['RV'])
             spec.radial_correction(radial_velocity)
-            print('\t For {:s},  RV = {:7.2f}'.format(sequence+': '+spec.name, radial_velocity))
+            print('\t For {:s},  RV = {:7.2f} km/s'.format(sequence+': '+spec.name, radial_velocity))
             #print('    correcting RV= %7.3f km/s:  done' %float(self.param_file[self.param_file['name'] == name]['RV']))
 
 

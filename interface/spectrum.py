@@ -201,8 +201,9 @@ class Spectrum():
 
     #################################################
     ### Total mutators
-    def set_params(self,CLASS, JK, MODE, INPUT_CARBON_MODE, iter, T_SIGMA, HARD_TEFF):
+    def set_params(self,SEQUENCE, CLASS, JK, MODE, INPUT_CARBON_MODE, iter, T_SIGMA, HARD_TEFF):
     #def set_params(self,CLASS, JK, MODE, iter, T_SIGMA, HARD_TEFF):
+        self.SEQUENCE = str(SEQUENCE)
         self.gravity_class = str(CLASS)
         self.JK = JK
         self.MODE = str(MODE)
@@ -367,6 +368,9 @@ class Spectrum():
         return
 
     ################################################################
+    def get_sequence(self):
+        return "{:s}".format(self.SEQUENCE)
+
     def get_name(self):
         return "{:<20}".format(self.name)
         #return self.name.ljust(20)
@@ -441,6 +445,7 @@ class Spectrum():
     def get_output_row(self):
         ## simply produces a dataframe row with the desired outputs
         return pd.DataFrame({
+                        "SEQUENCE" : [self.get_sequence()],
                         "NAME"     : [self.get_name()],
                         "MODE"     : [self.get_carbon_mode()],
                         'GROUP'    : [self.get_arch_group()],
