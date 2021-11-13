@@ -33,21 +33,21 @@ class Batch():
         return
 
     def set_io_paths(self):
-        print("loading io_paths:  ", self.io_paths)
+        print("\nloading io_paths:  ", self.io_paths)
         self.io_params   = eval(open(self.io_paths, 'r').read())
 
-        print("setting io_paths:  ")
+        print("\nsetting io_paths:  ")
         self.param_path  = self.io_params['param_path']
         self.spectra_path  = self.io_params['spectra_dir_path']
         self.output_name  = self.io_params['output_dir_path'] + self.io_params['output_file_name']
-        print("                  > input setting parameter    :  ", self.param_path)
-        print("                  > input spectra directory    :  ", self.spectra_path)
-        print("                  > output directory + filename:  ", self.output_name)
+        print(" \t\t\t > input setting parameter    :  ", self.param_path)
+        print(" \t\t\t > input spectra directory    :  ", self.spectra_path)
+        print(" \t\t\t > output directory + filename:  ", self.output_name)
 
         return
 
     def load_params(self):
-        print("loading input params:  ", self.param_path)
+        print("\nloading input params:  ", self.param_path)
         self.param_file  = pd.read_csv(self.param_path)
         print(list(self.param_file.columns))
         # 09-08-2020 J. Yoon
@@ -67,18 +67,20 @@ class Batch():
 
 
     def load_spectra(self, is_fits=True):
-        print("... loading spectra:  ", self.spectra_path)
+        print("\n ... loading spectra:  ", self.spectra_path)
 
 
         ### I only want the spectra in the param file
         self.spectra_names = self.param_file['name'].tolist()
         if is_fits == True:
-            print("input spectra files are of fits format!")
-            self.spectra_array = [spectrum.Spectrum(fits.open(self.spectra_path + current),name=current, is_fits=fits) for current in self.spectra_names]
+            #print("input spectra files are of fits format!")
+            self.spectra_array = [spectrum.Spectrum(fits.open(self.spectra_path + current),
+                name=current, is_fits=fits) for current in self.spectra_names]
 
         else:
-            print("input spectra files are of csv format")
-            self.spectra_array = [spectrum.Spectrum(pd.read_csv(self.spectra_path + current),name=current, fits=False) for current in self.spectra_names]
+            #print("input spectra files are of csv format")
+            self.spectra_array = [spectrum.Spectrum(pd.read_csv(self.spectra_path + current),
+                name=current, fits=False) for current in self.spectra_names]
         self.length = len(self.spectra_array)
 
         return
@@ -88,7 +90,7 @@ class Batch():
     def set_params(self):
         ### Need to distribute the parameters across the Spectrum objects
         ### I'll update this as needed
-        print("... setting spectra parameters")
+        print("\n... setting spectra parameters")
         for i, row in self.param_file.iterrows():
 
             spec = self.spectra_array[i]
@@ -112,16 +114,15 @@ class Batch():
         return
 
 
-
-
     def radial_correct(self):
-        print("... correcting radial velocities")
-        for name, spec in zip(self.spectra_names, self.spectra_array):
+        print("\n... correcting radial velocities")
+        self.sequence = self.param_file['sequence'].tolist()
+        for sequence, spec in zip(self.sequence, self.spectra_array):
 
-
-            spec.radial_correction(float(self.param_file[self.param_file['name'] == name]['RV']))
-            print('For {:20}'.format(spec.name), ":  okay")
-            print('    correcting RV= %7.3f km/s:  done' %float(self.param_file[self.param_file['name'] == name]['RV']))
+            radial_velocity = float(self.param_file[self.param_file['sequence'] == sequence]['RV'])
+            spec.radial_correction(radial_velocity)
+            print('\t For {:s},  RV = {:7.2f}'.format(sequence+': '+spec.name, radial_velocity))
+            #print('    correcting RV= %7.3f km/s:  done' %float(self.param_file[self.param_file['name'] == name]['RV']))
 
 
     def build_frames(self, bounds = [3000, 5000]):
@@ -129,7 +130,7 @@ class Batch():
         ### plus it's nice to work with dataframes, so I'm just gonna dump arrays to member frames
         ### might as well trim the wavelength coverage here to match the synthetic spectra
 
-        print("... build dataframes")
+        print("\n ... build dataframes")
         [spec.set_frame(wave=spec.get_wave(), flux=spec.get_flux()) for spec in self.spectra_array]
         [spec.trim_frame(bounds) for spec in self.spectra_array]
 
@@ -137,7 +138,7 @@ class Batch():
 
 
     def normalize(self, default=True):
-        print("... normalizing spectra batch")
+        print("\n... normalizing spectra batch")
         print("... iterating convolution sigma")
         ### Default specfies whether any GISIC values should be taken from the param_file
         ## for now I'm just going to write the default case
@@ -186,7 +187,7 @@ class Batch():
         return
 
     def ebv_correction(self):
-        print("... correcting photometry")
+        print("\n... correcting photometry")
         for i, row in self.param_file.iterrows():
             spec = self.spectra_array[i]
             spec.ebv_correct(row)
@@ -199,7 +200,7 @@ class Batch():
         ## along with the surface gravity class, if known
         ## We'll eventually want to update to override sigma, I'l come back to that
 
-        print("... determining photometric temperature")
+        print("\n... determining photometric temperature")
 
         ### I don't think the spectra_array and the param_file are sorted the same
         ### so I need to be careful
@@ -244,10 +245,7 @@ class Batch():
         output_table = HEADER
 
         for spec in self.spectra_array:
-            row = np.concatenate([[spec.get_name().split(".fits")[0]],
-                                        [spec.TEMP_FRAME.loc[CURRENT].values[0] for CURRENT in HEADER[1:]]
-                                    ])
-
+            row = np.concatenate([[spec.get_name().split(".fits")[0]],[spec.TEMP_FRAME.loc[CURRENT].values[0] for CURRENT in HEADER[1:]]])
             output_table = np.vstack([output_table, row])
 
         table = Texttable()
@@ -263,24 +261,24 @@ class Batch():
 
     def set_KP_bounds(self):
         ## set the appropriate bandwidth on the CaII index
-        print("... setting KP bandwidth")
+        print("\n... setting KP bandwidth")
         [spec.set_KP_bounds(EW.get_KP_band(spec)) for spec in self.spectra_array]
 
         return
 
     def set_carbon_mode(self):
         ## At some point we'll want to override this using the param file, when desired
-        print("... setting carbon mode")
+        print("\n... setting carbon mode")
         [EW.set_CH_procedure(spec) for spec in self.spectra_array]
         return
 
     def estimate_sn(self):
-        print("... estimating S/N")
+        print("\n... estimating S/N")
         [spec.estimate_sn() for spec in self.spectra_array]
         return
 
     def set_mcmc_args(self):
-        print('... bulding mcmc_args dict')
+        print('\n... bulding mcmc_args dict')
         [spec.set_mcmc_args() for spec in self.spectra_array]
         return
 
@@ -288,7 +286,7 @@ class Batch():
     ##### the big ones
     def archetype_classification(self):
         io_functions.span_window()
-        print('... determining archetype classification')
+        print('\n... determining archetype classification')
 
         [interface_main.archetype_classify_MC(spec) for spec in self.spectra_array]
 
@@ -299,18 +297,14 @@ class Batch():
 
         for spec in self.spectra_array:
             row = np.concatenate([[spec.get_name()], [spec.LL_DICT[key][0].round(0) for key in ["GI", "GII", "GIII"]]])
-
             output_table = np.vstack([output_table, row])
 
         table = Texttable()
-
         table.add_rows(output_table)
         print(" ------  ARCHETYPE LIKELIHOODS -------")
         if len(self.spectra_array) < 30: print(table.draw())
         # save into a file
         print(table.draw(), file=open("outputs/archetype_table.txt", "a"))
-
-
 
         return
 
@@ -318,7 +312,7 @@ class Batch():
     def mcmc_determination(self, pool=20):
         ### Main iterative method for the mcmc_determination
         io_functions.span_window()
-        print('... performing MCMC determinations')
+        print('\n... performing MCMC determinations')
 
         [spec.prepare_regions() for spec in self.spectra_array]
 
@@ -343,7 +337,7 @@ class Batch():
 
     def generate_synthetic(self):
 
-        print("... generating synthetic spectra")
+        print("\n... generating synthetic spectra")
 
         [interface_main.generate_synthetic(spec) for spec in self.spectra_array]
 
@@ -351,7 +345,7 @@ class Batch():
 
     def generate_plots(self):
         io_functions.span_window()
-        print("... generating plots")
+        print("\n... generating plots")
 
         plot_functions.plot_spectra(self)
 
@@ -364,7 +358,7 @@ class Batch():
 
     def generate_output_files(self):
         io_functions.span_window()
-        print("... generating outputs")
+        print("\n... generating outputs")
 
         final = pd.concat([spec.get_output_row() for spec in self.spectra_array])
         try:

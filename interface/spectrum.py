@@ -48,14 +48,13 @@ class Spectrum():
         # changed from wl_range=[3800,6200] J. Yoon 06-17-2020
 
         self.name = name
-        print("... initializing:  ", name)
+        print("\n... initializing:  ", name)
         #### Use the fits file to generate all necessary info for the spectrum
         #self.spec = spec[spec[0].between(wl_range[0], wl_range[-1], inclusive=True)]
         #self.wavelength = np.power(10. , (self.fits[0].header['CRVAL1'] + np.arange(0, self.fits[0].header['NAXIS1'])*self.fits[0].header['CD1_1']))
 ################################################################################
         if is_fits:
             ## This is a cumbersome attempt to accomadate multiple fits data formats..
-            print("fits file, ")
             self.fits = spec
 
             if 'CD1_1' in spec[0].header:
@@ -68,7 +67,7 @@ class Spectrum():
                 print("I don't know which increment to use!")
 
             if self.fits[0].header['CRVAL1'] > 10.:
-                print("linear wavelength")
+                #print("linear wavelength")
                 ###testing purposes, probably this is the way to go
                 self.wavelength = (np.arange(0, spec[0].header['NAXIS1'], 1) * spec[0].header[DELTA]) + spec[0].header['CRVAL1']
 

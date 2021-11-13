@@ -207,7 +207,6 @@ def mcmc_determination(spectrum, mode='COARSE', pool=4):
     #PARAMS_F = spectrum.get_mcmc_dict(mode = mode)
     #print('\t Result parameters after MCMC runs:    ', PARAMS_F)
     print("\t\t mcmc mode = ", mode)
-    print("\t\t spectrum mcmc_dict", spectrum.get_mcmc_dict(mode = mode))
 
     return
 
