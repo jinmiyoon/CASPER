@@ -52,6 +52,7 @@ class Batch():
         print(list(self.param_file.columns))
         # 09-08-2020 J. Yoon
         #'mode' indicate galactic environment, 'HALO' or 'UFD' # I need to change "UFD" to "dSph"
+        self.param_file['sequence'] = self.param_file['sequence'].astype(str)
         self.param_file['mode'] = self.param_file['mode'].astype(str)
         # 09-08-2020 J. Yoon
         #'class' indicates luminosity (gravity) clas, 'GIANT' or 'DWARF'
