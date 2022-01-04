@@ -36,7 +36,7 @@ except FileExistsError:
 
 #print(" Started CASPER and logging!")
 
-#sys.stdout=open('outputs/logs/bf-full-survey-print-statements.txt', 'wt')
+#sys.stdout=open('outputs/logs/validation-smss1738m2b-multiruns-statements-2.txt', 'wt')
 
 
 start_time = time.time()
@@ -52,12 +52,12 @@ print(spec_batch.param_file['name'])
 spec_batch.load_spectra(is_fits=True)
 spec_batch.set_params()
 
-io_functions.span_window()
+#io_functions.span_window()
 
 spec_batch.radial_correct()
 spec_batch.build_frames()
 
-io_functions.span_window()
+#io_functions.span_window()
 
 ################################################################################
 #### Continuum normalization with GISIC

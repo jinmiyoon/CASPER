@@ -209,7 +209,7 @@ class Batch():
 
         for i, row in self.param_file.iterrows():
 
-            io_functions.span_window()
+            #io_functions.span_window()
 
 
 
@@ -287,7 +287,7 @@ class Batch():
 
     ##### the big ones
     def archetype_classification(self):
-        io_functions.span_window()
+        #io_functions.span_window()
         print('\n... determining archetype classification')
 
         [interface_main.archetype_classify_MC(spec) for spec in self.spectra_array]
@@ -313,7 +313,7 @@ class Batch():
 
     def mcmc_determination(self, pool=20):
         ### Main iterative method for the mcmc_determination
-        io_functions.span_window()
+        #io_functions.span_window()
         print('\n... performing MCMC determinations')
 
         [spec.prepare_regions() for spec in self.spectra_array]
@@ -323,7 +323,7 @@ class Batch():
         print("... performing kde determinations")
         [interface_main.generate_kde_params(spec, mode="COARSE") for spec in self.spectra_array]
 
-        io_functions.span_window()
+        #io_functions.span_window()
 
         print("... running refined mcmc")
         [interface_main.mcmc_determination(spec, mode='REFINE', pool=pool)  for spec in self.spectra_array]
@@ -331,9 +331,9 @@ class Batch():
         print("... finalizing kde determinations")
         [interface_main.generate_kde_params(spec, mode='REFINE') for spec in self.spectra_array]
 
-        io_functions.span_window()
+        #io_functions.span_window()
         print("... complete")
-        io_functions.span_window()
+        #io_functions.span_window()
         return
 
 
@@ -346,7 +346,7 @@ class Batch():
         return
 
     def generate_plots(self):
-        io_functions.span_window()
+        #io_functions.span_window()
         print("\n... generating plots")
 
         plot_functions.plot_spectra(self)
@@ -359,7 +359,7 @@ class Batch():
         return
 
     def generate_output_files(self):
-        io_functions.span_window()
+        #io_functions.span_window()
         print("\n... generating outputs")
 
         final = pd.concat([spec.get_output_row() for spec in self.spectra_array])

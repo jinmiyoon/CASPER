@@ -182,7 +182,7 @@ def determine_effective(TEMP_FRAME):
 
     FINITE_FRAME = TEMP_FRAME[np.isfinite(TEMP_FRAME['VALUE'])]
 
-    INDEX = int(len(FINITE_FRAME)/2)
+    INDEX = int(len(FINITE_FRAME)/2)  # to adopt the middle teff value.
 
     print("\t adopting : ", FINITE_FRAME.index.values[INDEX])
     value = float(FINITE_FRAME.iloc[INDEX]["VALUE"])

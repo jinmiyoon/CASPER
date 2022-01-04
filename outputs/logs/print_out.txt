@@ -1,0 +1,2 @@
+spectrum loaded
+Directory  outputs/logs  already exists

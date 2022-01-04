@@ -11,5 +11,5 @@
 # output_name will be prepended to .pdf and .csv for the spectra fit output files,
 # MCMC corner plots and output stellar parameters files.
 "output_dir_path"   : "outputs/test/",
-"output_file_name"  : "test_input_style"
+"output_file_name"  : "test_teff_irfm_output"
 }

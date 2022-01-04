@@ -212,7 +212,7 @@ class Spectrum():
         self.T_SIGMA = float(T_SIGMA)
         self.HARD_TEFF = float(HARD_TEFF)
         assert (self.gravity_class == 'GIANT') or (self.gravity_class == 'DWARF'), "Invalid gravity class: {}".format(self.gravity_class)
-        assert (self.MODE == 'UFD') or (self.MODE == 'HALO'), "Invalid Environment"
+        assert (self.MODE == 'UFD') or (self.MODE == 'HALO'), "Invalid Galactic Environment"
         #assert (self.INPUT_CARBON_MODE =='CH') or (self.INPUT_CARBON_MODE =='CH+C2'), "Invalid Enviornment: {}".format(self.carbon_mode)
 
         return
@@ -250,6 +250,13 @@ class Spectrum():
     def set_temperature(self, input_temp, sigma, hard=False):
         ### for use with the calibrate_temperatures function
         ### input_dict:  {"Casagrande":, "Hernandez":, "Bergeat": }
+        self.teff_irfm = input_temp
+        self.teff_irfm_unc = sigma
+
+        '''
+        # 12/13/2021, J Yoon.
+        # I dont understand why Devin wrote this way below.
+        # Perhaps, he meant to do something else.
 
         if hard == True:
             self.teff_irfm = input_temp
@@ -260,6 +267,7 @@ class Spectrum():
             self.teff_irfm = input_temp
             self.teff_irfm_unc = sigma
 
+        '''
 
         return
 
@@ -444,6 +452,7 @@ class Spectrum():
 
     def get_output_row(self):
         ## simply produces a dataframe row with the desired outputs
+        # 01-04-2022 added  a missing suffix ('_UNC') for TEFF_IRFM_UNC
         return pd.DataFrame({
                         "SEQUENCE" : [self.get_sequence()],
                         "NAME"     : [self.get_name()],
@@ -451,8 +460,8 @@ class Spectrum():
                         'GROUP'    : [self.get_arch_group()],
                         'TEFF'     : [round(self.MCMC_COARSE['TEFF'][0], 0)],
                         'TEFF_ERR' : [round(self.MCMC_COARSE['TEFF'][1], 2)],
-                        'TEFF_IRFM': [self.teff_irfm],
-                        'TEFF_IRFM': [self.teff_irfm_unc],
+                        'TEFF_IRFM': [round(self.teff_irfm]),
+                        'TEFF_IRFM_UNC': [self.teff_irfm_unc],
                         'FEH'      : [round(self.MCMC_REFINE['FEH'][0], 2)],
                         'FEH_ERR'  : [round(max([self.MCMC_REFINE['FEH'][1], self.MCMC_COARSE['FEH'][1]]), 4)],
                         'CFE'      : [round(self.MCMC_REFINE['CFE'][0], 2)],

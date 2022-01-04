@@ -1,7 +1,6 @@
 ################################################################################
-### Author: Devin Whitten
-### Email: devin.d.whitten@gmail.com
-### Institute: University of Notre Dame
+### Author: Devin Whitten, Jinmi Yoon
+### Email: jinmi.yoon@gmail.com, devin.d.whitten@gmail.com
 ################################################################################
 
 import matplotlib.pyplot as plt
@@ -23,15 +22,16 @@ plt.ion()
 
 plt.style.use('classic')
 plt.rcParams['font.family'] = 'Times New Roman'
-plt.rcParams['xtick.labelsize'] = 5.5  # change from 7, J. Yoon 06-17-2020
-plt.rcParams['ytick.labelsize'] = 5.5  # change from 7, J. Yoon 06-17-2020
-plt.rcParams['axes.linewidth'] = 0.5   # change from 0.7, J. Yoon 06-17-2020
+plt.rcParams['xtick.labelsize'] = 5.5  # change from 7, 06-17-2020
+plt.rcParams['ytick.labelsize'] = 5.5  # change from 7, 06-17-2020
+plt.rcParams['axes.linewidth'] = 0.5   # change from 0.7, 06-17-2020
 
 def produce_title(spectrum):
     ## just returns a nice looking string for the plot title
     MCMC_DICT = spectrum.get_mcmc_dict(mode='BOTH')
 
-    #11-13-2021 J. Yoon revised the return value.
+    # 11-13-2021 revised the return value to include sequence numbers.
+    # 01-04-2022 need to find out why Teff value is from MCMC_DICT[0] (COARSE), not from MCMC_DICT[1](REFINE)
     return "#"+spectrum.get_sequence()+" "+ spectrum.get_name() + "  " + \
     "   Teff : %.0F  [Fe/H] : %.2F   [C/Fe] : %.2F   A(C) : %.2F" % (MCMC_DICT[0]['TEFF'][0] , MCMC_DICT[1]['FEH'][0], MCMC_DICT[1]['CFE'][0], MCMC_DICT[1]['AC'][0]) + \
     "   MODE:  " + spectrum.get_carbon_mode() + "   CLASS: " + spectrum.get_gravity_class()+ "  "+spectrum.get_arch_group()  + " (tentative)"
@@ -91,7 +91,7 @@ def plot_spectra(spectra_batch):
         ax[index, 0].set_yticks([0.0, max(spec.frame['flux'])])
         [label.set_xticks(np.linspace(min(spec.frame['wave']), max(spec.frame['wave']),5)) for label in ax[index,0:2]]
 
-        #11-13-2021 J. Yoon added Xlabel
+        #11-13-2021 added Xlabel
         ang = u.Unit('Angstrom')
         [label.set_xlabel("wavelength ({:s})".format(ang.to_string(format='Latex')), labelpad=1, fontsize=6) for label in ax[index,0:5]]
 

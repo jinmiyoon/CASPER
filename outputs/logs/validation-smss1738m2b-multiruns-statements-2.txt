@@ -1,0 +1,328 @@
+... initializing spectra batch
+
+loading io_paths:   interface/io_paths.py
+
+setting io_paths:  
+ 			 > input setting parameter    :   inputs/params/validation-multiruns-smss1738-m2b.csv
+ 			 > input spectra directory    :   inputs/spectra/bf-full-survey-data/
+ 			 > output directory + filename:   outputs/test/multiruns/multiruns-smss1738-m2b
+
+loading input params:   inputs/params/validation-multiruns-smss1738-m2b.csv
+['sequence', 'name', 'J-K', 'H-K', 'g-r', 'EBV_SFD', 'TEFF_SET', 'T_SIGMA', 'RV', 'SN_CA', 'SN_CH', 'SN_C2', 'class', 'mode', 'carbon_mode', 'MCMC_iter']
+0    smss1738_m2b_casper.fits
+1    smss1738_m2b_casper.fits
+2    smss1738_m2b_casper.fits
+3    smss1738_m2b_casper.fits
+4    smss1738_m2b_casper.fits
+5    smss1738_m2b_casper.fits
+6    smss1738_m2b_casper.fits
+7    smss1738_m2b_casper.fits
+Name: name, dtype: object
+
+ ... loading spectra:   inputs/spectra/bf-full-survey-data/
+
+... initializing:   smss1738_m2b_casper.fits
+... correcting endian mismatch
+
+... initializing:   smss1738_m2b_casper.fits
+... correcting endian mismatch
+
+... initializing:   smss1738_m2b_casper.fits
+... correcting endian mismatch
+
+... initializing:   smss1738_m2b_casper.fits
+... correcting endian mismatch
+
+... initializing:   smss1738_m2b_casper.fits
+... correcting endian mismatch
+
+... initializing:   smss1738_m2b_casper.fits
+... correcting endian mismatch
+
+... initializing:   smss1738_m2b_casper.fits
+... correcting endian mismatch
+
+... initializing:   smss1738_m2b_casper.fits
+... correcting endian mismatch
+
+... setting spectra parameters
+
+... correcting radial velocities
+	 For 21: smss1738_m2b_casper.fits,  RV =   84.40 km/s
+	 For 22: smss1738_m2b_casper.fits,  RV =   84.40 km/s
+	 For 23: smss1738_m2b_casper.fits,  RV =   84.40 km/s
+	 For 24: smss1738_m2b_casper.fits,  RV =   84.40 km/s
+	 For 25: smss1738_m2b_casper.fits,  RV =   84.40 km/s
+	 For 26: smss1738_m2b_casper.fits,  RV =   84.40 km/s
+	 For 27: smss1738_m2b_casper.fits,  RV =   84.40 km/s
+	 For 28: smss1738_m2b_casper.fits,  RV =   84.40 km/s
+
+ ... build dataframes
+
+... normalizing spectra batch
+... iterating convolution sigma
+	 smss1738_m2b_casper.fits :  okay
+	 smss1738_m2b_casper.fits :  okay
+	 smss1738_m2b_casper.fits :  okay
+	 smss1738_m2b_casper.fits :  okay
+	 smss1738_m2b_casper.fits :  okay
+	 smss1738_m2b_casper.fits :  okay
+	 smss1738_m2b_casper.fits :  okay
+	 smss1738_m2b_casper.fits :  okay
+
+... setting KP bandwidth
+	 recommending K12 bounds
+	 recommending K12 bounds
+	 recommending K12 bounds
+	 recommending K12 bounds
+	 recommending K12 bounds
+	 recommending K12 bounds
+	 recommending K12 bounds
+	 recommending K12 bounds
+
+... setting carbon mode
+flux_bounds_max =  0.9882867234725601
+EW_subtract=   1.171327652743992
+CH_EW= 10.25
+	 recommending CH procedure
+flux_bounds_max =  0.9882867234725601
+EW_subtract=   1.171327652743992
+CH_EW= 10.25
+	 recommending CH procedure
+flux_bounds_max =  0.9882867234725601
+EW_subtract=   1.171327652743992
+CH_EW= 10.25
+	 recommending CH procedure
+flux_bounds_max =  0.9882867234725601
+EW_subtract=   1.171327652743992
+CH_EW= 10.25
+	 recommending CH procedure
+flux_bounds_max =  0.9882867234725601
+EW_subtract=   1.171327652743992
+CH_EW= 10.25
+	 recommending CH procedure
+flux_bounds_max =  0.9882867234725601
+EW_subtract=   1.171327652743992
+CH_EW= 10.25
+	 recommending CH procedure
+flux_bounds_max =  0.9882867234725601
+EW_subtract=   1.171327652743992
+CH_EW= 10.25
+	 using the input CH carbon_mode
+flux_bounds_max =  0.9882867234725601
+EW_subtract=   1.171327652743992
+CH_EW= 10.25
+	 using the input CH+C2 carbon_mode: 
+
+... estimating S/N
+
+... correcting photometry
+	 corrected : smss1738_m2b_casper.fits
+	 corrected : smss1738_m2b_casper.fits
+	 corrected : smss1738_m2b_casper.fits
+	 corrected : smss1738_m2b_casper.fits
+	 corrected : smss1738_m2b_casper.fits
+	 corrected : smss1738_m2b_casper.fits
+	 corrected : smss1738_m2b_casper.fits
+	 corrected : smss1738_m2b_casper.fits
+
+... determining photometric temperature
+	 setting photometric temperature sigma:  300.0
+	 setting hard teff:    4429.05
+	 calibrating temperature frame
+	 using GIANT calibration in Hernandez
+	 setting effective temperature:
+	 adopting :  Hernandez
+	 setting photometric temperature sigma:  250.0
+	 setting hard teff:    4429.05
+	 calibrating temperature frame
+	 using GIANT calibration in Hernandez
+	 setting effective temperature:
+	 adopting :  Hernandez
+	 setting photometric temperature sigma:  200.0
+	 setting hard teff:    4429.05
+	 calibrating temperature frame
+	 using GIANT calibration in Hernandez
+	 setting effective temperature:
+	 adopting :  Hernandez
+	 setting photometric temperature sigma:  300.0
+	 calibrating temperature frame
+	 using GIANT calibration in Hernandez
+	 setting effective temperature:
+	 adopting :  Hernandez
+	 setting photometric temperature sigma:  250.0
+	 calibrating temperature frame
+	 using GIANT calibration in Hernandez
+	 setting effective temperature:
+	 adopting :  Hernandez
+	 setting photometric temperature sigma:  200.0
+	 calibrating temperature frame
+	 using GIANT calibration in Hernandez
+	 setting effective temperature:
+	 adopting :  Hernandez
+	 setting photometric temperature sigma:  300.0
+	 setting hard teff:    4429.05
+	 calibrating temperature frame
+	 using GIANT calibration in Hernandez
+	 setting effective temperature:
+	 adopting :  Hernandez
+	 setting photometric temperature sigma:  300.0
+	 setting hard teff:    4429.05
+	 calibrating temperature frame
+	 using GIANT calibration in Hernandez
+	 setting effective temperature:
+	 adopting :  Hernandez
+ ------  PHOTOMETRIC TEMPERATURES -------
++--------------------+----------+-----------+------------+----------+----------+
+|        NAME        | Bergeat  | Hernandez | Casagrande | Fukugita | ADOPTED  |
++====================+==========+===========+============+==========+==========+
+| smss1738_m2b_caspe | 4246.958 | 4827.956  | 4871.631   | nan      | 4429.050 |
+| r                  |          |           |            |          |          |
++--------------------+----------+-----------+------------+----------+----------+
+| smss1738_m2b_caspe | 4246.958 | 4827.956  | 4871.631   | nan      | 4429.050 |
+| r                  |          |           |            |          |          |
++--------------------+----------+-----------+------------+----------+----------+
+| smss1738_m2b_caspe | 4246.958 | 4827.956  | 4871.631   | nan      | 4429.050 |
+| r                  |          |           |            |          |          |
++--------------------+----------+-----------+------------+----------+----------+
+| smss1738_m2b_caspe | 4246.958 | 4827.956  | 4871.631   | nan      | 4827.956 |
+| r                  |          |           |            |          |          |
++--------------------+----------+-----------+------------+----------+----------+
+| smss1738_m2b_caspe | 4246.958 | 4827.956  | 4871.631   | nan      | 4827.956 |
+| r                  |          |           |            |          |          |
++--------------------+----------+-----------+------------+----------+----------+
+| smss1738_m2b_caspe | 4246.958 | 4827.956  | 4871.631   | nan      | 4827.956 |
+| r                  |          |           |            |          |          |
++--------------------+----------+-----------+------------+----------+----------+
+| smss1738_m2b_caspe | 4246.958 | 4827.956  | 4871.631   | nan      | 4429.050 |
+| r                  |          |           |            |          |          |
++--------------------+----------+-----------+------------+----------+----------+
+| smss1738_m2b_caspe | 4246.958 | 4827.956  | 4871.631   | nan      | 4429.050 |
+| r                  |          |           |            |          |          |
++--------------------+----------+-----------+------------+----------+----------+
+
+... determining archetype classification
+ ------  ARCHETYPE LIKELIHOODS -------
++--------------------------+---------+-------+---------+
+|           NAME           |   GI    |  GII  |  GIII   |
++==========================+=========+=======+=========+
+| smss1738_m2b_casper.fits | -686519 | -2950 | -491552 |
++--------------------------+---------+-------+---------+
+| smss1738_m2b_casper.fits | -684284 | -2906 | -471261 |
++--------------------------+---------+-------+---------+
+| smss1738_m2b_casper.fits | -686050 | -2858 | -487225 |
++--------------------------+---------+-------+---------+
+| smss1738_m2b_casper.fits | -545239 | -2643 | -112581 |
++--------------------------+---------+-------+---------+
+| smss1738_m2b_casper.fits | -509614 | -2295 | -101075 |
++--------------------------+---------+-------+---------+
+| smss1738_m2b_casper.fits | -489075 | -2655 | -94571  |
++--------------------------+---------+-------+---------+
+| smss1738_m2b_casper.fits | -685101 | -2874 | -478577 |
++--------------------------+---------+-------+---------+
+| smss1738_m2b_casper.fits | -689169 | -3208 | -519055 |
++--------------------------+---------+-------+---------+
+
+... performing MCMC determinations
+	 MCMC run mode =   COARSE
+	 smss1738_m2b_casper.fits:  GIANT : CH : 3927.7 - 3939.7
+	 initializing with archetype parameters:  {'FEH': -3.5, 'CFE': 0.97, 'AC': 5.9}
+	 running with carbon mode: CH only
+	 running for  400  iterations...
+		 mcmc mode =  COARSE
+	 MCMC run mode =   COARSE
+	 smss1738_m2b_casper.fits:  GIANT : CH : 3927.7 - 3939.7
+	 initializing with archetype parameters:  {'FEH': -3.5, 'CFE': 0.97, 'AC': 5.9}
+	 running with carbon mode: CH only
+	 running for  400  iterations...
+		 mcmc mode =  COARSE
+	 MCMC run mode =   COARSE
+	 smss1738_m2b_casper.fits:  GIANT : CH : 3927.7 - 3939.7
+	 initializing with archetype parameters:  {'FEH': -3.5, 'CFE': 0.97, 'AC': 5.9}
+	 running with carbon mode: CH only
+	 running for  400  iterations...
+		 mcmc mode =  COARSE
+	 MCMC run mode =   COARSE
+	 smss1738_m2b_casper.fits:  GIANT : CH : 3927.7 - 3939.7
+	 initializing with archetype parameters:  {'FEH': -3.5, 'CFE': 0.97, 'AC': 5.9}
+	 running with carbon mode: CH only
+	 running for  400  iterations...
+		 mcmc mode =  COARSE
+	 MCMC run mode =   COARSE
+	 smss1738_m2b_casper.fits:  GIANT : CH : 3927.7 - 3939.7
+	 initializing with archetype parameters:  {'FEH': -3.5, 'CFE': 0.97, 'AC': 5.9}
+	 running with carbon mode: CH only
+	 running for  400  iterations...
+		 mcmc mode =  COARSE
+	 MCMC run mode =   COARSE
+	 smss1738_m2b_casper.fits:  GIANT : CH : 3927.7 - 3939.7
+	 initializing with archetype parameters:  {'FEH': -3.5, 'CFE': 0.97, 'AC': 5.9}
+	 running with carbon mode: CH only
+	 running for  400  iterations...
+		 mcmc mode =  COARSE
+	 MCMC run mode =   COARSE
+	 smss1738_m2b_casper.fits:  GIANT : CH : 3927.7 - 3939.7
+	 initializing with archetype parameters:  {'FEH': -3.5, 'CFE': 0.97, 'AC': 5.9}
+	 running with carbon mode: CH only
+	 running for  400  iterations...
+		 mcmc mode =  COARSE
+	 MCMC run mode =   COARSE
+	 smss1738_m2b_casper.fits:  GIANT : CH+C2 : 3927.7 - 3939.7
+	 initializing with archetype parameters:  {'FEH': -3.5, 'CFE': 0.97, 'AC': 5.9}
+	 running with carbon mode: CH+C2
+	 running for  400  iterations...
+		 mcmc mode =  COARSE
+... performing kde determinations
+... running refined mcmc
+	 MCMC run mode =   REFINE
+	 smss1738_m2b_casper.fits:  GIANT : CH : 3927.7 - 3939.7
+	 initializing with COARSE run result parameters: Teff : 4595  [Fe/H] : -3.40   [C/Fe] : 0.69   A(C) : 5.71
+	 running for  400  iterations...
+		 mcmc mode =  REFINE
+	 MCMC run mode =   REFINE
+	 smss1738_m2b_casper.fits:  GIANT : CH : 3927.7 - 3939.7
+	 initializing with COARSE run result parameters: Teff : 4591  [Fe/H] : -3.40   [C/Fe] : 0.68   A(C) : 5.71
+	 running for  400  iterations...
+		 mcmc mode =  REFINE
+	 MCMC run mode =   REFINE
+	 smss1738_m2b_casper.fits:  GIANT : CH : 3927.7 - 3939.7
+	 initializing with COARSE run result parameters: Teff : 4281  [Fe/H] : -3.56   [C/Fe] : 0.83   A(C) : 5.70
+	 running for  400  iterations...
+		 mcmc mode =  REFINE
+	 MCMC run mode =   REFINE
+	 smss1738_m2b_casper.fits:  GIANT : CH : 3927.7 - 3939.7
+	 initializing with COARSE run result parameters: Teff : 4600  [Fe/H] : -3.40   [C/Fe] : 0.68   A(C) : 5.71
+	 running for  400  iterations...
+		 mcmc mode =  REFINE
+	 MCMC run mode =   REFINE
+	 smss1738_m2b_casper.fits:  GIANT : CH : 3927.7 - 3939.7
+	 initializing with COARSE run result parameters: Teff : 5000  [Fe/H] : -3.26   [C/Fe] : 0.69   A(C) : 5.85
+	 running for  400  iterations...
+		 mcmc mode =  REFINE
+	 MCMC run mode =   REFINE
+	 smss1738_m2b_casper.fits:  GIANT : CH : 3927.7 - 3939.7
+	 initializing with COARSE run result parameters: Teff : 4610  [Fe/H] : -3.40   [C/Fe] : 0.68   A(C) : 5.72
+	 running for  400  iterations...
+		 mcmc mode =  REFINE
+	 MCMC run mode =   REFINE
+	 smss1738_m2b_casper.fits:  GIANT : CH : 3927.7 - 3939.7
+	 initializing with COARSE run result parameters: Teff : 4282  [Fe/H] : -3.56   [C/Fe] : 0.83   A(C) : 5.70
+	 running for  400  iterations...
+		 mcmc mode =  REFINE
+	 MCMC run mode =   REFINE
+	 smss1738_m2b_casper.fits:  GIANT : CH+C2 : 3927.7 - 3939.7
+	 initializing with COARSE run result parameters: Teff : 4584  [Fe/H] : -3.41   [C/Fe] : 0.68   A(C) : 5.71
+	 running for  400  iterations...
+		 mcmc mode =  REFINE
+... finalizing kde determinations
+... complete
+
+... generating synthetic spectra
+
+... generating plots
+... generating continuum plots
+	 saving as:    outputs/test/multiruns/multiruns-smss1738-m2b
+... generating corner plots
+
+... generating outputs
+The total time for this CASPER run is 206.77s
