@@ -154,9 +154,10 @@ class Batch():
 
                 # Currently best choice with flux_min=80 (GISIC_S.normalize()) I think.
                 # but need to be further tested, 09/09/2020 J. Yoon
-                for SIGMA in np.linspace(15, 25, 10):
+                # The current setting is flux_min=70 as Devin's original setup.
+                # for SIGMA in np.linspace(15, 25, 10): penaltimate best choice
 
-                #for SIGMA in np.linspace(25, 35, 10): #
+                for SIGMA in np.linspace(25, 35, 10): #
                 #for SIGMA in np.linspace(10, 20, 10):
                 # this choice is not recommended because it does not capture continuum points well.
                 #It even makes C2 band continuum.

@@ -460,7 +460,7 @@ class Spectrum():
                         'GROUP'    : [self.get_arch_group()],
                         'TEFF'     : [round(self.MCMC_COARSE['TEFF'][0], 0)],
                         'TEFF_ERR' : [round(self.MCMC_COARSE['TEFF'][1], 2)],
-                        'TEFF_IRFM': [round(self.teff_irfm]),
+                        'TEFF_IRFM': [round(self.teff_irfm)],
                         'TEFF_IRFM_UNC': [self.teff_irfm_unc],
                         'FEH'      : [round(self.MCMC_REFINE['FEH'][0], 2)],
                         'FEH_ERR'  : [round(max([self.MCMC_REFINE['FEH'][1], self.MCMC_COARSE['FEH'][1]]), 4)],

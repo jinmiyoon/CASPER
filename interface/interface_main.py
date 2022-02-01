@@ -205,7 +205,7 @@ def mcmc_determination(spectrum, mode='COARSE', pool=4):
 
     _ = sampler.run_mcmc(pos, spectrum.get_MCMC_iterations())
     # want to print out the latest result from mcmc, 12/13/2021
-    print('\t the latest result from sampler() after MCMC runs:    ', _ )
+    #print('\t the latest result from sampler() after MCMC runs:    ', _ )
 
     spectrum.set_sampler(sampler, mode=mode)
 

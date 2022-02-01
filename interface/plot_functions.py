@@ -205,6 +205,9 @@ def plot_single_corner(spectrum, io_path, burnin=0.25):
         sampler = sampler.chain
 
     samples = sampler[:, int(burnin * iter):, :].reshape((-1, ndim))
+    #01/24/22 this can be updated because sampler.chain seems to be deprecated
+    # samples = sampler.get_chain(discard= int(burnin * iter), flat=True)
+
 
 
     if ndim == 6:
