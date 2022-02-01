@@ -1,7 +1,6 @@
 ################################################################################
 ### Author: Devin Whitten, revised by Jinmi Yoon
 ### Email: devin.d.whitten@gmail.com, jinmi.yoon@gmail.com
-### Institute: University of Notre Dame
 ################################################################################
 ## Functions related to the equivalent-width determinations
 
@@ -33,14 +32,6 @@ def GBAND_QUAD(wave, flux, bounds = [4222, 4322]):
     ## Revised by Jinmi Yoon, July 17 2020
     ## This revision needed to accomodate the problem of improper normalization
     ## of the CH-band area.
-<<<<<<< HEAD
-    ## If the CH-band feature is too low from the continuum level,
-    ## the EW estimation is not reliable and in turn influences
-    ## the set_CH_procedure whether to use the CH mode or CH+C2 mode.
-    ## The below calculation is needed in set_CH_procedure().
-    ## I decided not to use EW_reduced
-    ## However, I just leave the below scripts as it is for the future debugging.
-=======
     ## If the CH-band is too low from the continuum level, the EW estimation is
     ## not reliable and in turn influences the set_CH_procedure whether to use
     ## the CH mode or CH+C2 mode.
@@ -49,8 +40,7 @@ def GBAND_QUAD(wave, flux, bounds = [4222, 4322]):
     ## I eventually decided not to use reduced_CH_EW because the synthetic
     ## spectra at the CH band is indeed lower than 1.0 level. However, I just
     ## leave the below scripts as it is for the future debugging.
->>>>>>> casper-dev
-    
+
     func_bounds = interp1d(wave, flux)
     wave_bounds = np.arange(bounds[0], bounds[1], 0.01)
     flux_bounds = func_bounds(wave_bounds)
@@ -58,19 +48,11 @@ def GBAND_QUAD(wave, flux, bounds = [4222, 4322]):
 
     print("flux_bounds_max = ", flux_bounds_max)
 
-<<<<<<< HEAD
-    ## If flux_bounds_max is not close to 1. (normalized level),
-    ## I will calculate area subtended from 1.0 to flux_bounds_max for later
-    ## subtraction from CH_EW.
-    ## I need to use SNR at CH band for noise = 1./SNR but it appears very small
-    ## (~0.02) so at the moment I ignore this.
-=======
     ## If flux_boounds_max is not close to 1. (normalized level),
     ## I will calculate area subtended from 1.0 to flux_bounds_max for later
     ## subtraction from CH_EW. I need to use SNR at CH band for noise = 1./SNR
     ## but it appears very small (~0.02) so at the moment I ignore this.
-    
->>>>>>> casper-dev
+
     if flux_bounds_max < 1. :
         EW_subtract = (1.-flux_bounds_max)*(bounds[1]-bounds[0])
     else:
@@ -79,18 +61,12 @@ def GBAND_QUAD(wave, flux, bounds = [4222, 4322]):
 
     ############################################################################
 
-<<<<<<< HEAD
-    # I added EW_subtract in return so that I can use this subtraction for
-    # set_CH_procedure() J. Yoon, 07/17/2020
-    return integrate.quad(func, bounds[0], bounds[1], limit=1000, points=list(wave[(wave > bounds[0]) & (wave <  bounds[1])]))[0], EW_subtract
-=======
     ## J. Yoon, 07/17/2020
     ## I added EW_subtract in return so that I can use this subtraction
     ## for set_CH_procedure().
-    
-    return integrate.quad(func, bounds[0], bounds[1], limit=1000, 
+
+    return integrate.quad(func, bounds[0], bounds[1], limit=1000,
                           points=list(wave[(wave > bounds[0]) & (wave <  bounds[1])]))[0], EW_subtract
->>>>>>> casper-dev
 
 
 def GBAND_vanilla(wave, flux, bounds = [4222, 4322]):
@@ -184,27 +160,17 @@ def set_CH_procedure(spectrum):
     CH_EW, EW_subtract = GBAND_QUAD(spectrum.frame['wave'], spectrum.frame['norm'])
     spectrum.set_GBAND(CH_EW)
     #print("CH_EW, EW_subtract at EW.py = ", CH_EW, EW_subtract)
-    
+
     ############################################################################
     # Revised by Jinmi Yoon, July 17 2020
     # The default CH_EW =40 was used for the Yoon+2020 paper,
     # but I realized that EW changes depending on the level of continuum.
-<<<<<<< HEAD
-    # So it has to be changed a bit to prevent a uncessarily larger EW value
-    # to switch the mode. I meant to modify GBAND_QUAD calculation slightly
-    # to tackle the problem with this issue.
-    # However, the problem is that this function is used in other places.
-    # So I decided to change critieria here by changing CH_EW value based on
-    # the normalization level.
-    # First, I find a highest flux point, flux_max.
-=======
     # So it has to be changed a bit to prevent an unnecessarily large EW value
     # to switch the mode. I meant to modify GBAND_QUAD calculation slightly to
     # tackle the problem with this issue.
     # However, the problem is that this function appears to be used other places.
     # So I decided to change critieria here by changing CH_EW value based on
     # the normalization level. First, I find a highest flux point, flux_max.
->>>>>>> casper-dev
     # If flux_max does not reach 1.0, I subtract area from 1.0 to flux_max level
     # from CH_EW. To do so I define flux_bounds_max in GBAND_QUAD and calculate
     # this area and feed this number in this procedure.
@@ -214,49 +180,44 @@ def set_CH_procedure(spectrum):
     # I decided to keep Devin's procedure because the synthetic spectra at
     # this band indeed lower than 1.0 level.
     ############################################################################
-<<<<<<< HEAD
-    
-    if CH_EW > 40.:
-=======
     # Devin originally used CH_EW >40 for switching however, it depends on
     # the normalization though it is likely to be a minor difference.
-    
+
     print("CH_EW= %5.2f" %CH_EW)
 
     ##########################################################################
     #  09/09/2020, J. Yoon
     # I modified this procedure because I want to have freedom to
-    # set carbon_mode in input file for diagnosis of carbon mode. 
+    # set carbon_mode in input file for diagnosis of carbon mode.
     # If carbon_mode is missing in input files,
     # then it will use the CH_EW value for setting carbon_mode.
     ###########################################################################
 
-    if spectrum.INPUT_CARBON_MODE =='CH': 
+    if spectrum.INPUT_CARBON_MODE =='CH':
         print("\t using the input {0} carbon_mode".format(spectrum.INPUT_CARBON_MODE))
         spectrum.set_carbon_mode('CH')
 
     elif spectrum.INPUT_CARBON_MODE =='CH+C2':
         print("\t using the input {0} carbon_mode: ".format(spectrum.INPUT_CARBON_MODE))
         spectrum.set_carbon_mode('CH+C2')
-        
+
     else :
-    
-        #if CH_EW > 55.: 
-        if CH_EW > 40.: 
+
+        #if CH_EW > 55.:
+        if CH_EW > 40.:
             print("\t recommending CH+C2 procedure")
             spectrum.set_carbon_mode('CH+C2')
 
         else:
             print("\t recommending CH procedure")
             spectrum.set_carbon_mode('CH')
-      
+
     return
 
-            
+
 '''
 # original code part when the extra param (carbon_mode) was not used.
-    if CH_EW > 40.: 
->>>>>>> casper-dev
+    if CH_EW > 40.:
         print("\t recommending CH+C2 procedure")
         spectrum.set_carbon_mode('CH+C2')
 
@@ -264,13 +225,7 @@ def set_CH_procedure(spectrum):
         print("\t recommending CH procedure")
         spectrum.set_carbon_mode('CH')
 
-<<<<<<< HEAD
-    return
-
-
-=======
 '''
->>>>>>> casper-dev
 
 
 def CAII_KP(wave, flux):

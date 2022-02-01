@@ -48,14 +48,13 @@ class Spectrum():
         # changed from wl_range=[3800,6200] J. Yoon 06-17-2020
 
         self.name = name
-        print("... initializing:  ", name)
+        print("\n... initializing:  ", name)
         #### Use the fits file to generate all necessary info for the spectrum
         #self.spec = spec[spec[0].between(wl_range[0], wl_range[-1], inclusive=True)]
         #self.wavelength = np.power(10. , (self.fits[0].header['CRVAL1'] + np.arange(0, self.fits[0].header['NAXIS1'])*self.fits[0].header['CD1_1']))
 ################################################################################
         if is_fits:
             ## This is a cumbersome attempt to accomadate multiple fits data formats..
-            print("fits file, ")
             self.fits = spec
 
             if 'CD1_1' in spec[0].header:
@@ -68,7 +67,7 @@ class Spectrum():
                 print("I don't know which increment to use!")
 
             if self.fits[0].header['CRVAL1'] > 10.:
-                print("linear wavelength")
+                #print("linear wavelength")
                 ###testing purposes, probably this is the way to go
                 self.wavelength = (np.arange(0, spec[0].header['NAXIS1'], 1) * spec[0].header[DELTA]) + spec[0].header['CRVAL1']
 
@@ -124,9 +123,8 @@ class Spectrum():
 
         ##-- Jinmi Yoon 06-12-2020
         ## MAke sure the colors used in CASPER are from UKIRT colors.
-        ## If you have 2MASS colors, convert them to the UKIRT colors
-        ## by following a transformation equation found at
-        ## https://www.astro.caltech.edu/~jmc/2mass/v3/transformations/
+        ## If you have 2MASS colors, convert them to the UKIRT colors by following
+        ## a transformation equation found at https://www.astro.caltech.edu/~jmc/2mass/v3/transformations/
         ## (Ks)2MASS     =    KUKIRT + (0.003 ± 0.004) + (0.004 ± 0.006)(J-K)UKIRT
         ## (J-H)2MASS    =    (1.075 ± 0.013)(J-H)UKIRT + (-0.032 ± 0.006)
         ## (J-Ks)2MASS   =    (1.070 ± 0.008)(J-K)UKIRT + (-0.015 ± 0.006)
@@ -203,8 +201,9 @@ class Spectrum():
 
     #################################################
     ### Total mutators
-    def set_params(self,CLASS, JK, MODE, INPUT_CARBON_MODE, iter, T_SIGMA, HARD_TEFF):
+    def set_params(self,SEQUENCE, CLASS, JK, MODE, INPUT_CARBON_MODE, iter, T_SIGMA, HARD_TEFF):
     #def set_params(self,CLASS, JK, MODE, iter, T_SIGMA, HARD_TEFF):
+        self.SEQUENCE = str(SEQUENCE)
         self.gravity_class = str(CLASS)
         self.JK = JK
         self.MODE = str(MODE)
@@ -213,10 +212,12 @@ class Spectrum():
         self.T_SIGMA = float(T_SIGMA)
         self.HARD_TEFF = float(HARD_TEFF)
         assert (self.gravity_class == 'GIANT') or (self.gravity_class == 'DWARF'), "Invalid gravity class: {}".format(self.gravity_class)
-        assert (self.MODE == 'UFD') or (self.MODE == 'HALO'), "Invalid Environment"
+        assert (self.MODE == 'UFD') or (self.MODE == 'HALO'), "Invalid Galactic Environment"
         #assert (self.INPUT_CARBON_MODE =='CH') or (self.INPUT_CARBON_MODE =='CH+C2'), "Invalid Enviornment: {}".format(self.carbon_mode)
 
         return
+
+
 
 
 
@@ -249,6 +250,13 @@ class Spectrum():
     def set_temperature(self, input_temp, sigma, hard=False):
         ### for use with the calibrate_temperatures function
         ### input_dict:  {"Casagrande":, "Hernandez":, "Bergeat": }
+        self.teff_irfm = input_temp
+        self.teff_irfm_unc = sigma
+
+        '''
+        # 12/13/2021, J Yoon.
+        # I dont understand why Devin wrote this way below.
+        # Perhaps, he meant to do something else.
 
         if hard == True:
             self.teff_irfm = input_temp
@@ -259,6 +267,7 @@ class Spectrum():
             self.teff_irfm = input_temp
             self.teff_irfm_unc = sigma
 
+        '''
 
         return
 
@@ -367,6 +376,9 @@ class Spectrum():
         return
 
     ################################################################
+    def get_sequence(self):
+        return "{:s}".format(self.SEQUENCE)
+
     def get_name(self):
         return "{:<20}".format(self.name)
         #return self.name.ljust(20)
@@ -440,14 +452,16 @@ class Spectrum():
 
     def get_output_row(self):
         ## simply produces a dataframe row with the desired outputs
+        # 01-04-2022 added  a missing suffix ('_UNC') for TEFF_IRFM_UNC
         return pd.DataFrame({
+                        "SEQUENCE" : [self.get_sequence()],
                         "NAME"     : [self.get_name()],
                         "MODE"     : [self.get_carbon_mode()],
                         'GROUP'    : [self.get_arch_group()],
                         'TEFF'     : [round(self.MCMC_COARSE['TEFF'][0], 0)],
                         'TEFF_ERR' : [round(self.MCMC_COARSE['TEFF'][1], 2)],
-                        'TEFF_IRFM': [self.teff_irfm],
-                        'TEFF_IRFM': [self.teff_irfm_unc],
+                        'TEFF_IRFM': [round(self.teff_irfm)],
+                        'TEFF_IRFM_UNC': [self.teff_irfm_unc],
                         'FEH'      : [round(self.MCMC_REFINE['FEH'][0], 2)],
                         'FEH_ERR'  : [round(max([self.MCMC_REFINE['FEH'][1], self.MCMC_COARSE['FEH'][1]]), 4)],
                         'CFE'      : [round(self.MCMC_REFINE['CFE'][0], 2)],

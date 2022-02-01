@@ -123,20 +123,23 @@ def mcmc_determination(spectrum, mode='COARSE', pool=4):
     ### Precondition: must have run archetype_classification
     ### spectrum: spectrum.Spectrum() object
 
+    # mode here means either "coarse" or "fine" , 09/02/2020, J. Yoon
+    print("\t MCMC run mode =  ", mode)
+    # spectrum and its info
     print('\t ' + spectrum.get_name().ljust(20) + ":  " + spectrum.get_gravity_class() + " : " + spectrum.get_carbon_mode() + " : " + spectrum.print_KP_bounds())
-
 
 
     ## FOR initial FEH and CFE values, for temp use photometric temp.
     PARAMS = ARCHETYPE_PARAMS[spectrum.get_environ_mode()][spectrum.get_arch_group()]
-    print('\t initializing with archetype parameters: ', PARAMS)
 
     #### MAIN MODE BRANCH
 
     if mode=='COARSE':
         ## if it's coarse, then you need the photometric teff and the Sigma/Xi
-
+        print('\t initializing with archetype parameters: ', PARAMS)
         photo_teff = spectrum.get_photo_temp()
+        # inserted 01/04/2022 for comparison
+        print('Teff : %.0F  [Fe/H] : %.2F   [C/Fe] : %.2F  A(C): %.2F'% (photo_teff[0], PARAMS['FEH'], PARAMS['CFE'], PARAMS['AC']))
         initial = [photo_teff[0], PARAMS['FEH'], PARAMS['CFE']]
 
         ARGS = (spectrum.regions, SYNTH_WAVE, photo_teff[0], photo_teff[1],
@@ -155,10 +158,13 @@ def mcmc_determination(spectrum, mode='COARSE', pool=4):
             initial = np.concatenate([initial,
                                      [spectrum.SN_DICT['C2']['XI_AVG']]])
         else: print("\t running with carbon mode: CH only")
-
+        #PARAMS_0 = spectrum.get_mcmc_dict(mode = 'COARSE')
+        #print('\t COARSE run result parameters: ', PARAMS_0)
     elif mode == 'REFINE':
         ### In this case we want to use the params determined from the COARSE run
         PARAMS_0 = spectrum.get_mcmc_dict(mode = 'COARSE')
+        print('\t initializing with COARSE run result parameters:')
+        print(' Teff : %.0F  [Fe/H] : %.2F   [C/Fe] : %.2F   A(C) : %.2F' % (PARAMS_0['TEFF'][0],PARAMS_0['FEH'][0], PARAMS_0['CFE'][0],PARAMS_0['AC'][0]) )
 
         ARGS = (spectrum.regions, SYNTH_WAVE,
                 PARAMS_0, spectrum.get_gravity_class())
@@ -198,12 +204,12 @@ def mcmc_determination(spectrum, mode='COARSE', pool=4):
     ####
 
     _ = sampler.run_mcmc(pos, spectrum.get_MCMC_iterations())
+    # want to print out the latest result from mcmc, 12/13/2021
+    #print('\t the latest result from sampler() after MCMC runs:    ', _ )
 
-    # mode is either "coarse" or "fine" , 09/02/2020, J. Yoon
     spectrum.set_sampler(sampler, mode=mode)
 
-    print()
-
+    print("\t\t mcmc mode = ", mode)
 
     return
 
@@ -228,7 +234,7 @@ def generate_synthetic(spectrum):
     return
 
 
-def kde_param_relection(distro):
+def kde_param_reflection(distro):
     ### this version is very susceptible to local maxima...
     ### kde_param tries to ensure correct handling of multimodal distributions
 
@@ -286,7 +292,7 @@ def generate_kde_params(spectrum, mode, burnin=0.25):
     ### Note: kde is highly susceptible to errors at the boundaries of the grid
     ### I'm going to try a solution involving edge reflection
 
-    results   =       [kde_param_relection(array) for array in chain.T]
+    results   =       [kde_param_reflection(array) for array in chain.T]
 
 
     if ndim == 2:

@@ -266,9 +266,9 @@ def chi_ll_refine_C2(theta, spec_regions, synth_wave,
 
 
 
-
+### get_mcmc_params appears to not be used so deprecated  J. Yoon ###
 def get_mcmc_params(SAMPLER, burnin=0.25, return_kde=False):
-    print("DEPRECIATED FUNCTION")
+    print("DEPRECATED FUNCTION")
     #ndim = SAMPLER.chain.shape[2]
     #SAMPLES = SAMPLER.chain[:, burnin:, :].reshape((-1, ndim))
 
