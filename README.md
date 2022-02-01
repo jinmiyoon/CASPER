@@ -29,14 +29,3 @@ If you want to use this package for your scientific use and/or help to complete 
 
 <img src="https://github.com/DevinWhitten/CCSLab/blob/master/images/continuum_animation.gif" width="80%"
 style="display:block;margin: 0 auto;">
-<<<<<<< HEAD
-
-
-
-### Required python packages
-If you installed anaconda3, you will need to install these packages.
-- conda install -c astropy emcee
-- conda install -c astropy corner
-- conda install -c conda-forge texttable
-=======
->>>>>>> casper-dev
