@@ -138,7 +138,7 @@ def mcmc_determination(spectrum, mode='COARSE', pool=4):
         ## if it's coarse, then you need the photometric teff and the Sigma/Xi
         print('\t initializing with archetype parameters: ', PARAMS)
         photo_teff = spectrum.get_photo_temp()
-        # inserted 01/04/2022 for comparison
+        # inserted 01/04/2022 for comparison J.Yoon
         print('Teff : %.0F  [Fe/H] : %.2F   [C/Fe] : %.2F  A(C): %.2F'% (photo_teff[0], PARAMS['FEH'], PARAMS['CFE'], PARAMS['AC']))
         initial = [photo_teff[0], PARAMS['FEH'], PARAMS['CFE']]
 
@@ -158,8 +158,7 @@ def mcmc_determination(spectrum, mode='COARSE', pool=4):
             initial = np.concatenate([initial,
                                      [spectrum.SN_DICT['C2']['XI_AVG']]])
         else: print("\t running with carbon mode: CH only")
-        #PARAMS_0 = spectrum.get_mcmc_dict(mode = 'COARSE')
-        #print('\t COARSE run result parameters: ', PARAMS_0)
+
     elif mode == 'REFINE':
         ### In this case we want to use the params determined from the COARSE run
         PARAMS_0 = spectrum.get_mcmc_dict(mode = 'COARSE')

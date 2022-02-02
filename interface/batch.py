@@ -102,7 +102,6 @@ class Batch():
             CLASS = row['class'].strip()
             MODE  = row['mode'].strip()
             INPUT_CARBON_MODE = row['carbon_mode'].strip()  # 09-09-2020 J. Yoon
-            #print("DEBUG!", INPUT_CARBON_MODE)
             ITER  = row['MCMC_iter']
             T_SIGMA = row['T_SIGMA']
             HARD_TEFF = row['TEFF_SET']
@@ -151,16 +150,14 @@ class Batch():
                 cont_array = []
                 ###     July 15 2020 J. Yoon      ###
                 #for SIGMA in np.linspace(15, 30, 10): # Devin's original set up
-
-                # Currently best choice with flux_min=80 (GISIC_S.normalize()) I think.
+                # The best choice might be flux_min=80 (GISIC_S.normalize()) I think.
                 # but need to be further tested, 09/09/2020 J. Yoon
                 # The current setting is flux_min=70 as Devin's original setup.
-                # for SIGMA in np.linspace(15, 25, 10): penaltimate best choice
 
+                # for SIGMA in np.linspace(15, 25, 10): might be penaltimate best choice
                 for SIGMA in np.linspace(25, 35, 10): #
-                #for SIGMA in np.linspace(10, 20, 10):
-                # this choice is not recommended because it does not capture continuum points well.
-                #It even makes C2 band continuum.
+                #for SIGMA in np.linspace(10, 20, 10): # this choice is not recommended
+                # because it does not capture continuum points well. It even makes C2 band continuum.
                     wave, norm, cont = GISIC.normalize(spec.get_frame_wave(), spec.get_frame_flux(), sigma = SIGMA, k=1)
 
                     cont_array.append(cont)
@@ -258,7 +255,7 @@ class Batch():
         print(" ------  PHOTOMETRIC TEMPERATURES -------")
         if len(self.spectra_array) < 30: print(table.draw())
         # save into a file
-        print(table.draw(), file=open("outputs/temp_cal_table.txt", "a"))
+        print(table.draw(), file=open("outputs/tables/temp_cal_table.txt", "a"))
 
         return
 
@@ -307,7 +304,7 @@ class Batch():
         print(" ------  ARCHETYPE LIKELIHOODS -------")
         if len(self.spectra_array) < 30: print(table.draw())
         # save into a file
-        print(table.draw(), file=open("outputs/archetype_table.txt", "a"))
+        print(table.draw(), file=open("outputs/tables/archetype_likelihood_table.txt", "a"))
 
         return
 

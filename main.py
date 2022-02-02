@@ -35,8 +35,7 @@ except FileExistsError:
     print("Directory " , dirName ,  " already exists")
 
 #print(" Started CASPER and logging!")
-
-#sys.stdout=open('outputs/logs/validation-smss1738m2b-multiruns-statements-2.txt', 'wt')
+#sys.stdout=open('outputs/logs/log.txt', 'wt')
 
 
 start_time = time.time()

@@ -452,7 +452,7 @@ class Spectrum():
 
     def get_output_row(self):
         ## simply produces a dataframe row with the desired outputs
-        # 01-04-2022 added  a missing suffix ('_UNC') for TEFF_IRFM_UNC
+        # 01-04-2022 J. Yoon added  a missing suffix ('_UNC') for TEFF_IRFM_UNC
         return pd.DataFrame({
                         "SEQUENCE" : [self.get_sequence()],
                         "NAME"     : [self.get_name()],
