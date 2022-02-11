@@ -14,18 +14,18 @@ def Hernandez(JK, FEH=-2.5, CLASS= None):
     #### Updated to Nov 2019
 
     if CLASS == 'GIANT':
-        print("\t using GIANT calibration in Hernandez")
+        print("\t\t using GIANT calibration in Hernandez")
         #A0 = [0.6517, 0.6312, 0.0168, -0.0381, 0.0256, 0.0013]
         A0 = [0.6517, 0.6312, 0.0168, -0.0381, 0.0256, 0.0013]
 
     elif CLASS == 'DWARF':
-        print("\t using DWARF calibration in Hernandez")
+        print("\t\t using DWARF calibration in Hernandez")
         #A0 = [0.6524, 0.5813, 0.1225, –0.0646, 0.0370, 0.0016]
         A0 = [0.6524, 0.5813, 0.1225, -0.0646, 0.0370, 0.0016]
 
     else:
-        print("\t Can't handle input class:  ", CLASS)
-        print("\t Defaulting to GIANT")
+        print("\t\t Can't handle input class:  ", CLASS)
+        print("\t\t Defaulting to GIANT")
         A0 = [0.6517, 0.6312, 0.0168, -0.0381, 0.0256, 0.0013]
 
     if (JK >= 0.1 and JK <= 0.95): ### JK should be 0.9 !!!!
@@ -46,7 +46,7 @@ def Casagrande(JK, FEH=-2.5, CLASS=None):
         T_JK = 5040./Teff
 
     else:
-        print("\t Casagrande Calibration out of bounds")
+        print("\t\t Casagrande Calibration out of bounds")
         T_JK = np.nan
 
     return T_JK
@@ -171,12 +171,12 @@ def Fukugita(gr):
  try:
      return 1.09*10000/(gr + 1.47)
  except:
-     print("\t skipping (g-r)")
+     print("\t\t skipping (g-r)")
      return np.nan
 
 ######-------------------------------------------------------------------------
 def determine_effective(TEMP_FRAME):
-    print("\t setting effective temperature:")
+    print("\t\t setting effective photo temperature:")
 
     TEMP_FRAME = TEMP_FRAME.sort_values(by=['VALUE'])
 
@@ -184,11 +184,11 @@ def determine_effective(TEMP_FRAME):
 
     INDEX = int(len(FINITE_FRAME)/2)  # to adopt the middle teff value.
 
-    print("\t adopting : ", FINITE_FRAME.index.values[INDEX])
+    print("\t\t adopting photo teff from : ", FINITE_FRAME.index.values[INDEX])
     value = float(FINITE_FRAME.iloc[INDEX]["VALUE"])
     #print(value)
 
-    assert np.isfinite(value), "\t ERROR, PHOTO TEMP NOT FINITE"
+    assert np.isfinite(value), "\t\t ERROR, PHOTO TEMP NOT FINITE"
     TEMP_FRAME = TEMP_FRAME.append(pd.DataFrame(data = [value],
                                    columns = ['VALUE'], index=['ADOPTED']))
 
@@ -198,7 +198,7 @@ def determine_effective(TEMP_FRAME):
 
 def calibrate_temp_frame(JK, gr, FEH = -2.5, CLASS=None):
     ### Just run as many of them as you want
-    print("\t calibrating temperature frame")
+    print("\t\t calibrating temperature frame")
     if np.isfinite(JK):
         TEMP_DICT = {'Casagrande': Casagrande(JK, FEH, CLASS),
                     'Hernandez': Hernandez(JK, FEH, CLASS),

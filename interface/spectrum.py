@@ -1,7 +1,6 @@
 ################################################################################
 ### Author: Devin Whitten, Jinmi Yoon
 ### Email: devin.d.whitten@gmail.com, jinmi.yoon@gmail.com
-### Institute: University of Notre Dame
 ################################################################################
 #Date: Nov 12, 2016
 # This is will serve as the interface for the normalization function.
@@ -226,6 +225,8 @@ class Spectrum():
         self.KP_bounds = input_bounds
         return
 
+    # created this function to provide an option to manually set
+    # carbon_mode: CH or CH+C2 modes   J. Yoon
     def set_carbon_mode(self, carbon_mode):
         self.carbon_mode = carbon_mode
         return

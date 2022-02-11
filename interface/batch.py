@@ -203,7 +203,8 @@ class Batch():
         ## along with the surface gravity class, if known
         ## We'll eventually want to update to override sigma, I'l come back to that
 
-        print("\n... determining photometric temperature")
+        #print("\n... determining photometric temperature")
+        print("\n... determining temperature for archetype classification")
 
         ### I don't think the spectra_array and the param_file are sorted the same
         ### so I need to be careful
@@ -212,34 +213,36 @@ class Batch():
 
             #io_functions.span_window()
 
-
-
             spec = self.spectra_array[i]
 
             assert spec.name == row['name'], 'Parameter error in calibrate_temperatures()'
-            print("\t setting photometric temperature sigma: ", spec.T_SIGMA)
+            #print("\t setting photometric temperature sigma: ", spec.T_SIGMA)
+            print("\t setting input temperature sigma: ", spec.T_SIGMA) #J.Yoon 02/11/2022
 
             CLASS = row['class'].strip()
 
             #### remember that there is a class definition here too
+
+            # Here sets temp with HARD_TEFF if the value exists.
             if np.isfinite(spec.HARD_TEFF):
-                print("\t setting hard teff:   ", spec.HARD_TEFF)
                 spec.set_temp_frame(TC.calibrate_temp_frame(float(spec.PHOTO_0['J-K']),
                                           float(spec.PHOTO_0['g-r']),
                                           CLASS = CLASS))
 
-                spec.TEMP_FRAME.loc['HARD_TEFF', 'VALUE'] = spec.HARD_TEFF
+                spec.TEMP_FRAME.loc['HARD_TEFF', 'VALUE'] = spec.HARD_TEFF # added for extra table column J.Yoon 02/11/2022
                 spec.TEMP_FRAME.loc['ADOPTED', 'VALUE'] = spec.HARD_TEFF
 
                 spec.set_temperature(spec.HARD_TEFF, spec.T_SIGMA, hard=True)
+                print("\t setting and adopting hard teff:   ", spec.HARD_TEFF)
 
+            #Here sets temp with one of the photometric temps.
             else:
-                print("\t setting photo teff:   ")
                 spec.set_temp_frame(TC.calibrate_temp_frame(float(spec.PHOTO_0['J-K']),
                                           float(spec.PHOTO_0['g-r']),
                                           CLASS = CLASS))
-                spec.TEMP_FRAME.loc['HARD_TEFF', 'VALUE'] = np.nan
+                spec.TEMP_FRAME.loc['HARD_TEFF', 'VALUE'] = np.nan  # added for extra table column J.Yoon 02/11/2022
                 spec.set_temperature(spec.TEMP_FRAME.loc['ADOPTED', 'VALUE'], sigma=spec.T_SIGMA)
+                print("\t setting and adopting photo teff:   ", spec.TEMP_FRAME.loc['ADOPTED', 'VALUE'] )
 
         #### NOW ASSEMBLE THE OUTPUT TABLE
 
@@ -256,8 +259,9 @@ class Batch():
 
         table.add_rows(output_table)
 
-        print(" ------  PHOTOMETRIC TEMPERATURES -------")
+        print(" ------ TEMPERATURES (PHOTOMETRIC + HARD + ADOPTED)-------")
         if len(self.spectra_array) < 30: print(table.draw())
+        else : print("Too long table to print; only save the temp table in a file in "+self.io_params['output_dir_path'])
         # save into a file
         print(table.draw(), file=open(self.output_name + "_temp_cal_table.txt", "a"))
         return

@@ -25,22 +25,23 @@ import plot_functions
 from batch import Batch
 import time
 
+start_time = time.time()
+
+
 # Create directory
 dirName = 'outputs/logs'
+
 try:
     # Create target Directory
     os.mkdir(dirName)
-    print("Directory " , dirName ,  " Created ")
+    print("Directory " , dirName ,  " Created \n ")
 except FileExistsError:
-    print("Directory " , dirName ,  " already exists")
+    print("Directory " , dirName ,  " already exists \n")
 
-#print(" Started CASPER and logging!")
+print("Started CASPER and logging! \n\n")
+sys.stdout=open(dirName+'/casper_run_'+time.strftime("%Y-%m-%d-%H:%M:%S")+'.log', 'wt')
 
-#sys.stdout=open('outputs/logs/validation-smss1738m2b-multiruns-statements-2.txt', 'wt')
-
-
-start_time = time.time()
-print("... initializing spectra batch")
+print("\n ... initializing spectra batch")
 
 spec_batch = Batch(io_paths)
 spec_batch.set_io_paths()
@@ -74,7 +75,7 @@ spec_batch.ebv_correction()
 ################################################################################
 #### Main procedures
 
-# does this procedure is done for once for initial param for archetype_classification?
+# is this procedure done for once for initial param for archetype_classification?
 spec_batch.calibrate_temperatures()
 
 spec_batch.archetype_classification()
