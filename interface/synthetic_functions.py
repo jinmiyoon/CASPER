@@ -29,10 +29,15 @@ def get_interp():
 ################################################################################
 
 def ln_chi_square_sigma(flux, synth, xi):
-    ### assume the flux arrays are aligned in wavelength
-    ### update: doing a transformation on here. sigma is the inverse of the signal-to-noise
-    ### the sigma used in the chi square is the noise, so multiply by the current signal flux.
-    ### smaller synth, means smaller effective sigma, which should prioritize the centers of the absorption features.
+    ### J. Yoon 02/25/2022
+    ### This function is truncated log chi square pdf.
+
+    ### input
+    #   flux : observed, synth: synthetic flux, xi: noise (the inverse of SNR for observed flux)
+    #  assume the flux arrays are aligned in wavelength
+    #  update: doing a transformation on here. sigma (xi) is the inverse of the signal-to-noise
+    #  the sigma used in the chi square is the noise, so multiply by the current signal flux.
+    #  smaller synth, means smaller effective sigma, which should prioritize the centers of the absorption features.
 
     dof = len(flux) - 1
     chi = np.square(np.divide(flux - synth, xi*synth)).sum()
@@ -44,9 +49,11 @@ def ln_chi_square_sigma(flux, synth, xi):
 
 
 def CAII_CH_CHI_LH(obs, synth, CA_BOUNDS, CH_BOUNDS, CA_XI, CH_XI):
+    # calculate log likelihood function for CA II and CH for MLE estimation
+
     #### CA_XI, CH_XI : the inverse signal to noise
 
-    ### interpolate
+    ### create linearly interpolated spectra J. Yoon 02/25/2022
     synth_function = interp1d(synth['wave'], synth['norm'])
 
 

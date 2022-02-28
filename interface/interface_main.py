@@ -64,9 +64,16 @@ def archetype_classify_MC(spectrum):
     temp_values = np.random.normal(spectrum.teff_irfm, spectrum.teff_irfm_unc, length)
     span = np.ones(length)
 
-    ### generate spectra
-    ### GI
+    ### Generate spectra (GI_SYNTH, GII_SYNTH,GIII_SYNTH)
+    # J. Yoon Feb 25 2022
+    #
+    #    Here is buiding arrays of spectral parameters/grids within a Teff range
+    #    ([TEFF_HARD - T_SIGMA, TEFF_HARD + T_SIGMA] or
+    #    [TEFF_ADT - T_SIGMA, TEFF_ADT + T_SIGMA]) to generate synthetic spectra.
+    #    for example, GI_SYNTH will create len(span) of arrays, each value looks
+    #    like [4715.6, -2.5, 1.97] depending on gravity_class and galactic env mode.
 
+    ### GI
 
     GI_SYNTH = INTERPOLATOR[spectrum.gravity_class](np.column_stack((temp_values,
                                                 span * ARCHETYPE_PARAMS[spectrum.MODE]['GI']['FEH'],
@@ -137,7 +144,9 @@ def mcmc_determination(spectrum, mode='COARSE', pool=4):
     if mode=='COARSE':
         ## if it's coarse, then you need the photometric teff and the Sigma/Xi
         print('\t initializing with archetype parameters: ', PARAMS)
-        photo_teff = spectrum.get_photo_temp()
+
+        # spectrum.get_photo_temp() returns self.teff_irfm, self.teff_irfm_unc
+        photo_teff = spectrum.get_photo_temp() 
         # inserted 01/04/2022 for comparison
         print('Teff : %.0F  [Fe/H] : %.2F   [C/Fe] : %.2F  A(C): %.2F'% (photo_teff[0], PARAMS['FEH'], PARAMS['CFE'], PARAMS['AC']))
         initial = [photo_teff[0], PARAMS['FEH'], PARAMS['CFE']]

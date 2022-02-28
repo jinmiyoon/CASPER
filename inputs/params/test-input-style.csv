@@ -1,4 +1,6 @@
 sequence,name,J-K,H-K,g-r,EBV_SFD,TEFF_SET,T_SIGMA,RV,SN_CA,SN_CH,SN_C2,class,mode,carbon_mode,MCMC_iter
-1,hd198269_m1b_casper.fits,0.6595,0.0970,,0.1021,4716,200,-264.2,  NaN, NaN, NaN,GIANT, HALO, , 400
-2,hd198269_m1b_casper.fits,0.6595,0.0970,,0.1021,,250,-264.2,  NaN, NaN, NaN,GIANT, HALO,CH , 400
-3,jy1390_m1b_casper.fits,0.8681,0.2853,1.495,0.0283,4035,200,289.,  NaN, NaN, NaN,DWARF, HALO, CH+C2,400
+0,hd198269_m1b_casper.fits,0.6595,0.0970,4716,0.1021,,250,-264.2,  NaN, NaN, NaN,GIANT, HALO, , 1000
+1,hd198269_m1b_casper.fits,0.6595,0.0970,,0.1021,,250,-264.2,  NaN, NaN, NaN,DWARF, HALO, , 1000
+2,hd198269_m1b_casper.fits,0.6595,0.0970,,0.1021,,250,-264.2,  NaN, NaN, NaN,DWARF, HALO, , 1000
+3,hd198269_m1b_casper.fits,0.6595,0.0970,,0.1021,,250,-264.2,  NaN, NaN, NaN,GIANT, HALO, , 1000
+4,hd198269_m1b_casper.fits,0.6595,0.0970,,0.1021,,250,-264.2,  NaN, NaN, NaN,GIANT, HALO, , 1000

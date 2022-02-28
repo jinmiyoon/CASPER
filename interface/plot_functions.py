@@ -30,8 +30,8 @@ def produce_title(spectrum):
     ## just returns a nice looking string for the plot title
     MCMC_DICT = spectrum.get_mcmc_dict(mode='BOTH')
 
-    # 11-13-2021 revised the return value to include sequence numbers.
-    # 01-04-2022 need to find out why Teff value is from MCMC_DICT[0] (COARSE), not from MCMC_DICT[1](REFINE)
+    # 11-13-2021 J. Yoon, revised the return value to include sequence numbers.
+    # 01-04-2022 J. Yoon, need to find out why Teff value is from MCMC_DICT[0] (COARSE), not from MCMC_DICT[1](REFINE)
     return "#"+spectrum.get_sequence()+" "+ spectrum.get_name() + "  " + \
     "   Teff : %.0F  [Fe/H] : %.2F   [C/Fe] : %.2F   A(C) : %.2F" % (MCMC_DICT[0]['TEFF'][0] , MCMC_DICT[1]['FEH'][0], MCMC_DICT[1]['CFE'][0], MCMC_DICT[1]['AC'][0]) + \
     "   MODE:  " + spectrum.get_carbon_mode() + "   CLASS: " + spectrum.get_gravity_class()+ "  "+spectrum.get_arch_group()  + " (tentative)"
