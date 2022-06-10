@@ -6,7 +6,7 @@
 ### you can change output name in io_param.py
 
 
-###
+### J. Yoon
 # To run CASPER, you need to set up paths for input spectra and parameters and
 # output directory and the ouput files.
 # io_paths lets you prepend the output name for parameter file as .csv,
@@ -25,71 +25,80 @@ import plot_functions
 from batch import Batch
 import time
 
-start_time = time.time()
+# We need the below line to attempt to start a new process before the current
+# process has finished its bootstrapping phase. This line allows multiprocessing
+# in interface_mcmc.run_mcmc_determination(). J. Yoon 03/11/2022
+if __name__ == "__main__":
 
 
-# Create directory
-dirName = 'outputs/logs'
+    start_time = time.time()
 
-try:
-    # Create target Directory
-    os.mkdir(dirName)
-    print("Directory " , dirName ,  " Created \n ")
-except FileExistsError:
-    print("Directory " , dirName ,  " already exists \n")
 
-print("Started CASPER and logging! \n\n")
-sys.stdout=open(dirName+'/casper_run_'+time.strftime("%Y-%m-%d-%H:%M:%S")+'.log', 'wt')
+    # Create directory
+    dirName = 'outputs/logs'
 
-print("\n ... initializing spectra batch")
+    try:
+        # Create target Directory
+        os.mkdir(dirName)
+        print("Directory " , dirName ,  " Created \n ")
+    except FileExistsError:
+        print("Directory " , dirName ,  " already exists \n")
 
-spec_batch = Batch(io_paths)
-spec_batch.set_io_paths()
+    # save the CASPER progress printouts in to a log file.
+    print("Started CASPER and logging! \n\n")
+    sys.stdout=open(dirName+'/casper_run_'+time.strftime("%Y-%m-%d-%H:%M:%S")+'.log', 'wt')
 
-################################################################################
-### load spectra + params
-spec_batch.load_params()
-print(spec_batch.param_file['name'])
-spec_batch.load_spectra(is_fits=True)
-spec_batch.set_params()
+    print("### CAPER starts now: ###")
+    print("\n ... initializing spectra batch")
 
-#io_functions.span_window()
+    spec_batch = Batch(io_paths)
+    spec_batch.set_io_paths()
 
-spec_batch.radial_correct()
-spec_batch.build_frames()
+    ################################################################################
+    ### load spectra + params
+    spec_batch.load_params()
+    print(spec_batch.param_file['name'])
+    spec_batch.load_spectra(is_fits=True)
+    spec_batch.set_params()
 
-#io_functions.span_window()
+    #io_functions.span_window()
 
-################################################################################
-#### Continuum normalization with GISIC
-spec_batch.normalize()
+    spec_batch.radial_correct()
+    spec_batch.build_frames()
 
-################################################################################
-#### Preliminaries
-spec_batch.set_KP_bounds()
-spec_batch.set_carbon_mode()
+    #io_functions.span_window()
 
-spec_batch.estimate_sn()
-spec_batch.ebv_correction()
+    ################################################################################
+    #### Continuum normalization with GISIC
+    spec_batch.normalize()
 
-################################################################################
-#### Main procedures
+    ################################################################################
+    #### Preliminaries
+    spec_batch.set_KP_bounds()
+    spec_batch.set_carbon_mode()
 
-# is this procedure done for once for initial param for archetype_classification?
-spec_batch.calibrate_temperatures()
+    spec_batch.estimate_sn()
+    spec_batch.ebv_correction()
 
-spec_batch.archetype_classification()
+    ################################################################################
+    #### Main procedures
 
-spec_batch.mcmc_determination(pool=20)
+    # is this procedure done for once for initial param for archetype_classification?
+    spec_batch.calibrate_temperatures()
 
-################################################################################
-##### generate output files
-spec_batch.generate_synthetic()
-spec_batch.generate_plots()
-spec_batch.generate_output_files()
+    spec_batch.archetype_classification()
 
-print("The total time for this CASPER run is {:.2f}s".format(time.time()-start_time))
-#print('\007')
+    #spec_batch.mcmc_determination(pool=20) # no need of pool
+    spec_batch.mcmc_determination()
 
-#make a sound when the script run is finished.
-os.system("say beep")
+    ################################################################################
+    ##### generate output files
+    spec_batch.generate_synthetic()
+    spec_batch.generate_plots()
+    spec_batch.generate_output_files()
+
+
+    print("The total time for this CASPER run is {:.2f}s".format(time.time()-start_time))
+
+    #make a sound when the script run is finished.
+    os.system("say beep")

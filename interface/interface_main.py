@@ -4,6 +4,18 @@
 ################################################################################
 ## Main parameter determination procedures
 
+
+""" J Yoon 03/11/2022
+To use multiprocessing module:
+Some builds of NumPy (including the version included with Anaconda) will
+automatically parallelize some operations using something like
+the MKL linear algebra. This can cause problems when used with
+the parallelization methods described here so it can be good to turn that off
+(by setting the environment variable OMP_NUM_THREADS=1, for example).
+"""
+import os, sys
+os.environ["OMP_NUM_THREADS"] = "1"
+
 from astropy.io import fits
 from scipy.interpolate import LinearNDInterpolator as NDLinear
 from scipy.interpolate import interp1d
@@ -14,7 +26,7 @@ import numpy as np
 import ac
 import pandas as pd
 import matplotlib.pyplot as plt
-import os, sys
+import time
 import MAD
 from os.path import isfile, join
 from statsmodels.nonparametric.kde import KDEUnivariate
@@ -28,7 +40,6 @@ import spectrum
 import EW
 import emcee
 import synthetic_functions
-
 
 ### GLOBAL ITEMS
 
@@ -89,7 +100,7 @@ def archetype_classify_MC(spectrum):
                                                 span * ARCHETYPE_PARAMS[spectrum.MODE]['GIII']['FEH'],
                                                 span * ARCHETYPE_PARAMS[spectrum.MODE]['GIII']['CFE'])))
 
-
+    # calculate log likelihood function for CA II and CH for MLE estimation for each group
     GI_LLs = np.array([synthetic_functions.CAII_CH_CHI_LH(obs=spectrum.frame,
                                         synth=pd.DataFrame({'wave': SYNTH_WAVE, 'norm' : SYNTH}),
                                         CA_BOUNDS = spectrum.KP_bounds,
@@ -125,13 +136,14 @@ def archetype_classify_MC(spectrum):
 
 
 
-def mcmc_determination(spectrum, mode='COARSE', pool=4):
+#def mcmc_determination(spectrum, mode='COARSE', pool=4):
+def mcmc_determination(spectrum, mode='COARSE'):
 
     ### Precondition: must have run archetype_classification
     ### spectrum: spectrum.Spectrum() object
 
     # mode here means either "coarse" or "fine" , 09/02/2020, J. Yoon
-    print("\t MCMC run mode =  ", mode)
+    print("\t * MCMC run mode =  ", mode)
     # spectrum and its info
     print('\t ' + spectrum.get_name().ljust(20) + ":  " + spectrum.get_gravity_class() + " : " + spectrum.get_carbon_mode() + " : " + spectrum.print_KP_bounds())
 
@@ -146,10 +158,14 @@ def mcmc_determination(spectrum, mode='COARSE', pool=4):
         print('\t initializing with archetype parameters: ', PARAMS)
 
         # spectrum.get_photo_temp() returns self.teff_irfm, self.teff_irfm_unc
-        photo_teff = spectrum.get_photo_temp() 
+        # so photo_teff[0] and photo_teff[1] respectively.
+        photo_teff = spectrum.get_photo_temp()
         # inserted 01/04/2022 for comparison
-        print('Teff : %.0F  [Fe/H] : %.2F   [C/Fe] : %.2F  A(C): %.2F'% (photo_teff[0], PARAMS['FEH'], PARAMS['CFE'], PARAMS['AC']))
+        #print('Teff : %.0F  [Fe/H] : %.2F   [C/Fe] : %.2F  A(C): %.2F'% (photo_teff[0], PARAMS['FEH'], PARAMS['CFE'], PARAMS['AC']))
         initial = [photo_teff[0], PARAMS['FEH'], PARAMS['CFE']]
+
+        #testing different initial values
+        #initial = [4100, PARAMS['FEH'], PARAMS['CFE']]
 
         ARGS = (spectrum.regions, SYNTH_WAVE, photo_teff[0], photo_teff[1],
                 spectrum.get_SN_dict(), spectrum.get_gravity_class())
@@ -197,9 +213,11 @@ def mcmc_determination(spectrum, mode='COARSE', pool=4):
     #    cpu_cores = pool
 
     #print("\t running on ", cpu_cores, " cores")
-    #pool_init = Pool(cpu_cores)
+    n_cpu = cpu_count()
+    print("\t number of cpu = ", n_cpu)
 
-    pos = initial + initial * (2e-2*np.random.rand(25, len(initial)))
+    pos = initial + initial * (2e-3*np.random.rand(100, len(initial))) # Gaussian distribution
+    #pos = initial + initial * (np.random.rand(25, len(initial))) # uniform spacing
     nwalkers, ndim = pos.shape
     bounds = 'default'
 
@@ -207,18 +225,69 @@ def mcmc_determination(spectrum, mode='COARSE', pool=4):
     print("\t running for ", spectrum.get_MCMC_iterations(), " iterations...")
 
 
+    """
     sampler = emcee.EnsembleSampler(nwalkers, ndim,
                                     LL_FUNCTION,
                                     args=(ARGS))
     ####
+    start = time.time()
 
     _ = sampler.run_mcmc(pos, spectrum.get_MCMC_iterations())
+    end = time.time()
+    serial_time = end - start
+    print("\t\t MCMC Serial took {0:.1f} seconds".format(serial_time))
+    """
+
+    with Pool() as pool:
+        sampler = emcee.EnsembleSampler(nwalkers, ndim, LL_FUNCTION,
+            #moves=[(emcee.moves.DEMove(), 0.5),(emcee.moves.DESnookerMove(), 0.5),],
+            pool=pool, args=(ARGS))
+        start = time.time()
+        _ = sampler.run_mcmc(pos, spectrum.get_MCMC_iterations())
+        end = time.time()
+        multi_time = end - start
+        print("\t \t MCMC Multiprocessing took {0:.1f} seconds".format(multi_time))
+
     # want to print out the latest result from mcmc, 12/13/2021
     #print('\t the latest result from sampler() after MCMC runs:    ', _ )
 
     spectrum.set_sampler(sampler, mode=mode)
+    mean_acc_fraction= np.mean(sampler.acceptance_fraction)
 
+    tau=sampler.get_autocorr_time(quiet=True)
+    #tau.tolist()
+    if len(tau)-tau.tolist().count(np.nan) == 0 :
+        max_auto_corr_time =100
+        print("\t\t all autocorr_times are Nan!")
+    elif len(tau)-tau.tolist().count(np.nan) == 1  :
+        for taulist in tau:
+            if taulist != np.nan:
+                max_auto_corr_time= taulist
+        print("\t\t all except one dim autocorr_time are Nan")
+    else:
+        max_auto_corr_time= np.nanmax(tau)
+        print("\t\t maximum autocorrelation time = ", max_auto_corr_time)
+
+    n_discard= int(3 * max_auto_corr_time)
     print("\t\t mcmc mode = ", mode)
+    print("\t\t interface_main: mean acceptance fraction: {0:.3f}".format(mean_acc_fraction))
+    print("\t\t interface_main: maxn autocorrelation_time = ", max_auto_corr_time)
+    # discard the first steps in the chain as burn-in
+    #n_discard= int(burnin * spectrum.MCMC_iterations)
+    print("\t\t interface_main: recommended n_discard = ",n_discard)
+
+
+    if mode == "COARSE":
+        spectrum.mcmc_coarse_acc_frac = mean_acc_fraction
+        # quiet=True kwarg let the run pass. If not, it complains with error and break the run.
+        spectrum.mcmc_coarse_tau = max_auto_corr_time
+        spectrum.mcmc_coarse_n_discard = n_discard
+    else:
+        spectrum.mcmc_refine_acc_frac = mean_acc_fraction
+        # quiet=True kwarg let the run pass. If not, it complains with error and break the run.
+        spectrum.mcmc_refine_tau = max_auto_corr_time
+        spectrum.mcmc_refine_n_discard = n_discard
+
 
     return
 
@@ -246,6 +315,9 @@ def generate_synthetic(spectrum):
 def kde_param_reflection(distro):
     ### this version is very susceptible to local maxima...
     ### kde_param tries to ensure correct handling of multimodal distributions
+
+    #### 04/18/22 J. Yoon: I may need to change this part using a new function
+
 
     distro = distro[np.isfinite(distro)]
 
@@ -279,29 +351,32 @@ def kde_param_reflection(distro):
     return {'result' : float(result['x']), 'kde' : KDE_MAIN, 'kde_reflect' : interp1d(span, KDE_FULL.evaluate(span) * scale)}
 
 
-def generate_kde_params(spectrum, mode, burnin=0.25):
+def generate_kde_params(spectrum, mode, n_thin=1):
     ### main parameter extraction routine following mcmc determination
+
     ### get chain
     if   mode == 'COARSE':
-        chain = spectrum.MCMC_COARSE_sampler.chain
+        #chain = spectrum.MCMC_COARSE_sampler.chain
+
+        # J. Yoon 04/18/2022
+        # updated to .get_chain from .chain
+        chain = spectrum.MCMC_COARSE_sampler.get_chain(discard= spectrum.mcmc_coarse_n_discard, thin=n_thin, flat=True)
 
     elif mode == 'REFINE':
-        chain = spectrum.MCMC_REFINE_sampler.chain
+        # Yoon 04/18/2022
+        # updated to .get_chain from .chain but the resulting arrays are differently storedJ.
+        #chain = spectrum.MCMC_REFINE_sampler.chain
+        chain = spectrum.MCMC_REFINE_sampler.get_chain(discard= spectrum.mcmc_refine_n_discard, thin=n_thin, flat=True)
 
-    walkers, iter, ndim = chain.shape
-
-    ### merge walkers and iterations for formatted chain
-    chain = chain[:, int(burnin * iter):, :].reshape((-1, ndim))
-
-    ### basic medians
-    MEDIAN = [np.median(array) for array in chain.T]
-    STD    = [np.std(array) for array in chain.T]
+    #walkers, iter, ndim = chain.shape
+    ndim = chain.shape[1]
+    #print("ndim = ", ndim)
 
     ### Let's use the kde_params
     ### Note: kde is highly susceptible to errors at the boundaries of the grid
     ### I'm going to try a solution involving edge reflection
 
-    results   =       [kde_param_reflection(array) for array in chain.T]
+    results   =  [kde_param_reflection(array) for array in chain.T]
 
 
     if ndim == 2:
@@ -313,7 +388,7 @@ def generate_kde_params(spectrum, mode, burnin=0.25):
     elif ndim == 6:
         dict_keys = ['TEFF', 'FEH', 'CFE', 'XI_CA', 'XI_CH', 'XI_C2']
 
-
+    #print("dict_keys =  ", dict_keys)
     ### build outputs
     OUTPUT = {key : [results[i]['result'], MAD.S_MAD(chain[:, i])] for i, key in enumerate(dict_keys)}
 

@@ -316,14 +316,18 @@ class Batch():
         return
 
 
-    def mcmc_determination(self, pool=20):
+    # def mcmc_determination(self, pool=20): # I don't see why pool variable is needed here. it was not even used.
+    # So I deleted pool variable from mcmc_determination() and interface_main.mcmc_determination()
+    #   Also, deleted pool=20 in main.py
+    def mcmc_determination(self):
         ### Main iterative method for the mcmc_determination
         #io_functions.span_window()
         print('\n... performing MCMC determinations')
 
         [spec.prepare_regions() for spec in self.spectra_array]
 
-        [interface_main.mcmc_determination(spec, mode='COARSE', pool=pool)  for spec in self.spectra_array]
+        #[interface_main.mcmc_determination(spec, mode='COARSE', pool=pool)  for spec in self.spectra_array]
+        [interface_main.mcmc_determination(spec, mode='COARSE')  for spec in self.spectra_array]
 
         print("... performing kde determinations")
         [interface_main.generate_kde_params(spec, mode="COARSE") for spec in self.spectra_array]
@@ -331,7 +335,8 @@ class Batch():
         #io_functions.span_window()
 
         print("... running refined mcmc")
-        [interface_main.mcmc_determination(spec, mode='REFINE', pool=pool)  for spec in self.spectra_array]
+        #[interface_main.mcmc_determination(spec, mode='REFINE', pool=pool)  for spec in self.spectra_array]
+        [interface_main.mcmc_determination(spec, mode='REFINE')  for spec in self.spectra_array]
 
         print("... finalizing kde determinations")
         [interface_main.generate_kde_params(spec, mode='REFINE') for spec in self.spectra_array]
@@ -355,6 +360,9 @@ class Batch():
         print("\n... generating plots")
 
         plot_functions.plot_spectra(self)
+
+        print("... generating mcmc trace plots")
+        plot_functions.plot_mcmc_trace_array(self)
 
         print("... generating corner plots")
         plot_functions.plot_corner_array(self)

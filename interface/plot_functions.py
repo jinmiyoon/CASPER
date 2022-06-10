@@ -4,6 +4,7 @@
 ################################################################################
 
 import matplotlib.pyplot as plt
+from mpl_toolkits.axes_grid1.inset_locator import inset_axes
 import pandas as pd
 import numpy as np
 from mpl_toolkits.mplot3d import Axes3D
@@ -169,9 +170,78 @@ def plot_spectra(spectra_batch):
 
     return
 
-##########
+########## To check burnt-in from the sampler chain
+def plot_mcmc_trace_array(spec_batch):
+    plt.rcParams.update({'font.size': 8, 'font.family':'monospace'})
+
+    # this function uses plot_single_corner function
+    pp = PdfPages(spec_batch.output_name + '_mcmc_trace.pdf')
+
+    fig_handle = []
+
+    for item in spec_batch.spectra_array:
+        fig_handle.append(plot_single_mcmc_trace(item, spec_batch.output_name))
+
+    plt.close()
+    [pp.savefig(fig) for fig in fig_handle]
+
+    pp.close()
+
+    return
+
+def plot_single_mcmc_trace(spectrum, io_path, n_thin= 1):
+    ### There are three conditions, based on ndim
+    ### get number of dimensions
+
+    sampler = spectrum.MCMC_COARSE_sampler
+    ndim = sampler.chain.shape[2]
+
+    samples_all = sampler.get_chain(thin=n_thin)
+
+    if ndim == 6:
+        ### COARSE run with CH+C2 mode
+        labels = [r'$T_{\rm eff}$', '[Fe/H]', '[C/Fe]', r'S/N$_{\rm CaII}$', r'S/N$_{\rm CH}$', r'S/N$_{\rm C2}$']  #r'$\xi_{\rm CaII}$', r'$\xi_{\rm CH}$', r'$\xi_{\rm C2}$'
+
+    elif ndim == 5:
+        ### COARSE run with CH mode
+        labels = [r'$T_{\rm eff}$', '[Fe/H]', '[C/Fe]', r'S/N$_{\rm CaII}$', r'S/N$_{\rm CH}$']
+
+    elif ndim == 2:
+        ### Fine parameters case
+        labels = ['[Fe/H]', '[C/Fe]']
+
+    name = spectrum.get_name()
+    sequence = spectrum.get_sequence()
+
+    #add add_subplots for tracing steps and chain
+    fig, axes = plt.subplots(ndim,1, figsize= (6,8), sharex=True)
+    fig.suptitle("COARSE run trace plot: #"+sequence+"  "+name, fontsize=10)
+
+    for i in range(ndim) :
+        axes[i].plot(samples_all[:,:,i], "k", lw= 0.3, alpha=0.2)
+        axes[i].set_xlim(0, int(spectrum.get_MCMC_iterations()/n_thin))
+        axes[i].set_ylabel(labels[i])
+        axes[i].axvline(spectrum.mcmc_coarse_n_discard, ls='--',color='b', alpha=0.5)
+
+    axes[ndim-1].text(0.5, 0.5, "Autocorr_time= {:.3f}".format(spectrum.mcmc_coarse_tau),
+        transform=axes[ndim-1].transAxes)
+    axes[ndim-1].text(0.5, 0.3, "Mean accept. frac. = {:.3f} ".format(spectrum.mcmc_coarse_acc_frac),
+        transform=axes[ndim-1].transAxes)
+    axes[ndim-1].text(0.5, 0.1, "Suggested burnin = {}".format(spectrum.mcmc_coarse_n_discard),
+        transform=axes[ndim-1].transAxes, color='b')
+    axes[ndim-1].set_xlabel("step number")
+
+    #plt.subplots_adjust(top=0.9)
+
+    plt.close()
+    return fig
+
+
+
+########## this function is used for plotting corner plot in CASPER.
 def plot_corner_array(spec_batch):
 
+    # this function uses plot_single_corner function
     pp = PdfPages(spec_batch.output_name + '_corner.pdf')
 
     fig_handle = []
@@ -187,26 +257,19 @@ def plot_corner_array(spec_batch):
     return
 
 
-def plot_single_corner(spectrum, io_path, burnin=0.25):
+def plot_single_corner(spectrum, io_path, n_thin= 1):
 
-    ## for now sampler is sampler.chain
     ### There are three conditions, based on ndim
     ### get number of dimensions
 
     sampler = spectrum.MCMC_COARSE_sampler
+    #samples = sampler[:, int(burnin * iter):, :].reshape((-1, ndim))
+    ## 04/19/22 J. Yoon revised samples and removed try/except statements because they are irrelevant.
+    ndim = sampler.chain.shape[2]
+    iter = sampler.chain.shape[1]
 
-    try:
-        ndim = sampler.shape[2]
-        iter = sampler.shape[1]
-
-    except:
-        ndim = sampler.chain.shape[2]
-        iter = sampler.chain.shape[1]
-        sampler = sampler.chain
-
-    samples = sampler[:, int(burnin * iter):, :].reshape((-1, ndim))
-    #01/24/22 this can be updated because sampler.chain seems to be deprecated
-    # samples = sampler.get_chain(discard= int(burnin * iter), flat=True)
+    #samples_all = sampler.get_chain(thin=n_thin)
+    samples = sampler.get_chain(discard= spectrum.mcmc_coarse_n_discard, thin=n_thin, flat=True)
 
 
 
@@ -225,15 +288,14 @@ def plot_single_corner(spectrum, io_path, burnin=0.25):
         labels = ['[Fe/H]', '[C/Fe]']
 
 
-
+    #corner plot
     fig = corner.corner(samples,
                         labels=labels,
                         color='black', hist_kwargs={'density': True})
 
     name = spectrum.get_name()
     sequence = spectrum.get_sequence()
-    fig.suptitle("#"+sequence+"  "+name, fontsize=15)
-
+    fig.suptitle("#"+sequence+"  "+name, fontsize=10)
 
 
     MEDIAN = np.median(samples, axis=0)
@@ -264,11 +326,10 @@ def plot_single_corner(spectrum, io_path, burnin=0.25):
 
     [label.tick_params(direction='in', right=True, top=True) for label in axes.flatten()]
 
+    #plt.subplots_adjust(top=0.9)
+
     plt.close()
     return fig
-
-
-
 
 
 
@@ -514,7 +575,7 @@ def plot_crit_3D(frame_array, group_class):
 
     plt.show()
 
-
+# not used routine below, plot_mcmc_sampler
 def plot_mcmc_sampler(SAMPLER, ndim, burnin,
                     suptitle, filename, acc_params, group):
 
@@ -580,7 +641,7 @@ def plot_mcmc_sampler(SAMPLER, ndim, burnin,
 ## Somehow code got deleted, which is crazy. So I'm rewriting..
 ##########################################
 
-
+# not used routine below,plot_mcmc_samples
 def plot_mcmc_samples(sampler, burnin = 0.25, params=None, suptitle=None, filename=None):
     ## for now sampler is sampler.chain
     ### There are three conditions, based on ndim

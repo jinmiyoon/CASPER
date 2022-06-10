@@ -1,7 +1,6 @@
 ################################################################################
 ### Author: Devin Whitten
 ### Email: devin.d.whitten@gmail.com
-### Institute: University of Notre Dame
 ################################################################################
 
 ### Prior functions for the updated MLE procedure
@@ -11,7 +10,8 @@ import numpy as np
 from scipy.stats import chisquare
 from scipy.stats import beta
 
-
+# J. Yoon 03/28/2022
+# I need to change Teff bounds. Need to find other places to change along with this too.
 native_bounds = {
                  "teff" : [4000, 5000],
                  "feh"  : [-4.5, -1.0],
@@ -35,6 +35,8 @@ def ln_chi_square_sigma(flux, synth, sigma):
 
 
 def teff_lnprior(X, mean, sigma):
+    # the temperature term in the logarithm of the prior distribution
+    # X : teff, mean: photo_teff, sigma: photo_teff_unc
     return -np.log(sigma) - 0.5*np.square(np.divide(X - mean, sigma))
 
 

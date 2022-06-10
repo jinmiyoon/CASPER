@@ -42,8 +42,6 @@ def plot(spec, dir):
 
 
 
-
-
     ### adding the derivatives here
     ax[1].plot(spec.wavelength, spec.frame.d1, color="black", alpha=0.75, linewidth=0.75, label=r'$\frac{df}{d\lambda}$')
     ax[1].plot(spec.wavelength, spec.frame.d2, color="purple", label=r'$\frac{d^2f}{d\lambda^2}$')

@@ -33,6 +33,7 @@ def kde_param(distribution, x0):
 
     return {'result' : float(result['x']), 'kde' : KDE}
 
+# not used currently
 def get_beta_params(spectrum, bounds):
 
     ## just return the proper values for alpha and beta for the given spectra.
@@ -53,7 +54,7 @@ def get_beta_params(spectrum, bounds):
 
     return {'alpha': alpha_param, 'beta': beta_param, "u": u, 'v':v}
 
-
+# not used currently
 def get_beta_param_bounds(spectrum, left_bounds, right_bounds, hard_var = None):
     ## trying to address the underestimation in the SN for at least CaII,
     ## should really average left and right of the feature
@@ -80,7 +81,7 @@ def get_beta_param_bounds(spectrum, left_bounds, right_bounds, hard_var = None):
 
     return {'alpha': alpha_param, 'beta': beta_param, "u": u, 'v':v}
 
-
+# not used currently
 def transform_beta(u, v):
     ### quick hack to transform the median and variance to beta distro params
     alpha_param = ((u**2)/v)*(1 - u) - u
@@ -88,6 +89,7 @@ def transform_beta(u, v):
 
     return alpha_param, beta_param
 
+# not used currently
 def beta_param_spec(spectrum, hard_var = None):
     ### To be run in the chi_mcmc.run_chi_mcmc() routine
     ####################################################################
@@ -176,7 +178,6 @@ def chi_likelihood_C2(theta, spec_regions, synth_wave,
                               INTERPOLATOR[G_CLASS]([teff, feh, carbon])[0],
                               kind = 'linear')
 
-
     LL =  MLE_priors.ln_chi_square_sigma(spec_regions['CA']['norm'], synth_function(spec_regions['CA']['wave']), XI_CA) + \
           0.5*MLE_priors.ln_chi_square_sigma(spec_regions['CH']['norm'], synth_function(spec_regions['CH']['wave']), XI_CH) + \
           0.5*MLE_priors.ln_chi_square_sigma(spec_regions['C2']['norm'], synth_function(spec_regions['C2']['wave']), XI_C2) + \
@@ -264,13 +265,13 @@ def chi_ll_refine_C2(theta, spec_regions, synth_wave,
         return -np.inf
 
 
-
+"""
 
 ### get_mcmc_params appears to not be used so deprecated  J. Yoon ###
 def get_mcmc_params(SAMPLER, burnin=0.25, return_kde=False):
     print("DEPRECATED FUNCTION")
-    #ndim = SAMPLER.chain.shape[2]
-    #SAMPLES = SAMPLER.chain[:, burnin:, :].reshape((-1, ndim))
+    #ndim = SAMPLER.get_chain.shape[2]
+    #SAMPLES = SAMPLER.get_chain[:, burnin:, :].reshape((-1, ndim))
 
     try:  ### SAMPLER is chain
 
@@ -278,7 +279,7 @@ def get_mcmc_params(SAMPLER, burnin=0.25, return_kde=False):
         iter = SAMPLER.shape[1]
 
     except:
-        SAMPLER = SAMPLER.chain
+        SAMPLER = SAMPLER.get_chain
         ndim = SAMPLER.shape[2]
         iter = SAMPLER.shape[1]
 
@@ -320,23 +321,17 @@ def get_mcmc_params(SAMPLER, burnin=0.25, return_kde=False):
         return OUTPUT
 
 
-
+# not used currently
 def get_post_distro(SAMPLER, index=0, burnin=500):
     ### grabs the stuff.
-    ndim = SAMPLER.chain.shape[2]
-    SAMPLES = SAMPLER.chain[:, burnin:, :].reshape((-1, ndim))
+    ndim = SAMPLER.get_chain.shape[2]
+    SAMPLES = SAMPLER.get_chain[:, burnin:, :].reshape((-1, ndim))
 
     return SAMPLES[:, index]
 
 
 
-
-
-
-
-
-
-
+# not used currently
 def set_param_bounds(param_dict):
     ############################################################################
 
@@ -349,3 +344,5 @@ def set_param_bounds(param_dict):
                          param_dict[key][0] + 3.0*param_dict[key][1]]
 
     return bounds
+
+"""

@@ -25,7 +25,7 @@ from scipy.ndimage.filters import gaussian_filter
 ### import structures
 from data_structures import *
 
-print('spectrum loaded')
+#print('spectrum loaded')
 ################################
 #Spectrum Class Definition
 ################################
@@ -43,6 +43,7 @@ def obtain_flux(data):
         return data[0].flatten()
 
 class Spectrum():
+    print('spectrum loaded')
     def __init__(self, spec, name, wl_range=[3000, 6000], is_fits=True):
         # changed from wl_range=[3800,6200] J. Yoon 06-17-2020
 
@@ -239,7 +240,7 @@ class Spectrum():
 
         GROUP = ['GI', 'GII', 'GIII'][LLs.index(max(LLs))]
 
-        #print('\t ' + self.get_name().ljust(20) + ": ", GROUP, ["%.2F" % val for val in LLs])
+        print('\t ' + self.get_name().ljust(20) + ": ", GROUP, ["%.2F" % val for val in LLs])
 
         self.ARCH_GROUP = GROUP
 
