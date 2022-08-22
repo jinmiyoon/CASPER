@@ -216,7 +216,7 @@ def mcmc_determination(spectrum, mode='COARSE'):
     n_cpu = cpu_count()
     print("\t number of cpu = ", n_cpu)
 
-    pos = initial + initial * (2e-3*np.random.rand(100, len(initial))) # Gaussian distribution
+    pos = initial + initial * (2e-2*np.random.rand(100, len(initial))) # Gaussian distribution
     #pos = initial + initial * (np.random.rand(25, len(initial))) # uniform spacing
     nwalkers, ndim = pos.shape
     bounds = 'default'

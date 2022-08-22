@@ -14,5 +14,5 @@
 # output_name will be prepended to .pdf and .csv for the spectra fit output files,
 # MCMC corner plots and output stellar parameters files.
 "output_dir_path"   : "outputs/test/emcee_update/",
-"output_file_name"  : "code_update_multi_stepsize_e-3"
+"output_file_name"  : "code_update_multi_walker-100_stepsize-c2-em2"
 }
