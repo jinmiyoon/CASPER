@@ -1,0 +1,2 @@
+sequence,name,J-K,H-K,g-r,EBV_SFD,TEFF_SET,T_SIGMA,RV,SN_CA,SN_CH,SN_C2,class,mode,carbon_mode,MCMC_iter
+114,jy1118_m1b_casper.fits,0.7905,0.1073,1.011,0.0297,4906.45,250,40.9,  NaN, NaN, NaN,GIANT, HALO, ,200

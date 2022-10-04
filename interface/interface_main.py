@@ -33,7 +33,7 @@ from statsmodels.nonparametric.kde import KDEUnivariate
 
 from collections import namedtuple
 #import GISIC   # Devin's original code
-import GISIC_C as GISIC
+#import GISIC_C as GISIC
 #custom class defs
 import MCMC_interface
 import spectrum
@@ -240,6 +240,7 @@ def mcmc_determination(spectrum, mode='COARSE'):
 
     with Pool() as pool:
         sampler = emcee.EnsembleSampler(nwalkers, ndim, LL_FUNCTION,
+            moves=[(emcee.moves.DEMove(), 1.0),],
             #moves=[(emcee.moves.DEMove(), 0.5),(emcee.moves.DESnookerMove(), 0.5),],
             pool=pool, args=(ARGS))
         start = time.time()
@@ -252,24 +253,30 @@ def mcmc_determination(spectrum, mode='COARSE'):
     #print('\t the latest result from sampler() after MCMC runs:    ', _ )
 
     spectrum.set_sampler(sampler, mode=mode)
-    mean_acc_fraction= np.mean(sampler.acceptance_fraction)
-
     tau=sampler.get_autocorr_time(quiet=True)
-    #tau.tolist()
-    if len(tau)-tau.tolist().count(np.nan) == 0 :
-        max_auto_corr_time =100
-        print("\t\t all autocorr_times are Nan!")
-    elif len(tau)-tau.tolist().count(np.nan) == 1  :
+    
+    #num_valid_autocorr_time_value = len(tau)-tau.tolist().count(np.nan)
+    num_valid_autocorr_time_value = len(tau)-np.isnan(tau).sum()
+    #print("\t\t interface_main: tau's shape= {}, length ={}, how many nan values = {}".format(tau.shape, len(tau), np.isnan(tau).sum()))
+    #print("\t\t interface_main: tau = {}, num_valid_autocorr_time_value ={} ".format(tau,num_valid_autocorr_time_value ))
+    if num_valid_autocorr_time_value == 0 :
+        print("\t\t interface_main: all autocorr_times are Nan!")
+        max_auto_corr_time =70 #a random number similar to average value of other maximum autocorr time
+        
+    elif num_valid_autocorr_time_value == 1  :
+        print("\t\t interface_main: all except one dim autocorr_time are Nan")
         for taulist in tau:
             if taulist != np.nan:
                 max_auto_corr_time= taulist
-        print("\t\t all except one dim autocorr_time are Nan")
+        
     else:
+        print("\t\t interface_main: n >= 2 in tau array values are vaild numbers ")
         max_auto_corr_time= np.nanmax(tau)
-        print("\t\t maximum autocorrelation time = ", max_auto_corr_time)
+        print("\t\t interface_main: maximum autocorrelation time = ", max_auto_corr_time)
 
     n_discard= int(3 * max_auto_corr_time)
     print("\t\t mcmc mode = ", mode)
+    mean_acc_fraction= np.mean(sampler.acceptance_fraction)
     print("\t\t interface_main: mean acceptance fraction: {0:.3f}".format(mean_acc_fraction))
     print("\t\t interface_main: maxn autocorrelation_time = ", max_auto_corr_time)
     # discard the first steps in the chain as burn-in

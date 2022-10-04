@@ -33,9 +33,14 @@ def produce_title(spectrum):
 
     # 11-13-2021 J. Yoon, revised the return value to include sequence numbers.
     # 01-04-2022 J. Yoon, need to find out why Teff value is from MCMC_DICT[0] (COARSE), not from MCMC_DICT[1](REFINE)
+    '''
     return "#"+spectrum.get_sequence()+" "+ spectrum.get_name() + "  " + \
     "   Teff : %.0F  [Fe/H] : %.2F   [C/Fe] : %.2F   A(C) : %.2F" % (MCMC_DICT[0]['TEFF'][0] , MCMC_DICT[1]['FEH'][0], MCMC_DICT[1]['CFE'][0], MCMC_DICT[1]['AC'][0]) + \
     "   MODE:  " + spectrum.get_carbon_mode() + "   CLASS: " + spectrum.get_gravity_class()+ "  "+spectrum.get_arch_group()  + " (tentative)"
+    '''
+    return "#"+spectrum.get_sequence()+"  "+ spectrum.get_name() + "  " + \
+    "   Teff : %.0F K [Fe/H] : %.2F   [C/Fe] : %.2F   A(C) : %.2F" % (MCMC_DICT[0]['TEFF'][0] , MCMC_DICT[1]['FEH'][0], MCMC_DICT[1]['CFE'][0], MCMC_DICT[1]['AC'][0]) + \
+    "   MODE:" + spectrum.get_carbon_mode() + "  LUM_CLASS:" + spectrum.get_gravity_class()+ "  RV: "+ str(spectrum.rv) +"km/s"
 
 
 def plot_spectra(spectra_batch):
@@ -70,7 +75,7 @@ def plot_spectra(spectra_batch):
             [label.set_xticks([3915, 3930, 3945, 3960, 3975]) for label in ax[:, 2]]
 
             ## CH
-            [label.set_xlim([4225, 4325]) for label in ax[:, 3]]
+            [label.set_xlim([4220, 4325]) for label in ax[:, 3]]
             [label.set_xticks(np.arange(4225, 4350, 25)) for label in ax[:, 3]]
 
             ## C2
@@ -146,7 +151,8 @@ def plot_spectra(spectra_batch):
                                                       color='purple', alpha=0.25)
 
 
-        #[ax[index, 3].axvline(edge, linestyle='dotted', linewidth=0.75, alpha=0.8) for edge in CA_WAVE[[0,-1]]]
+        # CH lineband from Beers+1990
+        [ax[index, 3].axvspan(4297.5, 4312.5, linewidth=0.75, alpha=0.2, color ='k', hatch='/')]
 
 
         ###

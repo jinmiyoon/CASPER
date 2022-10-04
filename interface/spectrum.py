@@ -15,7 +15,7 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
 import MAD
-import norm_functions
+#import norm_functions
 import synthetic_functions
 import pandas as pd
 import scipy.interpolate as interp
@@ -109,7 +109,7 @@ class Spectrum():
 
     def radial_correction(self, velocity=0.):
         ### corrects the wavelength shift for given radial velocity
-
+        self.rv =velocity
         # Later, I would use astropy constant for speed of light, Sep 02 2020, J. Yoon
         self.wavelength = self.original_wavelength / ((velocity/2.99792e5) + 1)
 
@@ -150,7 +150,7 @@ class Spectrum():
 
 
     ############################################################
-    def trim_frame(self, bounds= [3000, 5000]):
+    def trim_frame(self, bounds= [3000, 6000]):
         self.frame = self.frame[self.frame['wave'].between(bounds[0], bounds[1], inclusive=True)]
         return
 
