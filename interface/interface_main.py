@@ -240,7 +240,7 @@ def mcmc_determination(spectrum, mode='COARSE', burnin_factor=5):
 
     with Pool() as pool:
         sampler = emcee.EnsembleSampler(nwalkers, ndim, LL_FUNCTION,
-            moves=[(emcee.moves.DEMove(), 1.0),],
+            moves=[(emcee.moves.KDEMove(), 1.0),],
             #moves=[(emcee.moves.DEMove(), 0.5),(emcee.moves.DESnookerMove(), 0.5),],
             pool=pool, args=(ARGS))
         start = time.time()
