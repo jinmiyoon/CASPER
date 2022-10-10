@@ -39,8 +39,8 @@ def produce_title(spectrum):
     "   MODE:  " + spectrum.get_carbon_mode() + "   CLASS: " + spectrum.get_gravity_class()+ "  "+spectrum.get_arch_group()  + " (tentative)"
     '''
     return "#"+spectrum.get_sequence()+"  "+ spectrum.get_name() + "  " + \
-    "   Teff : %.0F K [Fe/H] : %.2F   [C/Fe] : %.2F   A(C) : %.2F" % (MCMC_DICT[0]['TEFF'][0] , MCMC_DICT[1]['FEH'][0], MCMC_DICT[1]['CFE'][0], MCMC_DICT[1]['AC'][0]) + \
-    "   MODE:" + spectrum.get_carbon_mode() + "  LUM_CLASS:" + spectrum.get_gravity_class()+ "  RV: "+ str(spectrum.rv) +"km/s"
+    " Teff : %.0F K [Fe/H] : %.2F [C/Fe] : %.2F A(C) : %.2F" % (MCMC_DICT[0]['TEFF'][0] , MCMC_DICT[1]['FEH'][0], MCMC_DICT[1]['CFE'][0], MCMC_DICT[1]['AC'][0]) + \
+    "   MODE:" + spectrum.get_carbon_mode() + " CLASS:" + spectrum.get_gravity_class()+ "  RV: "+ str(spectrum.get_rv()) +" km/s" + " N_iter:"+str(spectrum.MCMC_iterations)
 
 
 def plot_spectra(spectra_batch):

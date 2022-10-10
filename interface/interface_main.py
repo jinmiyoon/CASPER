@@ -137,7 +137,7 @@ def archetype_classify_MC(spectrum):
 
 
 #def mcmc_determination(spectrum, mode='COARSE', pool=4):
-def mcmc_determination(spectrum, mode='COARSE'):
+def mcmc_determination(spectrum, mode='COARSE', burnin_factor=5):
 
     ### Precondition: must have run archetype_classification
     ### spectrum: spectrum.Spectrum() object
@@ -257,8 +257,8 @@ def mcmc_determination(spectrum, mode='COARSE'):
     
     #num_valid_autocorr_time_value = len(tau)-tau.tolist().count(np.nan)
     num_valid_autocorr_time_value = len(tau)-np.isnan(tau).sum()
-    #print("\t\t interface_main: tau's shape= {}, length ={}, how many nan values = {}".format(tau.shape, len(tau), np.isnan(tau).sum()))
-    #print("\t\t interface_main: tau = {}, num_valid_autocorr_time_value ={} ".format(tau,num_valid_autocorr_time_value ))
+    print("\t\t interface_main: tau's shape= {}, length ={}, how many nan values = {}".format(tau.shape, len(tau), np.isnan(tau).sum()))
+    print("\t\t interface_main: tau = {}, num_valid_autocorr_time_value ={} ".format(tau,num_valid_autocorr_time_value ))
     if num_valid_autocorr_time_value == 0 :
         print("\t\t interface_main: all autocorr_times are Nan!")
         max_auto_corr_time =70 #a random number similar to average value of other maximum autocorr time
@@ -266,7 +266,8 @@ def mcmc_determination(spectrum, mode='COARSE'):
     elif num_valid_autocorr_time_value == 1  :
         print("\t\t interface_main: all except one dim autocorr_time are Nan")
         for taulist in tau:
-            if taulist != np.nan:
+            #if taulist != np.nan:
+            if not np.isnan(taulist):
                 max_auto_corr_time= taulist
         
     else:
@@ -274,13 +275,19 @@ def mcmc_determination(spectrum, mode='COARSE'):
         max_auto_corr_time= np.nanmax(tau)
         print("\t\t interface_main: maximum autocorrelation time = ", max_auto_corr_time)
 
-    n_discard= int(3 * max_auto_corr_time)
+    # Setting burnin by discarding the first n_discard runs. 
+    n_discard= int(burnin_factor * max_auto_corr_time) 
+    
+    # if n_discard is larger than the mcmc iterations, it should be fixed to a random value, 
+    # perhaps, discard the first half runs. This can be revisited
+    if n_discard >= spectrum.get_MCMC_iterations() :
+        print("\t\t interface_main: n_discard is larger than the mcmc iterations! Setting n_discard to half the iterations. ") 
+        n_discard = 0.5 * spectrum.get_MCMC_iterations()
     print("\t\t mcmc mode = ", mode)
     mean_acc_fraction= np.mean(sampler.acceptance_fraction)
     print("\t\t interface_main: mean acceptance fraction: {0:.3f}".format(mean_acc_fraction))
     print("\t\t interface_main: maxn autocorrelation_time = ", max_auto_corr_time)
     # discard the first steps in the chain as burn-in
-    #n_discard= int(burnin * spectrum.MCMC_iterations)
     print("\t\t interface_main: recommended n_discard = ",n_discard)
 
 

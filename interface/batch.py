@@ -127,7 +127,7 @@ class Batch():
             #print('    correcting RV= %7.3f km/s:  done' %float(self.param_file[self.param_file['name'] == name]['RV']))
 
 
-    def build_frames(self, bounds = [3800, 5000]):
+    def build_frames(self, bounds = [3880, 4830]):
         ### I'd rather not modify the original wavelength and flux arrays
         ### plus it's nice to work with dataframes, so I'm just gonna dump arrays to member frames
         ### might as well trim the wavelength coverage here to match the synthetic spectra
@@ -161,7 +161,11 @@ class Batch():
                 #for SIGMA in np.linspace(10, 20, 10):
                 # this choice is not recommended because it does not capture continuum points well.
                 #It even makes C2 band continuum.
-                    wave, norm, cont = GISIC.normalize(spec.get_frame_wave(), spec.get_frame_flux(), sigma = SIGMA, k=1)
+                # J.Yoon 10/06/22 update: 
+                #best norm param fits (sigma=30, k=1, s=12, cahk=True, band_check=False, flux_min=60, boost=True)
+                # GISIC.normalize() defaults kwargs are now set that way execpt, k, so I set it to k=1 here.
+                    wave, norm, cont = GISIC.normalize(spec.get_frame_wave(), spec.get_frame_flux(), 
+                        sigma = SIGMA, k=1,cahk=True, band_check=True, flux_min=70, boost=True)
 
                     cont_array.append(cont)
 

@@ -6,6 +6,7 @@
 ################################################################################
 
 ## For now just the plotting functions
+## This routine is confusing with the same named function in GISIC_C. It appears not to be used in CASPER. J yoon Oct. 5 2022
 
 
 import pandas as pd

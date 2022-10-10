@@ -15,7 +15,6 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
 import MAD
-#import norm_functions
 import synthetic_functions
 import pandas as pd
 import scipy.interpolate as interp
@@ -424,6 +423,9 @@ class Spectrum():
     def get_photo_temp(self):
         return self.teff_irfm, self.teff_irfm_unc
 
+    def get_rv(self):
+        return self.rv
+
     def get_SN_dict(self):
         return self.SN_DICT
 
@@ -471,7 +473,8 @@ class Spectrum():
                         'CFE'      : [round(self.MCMC_REFINE['CFE'][0], 2)],
                         'CFE_ERR'  : [round(max([self.MCMC_REFINE['CFE'][1], self.MCMC_COARSE['CFE'][1]]), 4)],
                         'AC'       : [round(self.MCMC_REFINE['AC'][0], 2)],
-                        'AC_ERR'   : [round(max([self.MCMC_REFINE['AC'][1], self.MCMC_COARSE['AC'][1]]), 4)]
+                        'AC_ERR'   : [round(max([self.MCMC_REFINE['AC'][1], self.MCMC_COARSE['AC'][1]]), 4)],
+                        'RV'       : [self.get_rv()]
                     })
 
     ###### PRINT METHODS
