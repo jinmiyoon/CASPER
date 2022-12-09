@@ -2,13 +2,16 @@
 ### Main driver for normalization routine, intended for SEGUE medium-resolution spectra.
 
 # Jul 2020: Jinmi Yoon
-# normalize() requres several parameters.
-# Refer to scipy.interpolate.splrep for more details of these parameters.
-# s : A smoothing condition. This gives how smooth my fit would be.
-#     Larger s means more smoothing while smaller values of s indicate less smoothing.
+# normalize() requires several parameters for both observed spectra (sigma) and continuum finding (k, s)
+# Refer to scipy.interpolate.splrep for more details of k, s.
+# s : A smoothing condition. This controls smoothing the synthetic fit.
+#     Larger s means more smoothing while smaller values of s indicate less smoothing so more wiggly.
 #     The default value for s is s=12.
 # k : the degree of the spline fit. It is recommended to use cubic splines. Even values of k
 #     should be avoided especially with small s values. 1 <= k <= 5
+#
+# sigma: a smoothing factor for the flux, with using a Gaussian filter. 
+# Refer to scipy.ndimage.gaussian_filter(sigma)
 
 # I would like to set k and s outside of this code, perhaps in main.py or other parameter file or casper pa
 

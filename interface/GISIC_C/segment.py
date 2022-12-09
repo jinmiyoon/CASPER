@@ -55,7 +55,7 @@ class Segment():
     def define_cont_point(self, mad_min, mad_range, boost=True):
         ### Here's the idea, the greater the flux variation in the segment,
         ### the larger the probability of influence from an absorption feature.
-        ### there for, for larger variation, we want to bias the flux point assigned
+        ### therefore, for larger variation, we want to bias the flux point assigned
         ### increasingly torwards the maximum flux in the segment
 
         self.mad_relative = (self.mad_normal - mad_min)/mad_range

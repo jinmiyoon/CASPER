@@ -165,7 +165,7 @@ class Batch():
                 #best norm param fits (sigma=30, k=1, s=12, cahk=True, band_check=False, flux_min=60, boost=True)
                 # GISIC.normalize() defaults kwargs are now set that way execpt, k, so I set it to k=1 here.
                     wave, norm, cont = GISIC.normalize(spec.get_frame_wave(), spec.get_frame_flux(), 
-                        sigma = SIGMA, k=1,cahk=True, band_check=True, flux_min=70, boost=True)
+                        sigma = SIGMA, k=1,cahk=True, band_check=False, flux_min=70, boost=True)
 
                     cont_array.append(cont)
 

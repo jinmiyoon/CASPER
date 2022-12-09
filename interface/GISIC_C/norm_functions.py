@@ -11,7 +11,7 @@ def in_molecular_band(wl, tol=10):
     ### Checks to see if wavelength is within unacceptable limits of known bands
 #    bands = {"gband": [4200., 4400.],
     bands = {"gband": [4250., 4318.],
-             "C2_O":  [4100, 4200],
+             "C2_N":  [4100., 4220.],
              "C2":    [4550., 4750.]}
 #             "C2_N":    [5060., 5180.]}
 
