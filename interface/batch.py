@@ -73,15 +73,28 @@ class Batch():
 
         ### I only want the spectra in the param file
         self.spectra_names = self.param_file['name'].tolist()
+
         if is_fits == True:
+
             #print("input spectra files are of fits format!")
+            
+            def fits_input(pathname, current):
+                #print("filepath= ", pathname, current)
+                with fits.open(pathname) as hdu:
+                    return spectrum.Spectrum(hdu, name=current, is_fits=True)
+            self.spectra_array = [fits_input(self.spectra_path + current, current) for current in self.spectra_names] 
+
+            '''
             self.spectra_array = [spectrum.Spectrum(fits.open(self.spectra_path + current),
-                name=current, is_fits=fits) for current in self.spectra_names]
+                name=current, is_fits=True) for current in self.spectra_names]
+            '''
+            print("\t\t batch: what is spectra_arry - ", self.spectra_array)
 
         else:
-            #print("input spectra files are of csv format")
+            #print("input spectra files are of csv format") 
             self.spectra_array = [spectrum.Spectrum(pd.read_csv(self.spectra_path + current),
-                name=current, fits=False) for current in self.spectra_names]
+                name=current, is_fits=False) for current in self.spectra_names]
+
         self.length = len(self.spectra_array)
 
         return
@@ -93,7 +106,6 @@ class Batch():
         ### I'll update this as needed
         print("\n... setting spectra parameters")
         for i, row in self.param_file.iterrows():
-
             spec = self.spectra_array[i]
 
             assert spec.name == row['name'].strip(), 'Parameter error in calibrate_temperatures()'
@@ -102,10 +114,10 @@ class Batch():
             CLASS = row['class'].strip()
             MODE  = row['mode'].strip()
             INPUT_CARBON_MODE = row['carbon_mode'].strip()  # 09-09-2020 J. Yoon
-            #print("DEBUG!", INPUT_CARBON_MODE)
             ITER  = row['MCMC_iter']
             T_SIGMA = row['T_SIGMA']
             HARD_TEFF = row['TEFF_SET']
+
             #spec.set_params(CLASS = CLASS, JK = JK, MODE=MODE, iter=ITER, T_SIGMA=T_SIGMA, HARD_TEFF=HARD_TEFF)
             # 09-09-2020, 11-13-2021 J. yoon
             spec.set_params(SEQUENCE = SEQUENCE, CLASS = CLASS, JK = JK, MODE=MODE,

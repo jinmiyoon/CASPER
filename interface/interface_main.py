@@ -137,7 +137,7 @@ def archetype_classify_MC(spectrum):
 
 
 #def mcmc_determination(spectrum, mode='COARSE', pool=4):
-def mcmc_determination(spectrum, mode='COARSE', burnin_factor=5):
+def mcmc_determination(spectrum, mode='COARSE', burnin_factor=7):
 
     ### Precondition: must have run archetype_classification
     ### spectrum: spectrum.Spectrum() object
@@ -241,7 +241,7 @@ def mcmc_determination(spectrum, mode='COARSE', burnin_factor=5):
     with Pool() as pool:
         sampler = emcee.EnsembleSampler(nwalkers, ndim, LL_FUNCTION,
             moves=[(emcee.moves.KDEMove(), 1.0),],
-            #moves=[(emcee.moves.DEMove(), 0.5),(emcee.moves.DESnookerMove(), 0.5),],
+            #moves=[(emcee.moves.DEMove(), 0.9),(emcee.moves.DESnookerMove(), 0.1),],
             pool=pool, args=(ARGS))
         start = time.time()
         _ = sampler.run_mcmc(pos, spectrum.get_MCMC_iterations())
@@ -280,9 +280,9 @@ def mcmc_determination(spectrum, mode='COARSE', burnin_factor=5):
     
     # if n_discard is larger than the mcmc iterations, it should be fixed to a random value, 
     # perhaps, discard the first half runs. This can be revisited
-    if n_discard >= spectrum.get_MCMC_iterations() :
+    if n_discard >= 0.5 * spectrum.get_MCMC_iterations() :
         print("\t\t interface_main: n_discard is larger than the mcmc iterations! Setting n_discard to half the iterations. ") 
-        n_discard = 0.5 * spectrum.get_MCMC_iterations()
+        n_discard = int(0.5 * spectrum.get_MCMC_iterations())
     print("\t\t mcmc mode = ", mode)
     mean_acc_fraction= np.mean(sampler.acceptance_fraction)
     print("\t\t interface_main: mean acceptance fraction: {0:.3f}".format(mean_acc_fraction))
@@ -290,18 +290,10 @@ def mcmc_determination(spectrum, mode='COARSE', burnin_factor=5):
     # discard the first steps in the chain as burn-in
     print("\t\t interface_main: recommended n_discard = ",n_discard)
 
-
-    if mode == "COARSE":
-        spectrum.mcmc_coarse_acc_frac = mean_acc_fraction
-        # quiet=True kwarg let the run pass. If not, it complains with error and break the run.
-        spectrum.mcmc_coarse_tau = max_auto_corr_time
-        spectrum.mcmc_coarse_n_discard = n_discard
-    else:
-        spectrum.mcmc_refine_acc_frac = mean_acc_fraction
-        # quiet=True kwarg let the run pass. If not, it complains with error and break the run.
-        spectrum.mcmc_refine_tau = max_auto_corr_time
-        spectrum.mcmc_refine_n_discard = n_discard
-
+    spectrum.mcmc_coarse_acc_frac = spectrum.mcmc_refine_acc_frac = mean_acc_fraction
+    spectrum.mcmc_coarse_tau = spectrum.mcmc_refine_tau = max_auto_corr_time
+    spectrum.mcmc_coarse_n_discard = spectrum.mcmc_refine_n_discard = n_discard
+ 
 
     return
 

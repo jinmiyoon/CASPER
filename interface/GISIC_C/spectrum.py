@@ -130,7 +130,7 @@ class Spectrum():
             for i, row in EXTREMA.iterrows():
                 #### G-band avoidance
                 if not norm_functions.in_molecular_band(row['wave'], tol=10):
-                    print("GISIC test", norm_functions.in_molecular_band(row['wave'], tol=10))
+                    #print("GISIC test", norm_functions.in_molecular_band(row['wave'], tol=10))
                     SEGMENT = self.frame[self.frame['wave'].between(row['wave'] - int(width/2), row['wave']+ int(width/2), inclusive=True)].copy()
                     self.segments.append(Segment(np.array(SEGMENT['wave']), np.array(SEGMENT['flux'])))
                 else:

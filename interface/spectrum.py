@@ -24,8 +24,7 @@ from scipy.ndimage.filters import gaussian_filter
 ### import structures
 from data_structures import *
 
-#print('spectrum loaded')
-################################
+###############################
 #Spectrum Class Definition
 ################################
 def obtain_flux(data):
@@ -48,14 +47,9 @@ class Spectrum():
 
         self.name = name
         print("\n... initializing:  ", name)
-        #### Use the fits file to generate all necessary info for the spectrum
-        #self.spec = spec[spec[0].between(wl_range[0], wl_range[-1], inclusive=True)]
-        #self.wavelength = np.power(10. , (self.fits[0].header['CRVAL1'] + np.arange(0, self.fits[0].header['NAXIS1'])*self.fits[0].header['CD1_1']))
-################################################################################
+        ################################################################################
         if is_fits:
-            ## This is a cumbersome attempt to accomadate multiple fits data formats..
-            self.fits = spec
-
+            ## This is a cumbersome attempt to accomodate multiple fits data formats..
             if 'CD1_1' in spec[0].header:
                 DELTA = "CD1_1"
 
@@ -65,22 +59,23 @@ class Spectrum():
             else:
                 print("I don't know which increment to use!")
 
-            if self.fits[0].header['CRVAL1'] > 10.:
+            if spec[0].header['CRVAL1'] > 10.:
                 #print("linear wavelength")
-                ###testing purposes, probably this is the way to go
                 self.wavelength = (np.arange(0, spec[0].header['NAXIS1'], 1) * spec[0].header[DELTA]) + spec[0].header['CRVAL1']
 
 
             else:
-                self.wavelength = np.power(10. , (self.fits[0].header['CRVAL1'] + np.arange(0, self.fits[0].header['NAXIS1'])*self.fits[0].header[DELTA]))
+                self.wavelength = np.power(10. , (spec[0].header['CRVAL1'] + np.arange(0, spec[0].header['NAXIS1'])*spec[0].header[DELTA]))
 
             self.original_wavelength = self.wavelength
 
-            self.flux = obtain_flux(self.fits[0].data)
+            self.flux = obtain_flux(spec[0].data)
             self.wavelength = np.array(self.wavelength)
 
+            # not to keep fits file open
+            spec.close() 
 
-            ### check endian match
+            #check endian match
             #self.endian_match = (self.flux.dtype.byteorder == self.wavelength.dtype.byteorder)
 
             if self.flux.dtype.byteorder == ">":
@@ -88,9 +83,7 @@ class Spectrum():
                 self.flux = self.flux.byteswap().newbyteorder()
 
             #print(self.flux.dtype.byteorder == self.wavelength.dtype.byteorder)
-
-
-################################################################################
+        ################################################################################
 
         else:
             print("\t csv file, ")
@@ -103,6 +96,7 @@ class Spectrum():
         self.segments = None
         ####
         self.mad_global = None
+
 
         return
 

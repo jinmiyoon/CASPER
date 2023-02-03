@@ -57,7 +57,7 @@ if __name__ == "__main__":
     ################################################################################
     ### load spectra + params
     spec_batch.load_params()
-    print(spec_batch.param_file['name'])
+    print("spectra name:  ", spec_batch.param_file['name'])
     spec_batch.load_spectra(is_fits=True)
     spec_batch.set_params()
 
