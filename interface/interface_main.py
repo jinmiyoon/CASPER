@@ -240,8 +240,8 @@ def mcmc_determination(spectrum, mode='COARSE', burnin_factor=7):
 
     with Pool() as pool:
         sampler = emcee.EnsembleSampler(nwalkers, ndim, LL_FUNCTION,
-            moves=[(emcee.moves.KDEMove(), 1.0),],
-            #moves=[(emcee.moves.DEMove(), 0.9),(emcee.moves.DESnookerMove(), 0.1),],
+            #moves=[(emcee.moves.KDEMove(), 1.0),],
+            moves=[(emcee.moves.DEMove(), 0.8),(emcee.moves.DESnookerMove(), 0.2),],
             pool=pool, args=(ARGS))
         start = time.time()
         _ = sampler.run_mcmc(pos, spectrum.get_MCMC_iterations())
@@ -253,6 +253,7 @@ def mcmc_determination(spectrum, mode='COARSE', burnin_factor=7):
     #print('\t the latest result from sampler() after MCMC runs:    ', _ )
 
     spectrum.set_sampler(sampler, mode=mode)
+
     tau=sampler.get_autocorr_time(quiet=True)
     
     #num_valid_autocorr_time_value = len(tau)-tau.tolist().count(np.nan)
@@ -286,13 +287,19 @@ def mcmc_determination(spectrum, mode='COARSE', burnin_factor=7):
     print("\t\t mcmc mode = ", mode)
     mean_acc_fraction= np.mean(sampler.acceptance_fraction)
     print("\t\t interface_main: mean acceptance fraction: {0:.3f}".format(mean_acc_fraction))
-    print("\t\t interface_main: maxn autocorrelation_time = ", max_auto_corr_time)
+    print("\t\t interface_main: max autocorrelation_time = ", max_auto_corr_time)
     # discard the first steps in the chain as burn-in
     print("\t\t interface_main: recommended n_discard = ",n_discard)
 
-    spectrum.mcmc_coarse_acc_frac = spectrum.mcmc_refine_acc_frac = mean_acc_fraction
-    spectrum.mcmc_coarse_tau = spectrum.mcmc_refine_tau = max_auto_corr_time
-    spectrum.mcmc_coarse_n_discard = spectrum.mcmc_refine_n_discard = n_discard
+    if mode == 'COARSE': 
+        spectrum.mcmc_coarse_acc_frac = mean_acc_fraction
+        spectrum.mcmc_coarse_tau = max_auto_corr_time
+        spectrum.mcmc_coarse_n_discard = n_discard
+    else: 
+        spectrum.mcmc_refine_acc_frac = mean_acc_fraction
+        spectrum.mcmc_refine_tau = max_auto_corr_time
+        spectrum.mcmc_refine_n_discard = n_discard
+
  
 
     return

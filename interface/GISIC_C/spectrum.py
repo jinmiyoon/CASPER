@@ -90,8 +90,8 @@ class Spectrum():
         #### Look between the self.ZEROS
         for i in range(len(self.ZEROS) - 1):
 
-            #print(self.frame[self.frame['wave'].between(4000, 5000, inclusive=True)])
-            SEGMENT = self.frame[self.frame['wave'].between(self.ZEROS[i], self.ZEROS[i+1], inclusive=True)].copy()
+            #print(self.frame[self.frame['wave'].between(4000, 5000, inclusive='both')])
+            SEGMENT = self.frame[self.frame['wave'].between(self.ZEROS[i], self.ZEROS[i+1], inclusive='both')].copy()
             ### I don't care about positive peaks
             ### so if everything is negative
             if len(SEGMENT[SEGMENT['d2'] < 0.0]) > 0.8*len(SEGMENT['d2']):
@@ -102,8 +102,8 @@ class Spectrum():
         if cahk:
             # Ca HK
             print("\tadding CaII H&K continuum points")
-            SEG1 = self.frame[self.frame['wave'].between(3916 - cahkwidth, 3916 + cahkwidth, inclusive=True)]
-            SEG2 = self.frame[self.frame['wave'].between(3991 - cahkwidth, 3991 + cahkwidth, inclusive=True)]
+            SEG1 = self.frame[self.frame['wave'].between(3916 - cahkwidth, 3916 + cahkwidth, inclusive='both')]
+            SEG2 = self.frame[self.frame['wave'].between(3991 - cahkwidth, 3991 + cahkwidth, inclusive='both')]
 
             SEG1 = SEG1[SEG1['flux'] == max(SEG1['flux'])].copy()
             SEG2 = SEG2[SEG2['flux'] == max(SEG2['flux'])].copy()
@@ -131,14 +131,14 @@ class Spectrum():
                 #### G-band avoidance
                 if not norm_functions.in_molecular_band(row['wave'], tol=10):
                     #print("GISIC test", norm_functions.in_molecular_band(row['wave'], tol=10))
-                    SEGMENT = self.frame[self.frame['wave'].between(row['wave'] - int(width/2), row['wave']+ int(width/2), inclusive=True)].copy()
+                    SEGMENT = self.frame[self.frame['wave'].between(row['wave'] - int(width/2), row['wave']+ int(width/2), inclusive='both')].copy()
                     self.segments.append(Segment(np.array(SEGMENT['wave']), np.array(SEGMENT['flux'])))
                 else:
                     pass
 
         else:
             for i, row in EXTREMA.iterrows():
-                SEGMENT = self.frame[self.frame['wave'].between(row['wave'] - int(width/2), row['wave']+ int(width/2), inclusive=True)].copy()
+                SEGMENT = self.frame[self.frame['wave'].between(row['wave'] - int(width/2), row['wave']+ int(width/2), inclusive='both')].copy()
                 self.segments.append(Segment(np.array(SEGMENT['wave']), np.array(SEGMENT['flux'])))
 
         ### need to add the endpoints

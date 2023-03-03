@@ -41,7 +41,6 @@ def obtain_flux(data):
         return data[0].flatten()
 
 class Spectrum():
-    print('spectrum loaded')
     def __init__(self, spec, name, wl_range=[3000, 6000], is_fits=True):
         # changed from wl_range=[3800,6200] J. Yoon 06-17-2020
 
@@ -71,7 +70,7 @@ class Spectrum():
 
             self.flux = obtain_flux(spec[0].data)
             self.wavelength = np.array(self.wavelength)
-
+            print('spectrum loaded')
             # not to keep fits file open
             spec.close() 
 
@@ -144,7 +143,7 @@ class Spectrum():
 
     ############################################################
     def trim_frame(self, bounds= [3000, 6000]):
-        self.frame = self.frame[self.frame['wave'].between(bounds[0], bounds[1], inclusive=True)]
+        self.frame = self.frame[self.frame['wave'].between(bounds[0], bounds[1], inclusive='both')]
         return
 
 
@@ -164,8 +163,8 @@ class Spectrum():
 
             if (SIDEBANDS[key][0][0] > min(self.frame['wave'])) and (SIDEBANDS[key][1][1] < max(self.frame['wave'])):
 
-                SN_LEFT  = np.sqrt(self.frame['flux'][self.frame['wave'].between(*SIDEBANDS[key][0], inclusive=True)])
-                SN_RIGHT = np.sqrt(self.frame['flux'][self.frame['wave'].between(*SIDEBANDS[key][1], inclusive=True)])
+                SN_LEFT  = np.sqrt(self.frame['flux'][self.frame['wave'].between(*SIDEBANDS[key][0], inclusive='both')])
+                SN_RIGHT = np.sqrt(self.frame['flux'][self.frame['wave'].between(*SIDEBANDS[key][1], inclusive='both')])
 
                 ### Average the left and right sidebands
 
@@ -269,12 +268,12 @@ class Spectrum():
     def prepare_regions(self):
         ### prepares the CaII, CH, and C2 regions according to KP_bounds and carbon_mode
 
-        self.regions = {"CA" : self.frame[self.frame['wave'].between(*self.KP_bounds, inclusive=True)].copy(),
-                        "CH" : self.frame[self.frame['wave'].between(4222, 4322,      inclusive=True)].copy()}
+        self.regions = {"CA" : self.frame[self.frame['wave'].between(*self.KP_bounds, inclusive='both')].copy(),
+                        "CH" : self.frame[self.frame['wave'].between(4222, 4322,      inclusive='both')].copy()}
 
         if self.carbon_mode == "CH+C2":
             ### then add the C2 cut
-            self.regions['C2'] =  self.frame[self.frame['wave'].between(4710, 4750, inclusive=True).copy()]
+            self.regions['C2'] =  self.frame[self.frame['wave'].between(4710, 4750, inclusive='both').copy()]
 
         return
 

@@ -67,34 +67,34 @@ class Batch():
         return
 
 
-    def load_spectra(self, is_fits=True):
+    def load_spectra(self):
         print("\n ... loading spectra:  ", self.spectra_path)
 
 
         ### I only want the spectra in the param file
-        self.spectra_names = self.param_file['name'].tolist()
+        self.spectra_names =  self.param_file['name'].tolist()
 
-        if is_fits == True:
-
-            #print("input spectra files are of fits format!")
-            
-            def fits_input(pathname, current):
-                #print("filepath= ", pathname, current)
+        
+        def spectra_input(pathname, current):
+            #print("filepath= ", pathname, current)
+            file_ext = current.split('.')[1] 
+            if file_ext == 'fits': 
                 with fits.open(pathname) as hdu:
                     return spectrum.Spectrum(hdu, name=current, is_fits=True)
-            self.spectra_array = [fits_input(self.spectra_path + current, current) for current in self.spectra_names] 
+            elif file_ext =='csv': 
+                return spectrum.Spectrum(pd.read_csv(pathname), name=current, is_fits=False)
+            else: 
+                raise Exception("Invalid file format extension. Currently only .fits and .csv files are supported")
 
-            '''
-            self.spectra_array = [spectrum.Spectrum(fits.open(self.spectra_path + current),
-                name=current, is_fits=True) for current in self.spectra_names]
-            '''
-            print("\t\t batch: what is spectra_arry - ", self.spectra_array)
+        self.spectra_array = [spectra_input(self.spectra_path + current, current) for current in self.spectra_names] 
 
+        print("\t\t batch: what is spectra_arry - ", self.spectra_array)
+        '''
         else:
             #print("input spectra files are of csv format") 
             self.spectra_array = [spectrum.Spectrum(pd.read_csv(self.spectra_path + current),
                 name=current, is_fits=False) for current in self.spectra_names]
-
+        '''
         self.length = len(self.spectra_array)
 
         return

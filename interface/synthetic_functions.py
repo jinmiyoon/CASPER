@@ -58,8 +58,8 @@ def CAII_CH_CHI_LH(obs, synth, CA_BOUNDS, CH_BOUNDS, CA_XI, CH_XI):
 
 
     ### Break the segments
-    CA_FRAME = obs[obs['wave'].between(*CA_BOUNDS, inclusive=True)]
-    CH_FRAME = obs[obs['wave'].between(*CH_BOUNDS, inclusive=True)]
+    CA_FRAME = obs[obs['wave'].between(*CA_BOUNDS, inclusive='both')]
+    CH_FRAME = obs[obs['wave'].between(*CH_BOUNDS, inclusive='both')]
 
     CHI_CA = ln_chi_square_sigma(CA_FRAME['norm'], synth_function(CA_FRAME['wave']), CA_XI)
     CHI_CH = ln_chi_square_sigma(CH_FRAME['norm'], synth_function(CH_FRAME['wave']), CH_XI)
@@ -79,17 +79,17 @@ def determine_rChi_2(spec, synth, bounds, type='both'):
     #### Build the synthetic function
     synth_function = interp1d(synth['wave'], synth['norm'], kind='cubic')
 
-    spec_trim = spec[spec['wave'].between(bounds[0], bounds[1], inclusive=True)]
+    spec_trim = spec[spec['wave'].between(bounds[0], bounds[1], inclusive='both')]
 
     #residual = spec_trim['norm'] - synth_function(spec_trim['wave'])
 
     CHI = np.divide(np.square(spec_trim['norm'] - synth_function(spec_trim['wave'])), synth_function(spec_trim['wave']))
-    trim = np.concatenate([CHI[spec_trim['wave'].between(3925, 3980, inclusive=True)], CHI[spec_trim['wave'].between(4222, 4322, inclusive=True)]])
-    trim1 = CHI[spec_trim['wave'].between(3925, 3980, inclusive=True)]
-    trim2 = CHI[spec_trim['wave'].between(4222, 4322, inclusive=True)]
+    trim = np.concatenate([CHI[spec_trim['wave'].between(3925, 3980, inclusive='both')], CHI[spec_trim['wave'].between(4222, 4322, inclusive='both')]])
+    trim1 = CHI[spec_trim['wave'].between(3925, 3980, inclusive='both')]
+    trim2 = CHI[spec_trim['wave'].between(4222, 4322, inclusive='both')]
     if type=="CAII":
-        #FINAL = np.mean([np.mean(CHI[spec_trim['wave'].between(3925, 3980, inclusive=True)]),
-        #        np.mean(CHI[spec_trim['wave'].between(4222, 4322, inclusive=True)])])
+        #FINAL = np.mean([np.mean(CHI[spec_trim['wave'].between(3925, 3980, inclusive='both')]),
+        #        np.mean(CHI[spec_trim['wave'].between(4222, 4322, inclusive='both')])])
         FINAL = trim1.sum()/len(trim1)
 
         #print(CHI)
@@ -127,7 +127,7 @@ def determine_rChi_2(spec, synth, bounds, type='both'):
     #### Build the synthetic function
     synth_function = interp1d(synth['wave'], synth['norm'], kind='linear')
 
-    spec_trim = spec[spec['wave'].between(bounds[0], bounds[1], inclusive=True)]
+    spec_trim = spec[spec['wave'].between(bounds[0], bounds[1], inclusive='both')]
 
     #residual = spec_trim['norm'] - synth_function(spec_trim['wave'])
 
@@ -136,15 +136,15 @@ def determine_rChi_2(spec, synth, bounds, type='both'):
 
     CHI = np.square(spec_trim['norm'] - synth_function(spec_trim['wave']))
     CHI = np.divide(np.square(spec_trim['norm'] - synth_function(spec_trim['wave'])), spec_trim['norm'])
-    #trim = np.concatenate([CHI[spec_trim['wave'].between(3925, 3980, inclusive=True)], CHI[spec_trim['wave'].between(4222, 4322, inclusive=True)]])
-    #trim1 = CHI[spec_trim['wave'].between(3925, 3980, inclusive=True)]
+    #trim = np.concatenate([CHI[spec_trim['wave'].between(3925, 3980, inclusive='both')], CHI[spec_trim['wave'].between(4222, 4322, inclusive='both')]])
+    #trim1 = CHI[spec_trim['wave'].between(3925, 3980, inclusive='both')]
     ## adjusting CaII for the K18 index
-    trim1 = CHI[spec_trim['wave'].between(3927.7, 3939.7, inclusive=True)]
-    trim2 = CHI[spec_trim['wave'].between(4222, 4322, inclusive=True)]
+    trim1 = CHI[spec_trim['wave'].between(3927.7, 3939.7, inclusive='both')]
+    trim2 = CHI[spec_trim['wave'].between(4222, 4322, inclusive='both')]
 
     if type=="CAII":
-        #FINAL = np.mean([np.mean(CHI[spec_trim['wave'].between(3925, 3980, inclusive=True)]),
-        #        np.mean(CHI[spec_trim['wave'].between(4222, 4322, inclusive=True)])])
+        #FINAL = np.mean([np.mean(CHI[spec_trim['wave'].between(3925, 3980, inclusive='both')]),
+        #        np.mean(CHI[spec_trim['wave'].between(4222, 4322, inclusive='both')])])
         FINAL = trim1.sum()/len(trim1)
 
         #print(CHI)
@@ -198,12 +198,12 @@ def determine_rChi(spec, wave, flux, bounds, type="norm"):
     #### Build the synthetic function
     synth_function = interp1d(synth['wave'], synth['norm'], kind='cubic')
 
-    spec_trim = spec[spec['wave'].between(bounds[0], bounds[1], inclusive=True)]
+    spec_trim = spec[spec['wave'].between(bounds[0], bounds[1], inclusive='both')]
 
     CHI = np.divide(np.square(spec_trim['norm'] - synth_function(spec_trim['wave'])), synth_function(spec_trim['wave']))
-    trim = np.concatenate([CHI[spec_trim['wave'].between(3925, 3980, inclusive=True)], CHI[spec_trim['wave'].between(4222, 4322, inclusive=True)]])
-    trim1 = CHI[spec_trim['wave'].between(3925, 3980, inclusive=True)]
-    trim2 = CHI[spec_trim['wave'].between(4222, 4322, inclusive=True)]
+    trim = np.concatenate([CHI[spec_trim['wave'].between(3925, 3980, inclusive='both')], CHI[spec_trim['wave'].between(4222, 4322, inclusive='both')]])
+    trim1 = CHI[spec_trim['wave'].between(3925, 3980, inclusive='both')]
+    trim2 = CHI[spec_trim['wave'].between(4222, 4322, inclusive='both')]
 
     if type ==  'norm':
 

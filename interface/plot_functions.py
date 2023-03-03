@@ -97,13 +97,11 @@ def plot_spectra(spectra_batch):
         ax[index, 0].set_yticks([0.0, max(spec.frame['flux'])])
         [label.set_xticks(np.linspace(min(spec.frame['wave']), max(spec.frame['wave']),5)) for label in ax[index,0:2]]
 
-        #11-13-2021 added Xlabel
         ang = u.Unit('Angstrom')
         [label.set_xlabel("wavelength ({:s})".format(ang.to_string(format='Latex')), labelpad=1, fontsize=6) for label in ax[index,0:5]]
 
         ### Set title
         ax[index, 2].set_title(produce_title(spec), fontsize=8)
-        ## fontsize =10 originally
 
         ### Continuum Plot
         ax[index, 0].plot(spec.frame['wave'], spec.frame['flux'], linewidth=LINEW, color='black')
@@ -122,14 +120,14 @@ def plot_spectra(spectra_batch):
 
         ### CH Plot
         ax[index, 3].axhline(1.00, linewidth=0.75, linestyle='--', color='red')
-        ax[index, 3].plot(spec.frame['wave'][spec.frame['wave'].between(4150, 4500, inclusive=True)],
-                                             spec.frame['norm'][spec.frame['wave'].between(4150, 4500, inclusive=True)],
+        ax[index, 3].plot(spec.frame['wave'][spec.frame['wave'].between(4150, 4500, inclusive='both')],
+                                             spec.frame['norm'][spec.frame['wave'].between(4150, 4500, inclusive='both')],
                                              linewidth=LINEW_zoom, color='black')
 
         ### C2 Plot
         ax[index, 4].axhline(1.00, linewidth=0.75, linestyle='--', color='red')
-        ax[index, 4].plot(spec.frame['wave'][spec.frame['wave'].between(4650, 4850, inclusive=True)],
-                                             spec.frame['norm'][spec.frame['wave'].between(4650, 4850, inclusive=True)],
+        ax[index, 4].plot(spec.frame['wave'][spec.frame['wave'].between(4650, 4850, inclusive='both')],
+                                             spec.frame['norm'][spec.frame['wave'].between(4650, 4850, inclusive='both')],
                                              linewidth=LINEW_zoom, color='black')
 
         ###### SIGMA SHADING SECTION
