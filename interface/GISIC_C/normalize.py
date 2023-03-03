@@ -24,7 +24,7 @@ from astropy.io import fits
 
 from GISIC_C.spectrum import Spectrum
 
-def normalize(wavelength, flux, sigma=30, k=3, s=12, cahk=True, band_check=False, flux_min=70, boost=True, return_points=False):
+def normalize(wavelength, flux, sigma=30, k=3, s=12, cahk=False, band_check=True, flux_min=70, boost=True, return_points=False):
     # flux_min =70 percentile default where wavelength region
     # cahk=False, band_check=True were the original defaults but it doesn't do well. 
     spec = Spectrum(wavelength, flux)
