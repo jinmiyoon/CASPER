@@ -1,7 +1,6 @@
 ################################################################################
-### Author: Devin Whitten
-### Email: devin.d.whitten@gmail.com
-### Institute: University of Notre Dame
+### Author: Devin Whitten, Jinmi Yoon
+### Email: jinmi.yoon@gmail.com, devin.d.whitten@gmail.com
 ################################################################################
 
 import matplotlib.pyplot as plt
@@ -12,6 +11,7 @@ from scipy.interpolate import interp1d
 import corner
 import MCMC_interface
 from matplotlib.backends.backend_pdf import PdfPages
+from astropy import units as u
 
 #####
 ### This is just useful for many of the functions. Wanna keep format consistent
@@ -22,38 +22,41 @@ plt.ion()
 
 plt.style.use('classic')
 plt.rcParams['font.family'] = 'Times New Roman'
-plt.rcParams['xtick.labelsize'] = 7
-plt.rcParams['ytick.labelsize'] = 7
-plt.rcParams['axes.linewidth'] = 0.75
+plt.rcParams['xtick.labelsize'] = 5.5  # change from 7, 06-17-2020 J Yoon
+plt.rcParams['ytick.labelsize'] = 5.5  # change from 7, 06-17-2020 J Yoon
+plt.rcParams['axes.linewidth'] = 0.5   # change from 0.7, 06-17-2020 J Yoon
 
 def produce_title(spectrum):
     ## just returns a nice looking string for the plot title
     MCMC_DICT = spectrum.get_mcmc_dict(mode='BOTH')
 
-    return spectrum.get_name() + "  " + spectrum.get_arch_group() + \
-    '   Teff : %.0F  [Fe/H] : %.2F   [C/Fe] : %.2F   A(C) : %.2F' % (MCMC_DICT[0]['TEFF'][0] , MCMC_DICT[1]['FEH'][0], MCMC_DICT[1]['CFE'][0], MCMC_DICT[1]['AC'][0]) + \
-    "   MODE:  " + spectrum.get_carbon_mode() + "   CLASS: " + spectrum.get_gravity_class()
+    # 11-13-2021 revised the return value to include sequence numbers.
+    # 01-04-2022 need to find out why Teff value is from MCMC_DICT[0] (COARSE), not from MCMC_DICT[1](REFINE)
+    return "#"+spectrum.get_sequence()+" "+ spectrum.get_name() + "  " + \
+    "   Teff : %.0F  [Fe/H] : %.2F   [C/Fe] : %.2F   A(C) : %.2F" % (MCMC_DICT[0]['TEFF'][0] , MCMC_DICT[1]['FEH'][0], MCMC_DICT[1]['CFE'][0], MCMC_DICT[1]['AC'][0]) + \
+    "   MODE:  " + spectrum.get_carbon_mode() + "   CLASS: " + spectrum.get_gravity_class()+ "  "+spectrum.get_arch_group()  + " (tentative)"
 
 
 def plot_spectra(spectra_batch):
     ## to visualize normalizations
     ## I want multiple pages of 4x2
     CA_XLIM = [3910, 3980]
-    LINEW   = 0.5
+    LINEW   = 0.3
+    LINEW_zoom = 0.5 # added a new linewidth variable, J. Yoon 06-17-2020
 
     print("... generating continuum plots")
-    print("\t saving as:   ", spectra_batch.io_params['output_name'])
+    print("\t saving as:   ", spectra_batch.output_name)
     rows, columns = 8, 5
 
     pages = int(np.ceil(spectra_batch.length/(rows * columns)))
 
-    pp = PdfPages('output/' + spectra_batch.io_params['output_name'] + '_spec.pdf')
+    pp = PdfPages(spectra_batch.output_name + '_spec.pdf')
     count = 0
 
     for i, spec in enumerate(spectra_batch.spectra_array):  ### loop through pages
         if i % rows == 0: ## if new page required
             fig, ax = plt.subplots(rows, columns, figsize=(8.5, 11), dpi=200)
-            fig.subplots_adjust(hspace=0.5)
+            fig.subplots_adjust(hspace=0.7)
 
 
 
@@ -63,7 +66,7 @@ def plot_spectra(spectra_batch):
             ## CaII
             [label.ticklabel_format(axis='both', useOffset=False) for label in ax[:, 2]]
             [label.set_xlim(CA_XLIM) for label in ax[:, 2]]
-            [label.set_xticks([3915, 3930, 3945]) for label in ax[:, 2]]
+            [label.set_xticks([3915, 3930, 3945, 3960, 3975]) for label in ax[:, 2]]
 
             ## CH
             [label.set_xlim([4225, 4325]) for label in ax[:, 3]]
@@ -85,13 +88,16 @@ def plot_spectra(spectra_batch):
         index = i % rows
 
         ##### MAIN PLOT SECTION
-
         ax[index, 0].set_yticks([0.0, max(spec.frame['flux'])])
         [label.set_xticks(np.linspace(min(spec.frame['wave']), max(spec.frame['wave']),5)) for label in ax[index,0:2]]
 
-        ### Set title
-        ax[index, 2].set_title(produce_title(spec), fontsize=10)
+        #11-13-2021 added Xlabel
+        ang = u.Unit('Angstrom')
+        [label.set_xlabel("wavelength ({:s})".format(ang.to_string(format='Latex')), labelpad=1, fontsize=6) for label in ax[index,0:5]]
 
+        ### Set title
+        ax[index, 2].set_title(produce_title(spec), fontsize=8)
+        ## fontsize =10 originally
 
         ### Continuum Plot
         ax[index, 0].plot(spec.frame['wave'], spec.frame['flux'], linewidth=LINEW, color='black')
@@ -106,19 +112,19 @@ def plot_spectra(spectra_batch):
 
         ax[index, 2].axhline(1.00, linewidth=0.75, linestyle='--', color='red')
         ax[index, 2].plot(spec.frame['wave'],spec.frame['norm'],
-                                             linewidth=LINEW, color='black')
+                                             linewidth=LINEW_zoom, color='black')
 
         ### CH Plot
         ax[index, 3].axhline(1.00, linewidth=0.75, linestyle='--', color='red')
         ax[index, 3].plot(spec.frame['wave'][spec.frame['wave'].between(4150, 4500, inclusive=True)],
                                              spec.frame['norm'][spec.frame['wave'].between(4150, 4500, inclusive=True)],
-                                             linewidth=LINEW, color='black')
+                                             linewidth=LINEW_zoom, color='black')
 
         ### C2 Plot
         ax[index, 4].axhline(1.00, linewidth=0.75, linestyle='--', color='red')
         ax[index, 4].plot(spec.frame['wave'][spec.frame['wave'].between(4650, 4850, inclusive=True)],
                                              spec.frame['norm'][spec.frame['wave'].between(4650, 4850, inclusive=True)],
-                                             linewidth=LINEW, color='black')
+                                             linewidth=LINEW_zoom, color='black')
 
         ###### SIGMA SHADING SECTION
         ############################
@@ -166,12 +172,12 @@ def plot_spectra(spectra_batch):
 ##########
 def plot_corner_array(spec_batch):
 
-    pp = PdfPages('output/' + spec_batch.io_params['output_name'] + '_corner.pdf')
+    pp = PdfPages(spec_batch.output_name + '_corner.pdf')
 
     fig_handle = []
 
     for item in spec_batch.spectra_array:
-        fig_handle.append(plot_single_corner(item, spec_batch.io_params['output_name']))
+        fig_handle.append(plot_single_corner(item, spec_batch.output_name))
 
     plt.close()
     [pp.savefig(fig) for fig in fig_handle]
@@ -199,10 +205,13 @@ def plot_single_corner(spectrum, io_path, burnin=0.25):
         sampler = sampler.chain
 
     samples = sampler[:, int(burnin * iter):, :].reshape((-1, ndim))
+    #01/24/22 J. Yoon: this can be updated because sampler.chain seems to be deprecated
+    # samples = sampler.get_chain(discard= int(burnin * iter), flat=True)
+
 
 
     if ndim == 6:
-        labels = [r'$T_{\rm eff}', '[Fe/H]', '[C/Fe]', r'S/N$_{\rm CaII}$', r'S/N$_{\rm CH}$', r'S/N$_{\rm C2}$']  #r'$\xi_{\rm CaII}$', r'$\xi_{\rm CH}$', r'$\xi_{\rm C2}$'
+        labels = [r'$T_{\rm eff}$', '[Fe/H]', '[C/Fe]', r'S/N$_{\rm CaII}$', r'S/N$_{\rm CH}$', r'S/N$_{\rm C2}$']  #r'$\xi_{\rm CaII}$', r'$\xi_{\rm CH}$', r'$\xi_{\rm C2}$'
         #for i in range(3, ndim):
         #    samples[:, i] = np.divide(1., samples[:, i])
 
@@ -222,7 +231,8 @@ def plot_single_corner(spectrum, io_path, burnin=0.25):
                         color='black', hist_kwargs={'density': True})
 
     name = spectrum.get_name()
-    fig.suptitle(name, fontsize=15)
+    sequence = spectrum.get_sequence()
+    fig.suptitle("#"+sequence+"  "+name, fontsize=15)
 
 
 
@@ -256,11 +266,6 @@ def plot_single_corner(spectrum, io_path, burnin=0.25):
 
     plt.close()
     return fig
-
-
-
-
-
 
 
 
