@@ -161,23 +161,11 @@ class Batch():
         if default:
             for spec in self.spectra_array:
                 cont_array = []
-                ###     July 15 2020 J. Yoon      ###
-                #for SIGMA in np.linspace(15, 30, 10): # Devin's original set up
 
-                # Currently best choice with flux_min=80 (GISIC_S.normalize()) I think.
-                # but need to be further tested, 09/09/2020 J. Yoon
-                # The current setting is flux_min=70 as Devin's original setup.
-                # for SIGMA in np.linspace(15, 25, 10): penaltimate best choice
-
-                for SIGMA in np.linspace(25, 35, 10): #
-                #for SIGMA in np.linspace(10, 20, 10):
-                # this choice is not recommended because it does not capture continuum points well.
-                #It even makes C2 band continuum.
-                # J.Yoon 10/06/22 update: 
-                #best norm param fits (sigma=30, k=1, s=12, cahk=True, band_check=False, flux_min=60, boost=True)
-                # GISIC.normalize() defaults kwargs are now set that way execpt, k, so I set it to k=1 here.
+                #Devin's original setting for normalization
+                for SIGMA in np.linspace(15, 30, 10): #
                     wave, norm, cont = GISIC.normalize(spec.get_frame_wave(), spec.get_frame_flux(), 
-                        sigma = SIGMA, k=1,cahk=True, band_check=False, flux_min=70, boost=True)
+                        sigma = SIGMA, k=1,cahk=False, band_check=True, flux_min=70, boost=True)
 
                     cont_array.append(cont)
 
