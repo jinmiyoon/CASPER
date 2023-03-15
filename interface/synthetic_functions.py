@@ -10,13 +10,10 @@ import numpy as np
 import scipy.interpolate as interp
 import pandas as pd
 from scipy.interpolate import interp1d
-import os, sys
+import os
 import pickle as pkl
 from scipy.interpolate import LinearNDInterpolator as NDLinear
-import MAD
 import ac
-import emcee
-import corner
 
 
 def get_interp():

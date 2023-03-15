@@ -139,7 +139,7 @@ class Batch():
             #print('    correcting RV= %7.3f km/s:  done' %float(self.param_file[self.param_file['name'] == name]['RV']))
 
 
-    def build_frames(self, bounds = [3880, 4830]):
+    def build_frames(self, bounds = [3000,5000]):
         ### I'd rather not modify the original wavelength and flux arrays
         ### plus it's nice to work with dataframes, so I'm just gonna dump arrays to member frames
         ### might as well trim the wavelength coverage here to match the synthetic spectra

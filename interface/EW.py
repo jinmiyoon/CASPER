@@ -216,19 +216,6 @@ def set_CH_procedure(spectrum):
     return
 
 
-'''
-# original code part when the extra param (carbon_mode) was not used.
-    if CH_EW > 40.:
-        print("\t recommending CH+C2 procedure")
-        spectrum.set_carbon_mode('CH+C2')
-
-    else:
-        print("\t recommending CH procedure")
-        spectrum.set_carbon_mode('CH')
-
-'''
-
-
 def CAII_KP(wave, flux):
     ## Following the Beers 1999
     K6 =  CAII_K6(wave, flux)
