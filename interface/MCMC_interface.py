@@ -7,18 +7,16 @@
 #### Main interface for the MCMC procedure
 
 import numpy as np
-import pandas as pd
 from scipy.interpolate import interp1d
 import scipy
-from scipy.interpolate import LinearNDInterpolator
 import pickle as pkl
 from statsmodels.nonparametric.kde import KDEUnivariate
 import MLE_priors
-import MAD
-import ac
+import synthetic_functions
 
-INTERPOLATOR     = pkl.load(open("interface/libraries/MASTER_spec_interp.pkl", 'rb'))
 
+# import synthetic library interpolator 
+INTERPOLATOR = synthetic_functions.get_interp()
 
 def kde_param(distribution, x0):
     ### kde_param tries to ensure correct handling of multimodal distributions
@@ -117,13 +115,29 @@ def beta_param_spec(spectrum, hard_var = None):
     return param_dict
 
 
+# When using NEW_SYNTH
+# interpolating synthetic flux at a given wave range
+def interp1d_synth_flux(synth_wave, G_CLASS, teff, feh, carbon):
+
+    if np.isfinite(INTERPOLATOR[G_CLASS]([teff, feh, carbon])).all():
+        norm_synth_flux = synthetic_functions.normalize(synth_wave, INTERPOLATOR[G_CLASS]([teff, feh, carbon])[0])
+
+        return interp1d(synth_wave, norm_synth_flux, kind = 'linear')
+    
+    else : print("\t\t MCMC_interface: inter1d_synth_flux: Interpolated synthetic flux is not finite")
+
+def likelihood_params(theta, include_C2 = False):
+    if include_C2:
+        # params = teff, feh, carbon, XI_CA, XI_CH, XI_C2  
+        params  = theta[0], theta[1],theta[2],theta[3], theta[4], theta[5]
+    else:
+        # params =teff, feh, carbon, XI_CA, XI_CH
+        params =  theta[0], theta[1],theta[2],theta[3], theta[4]
+        
+    return params
 
 
-
-
-
-
-def chi_likelihood(theta, spec_regions, synth_wave,
+def chi_likelihood(theta, observed_spec_regions, synth_wave,
                    photo_teff,
                    photo_teff_unc,
                    SN_DICT, G_CLASS,
@@ -132,20 +146,20 @@ def chi_likelihood(theta, spec_regions, synth_wave,
     ### This is an important point, that the likelihood needs to accomodate fitting and not fitting the C2 band,
     ### according to the AC value
 
-    teff   = theta[0]
-    feh    = theta[1]
-    carbon = theta[2]
-    XI_CA  = theta[3]
-    XI_CH    = theta[4]
+    teff, feh, carbon, XI_CA, XI_CH = likelihood_params(theta)
+    #print("\t\t MCMC_interface: INSIDE chi_likelihood:  ", teff, feh, carbon, XI_CA, XI_CH)
 
-    synth_function = interp1d(synth_wave,
-                              INTERPOLATOR[G_CLASS]([teff, feh, carbon])[0],
-                              kind = 'linear')
+    synth_flux_region = interp1d_synth_flux(synth_wave, G_CLASS, teff, feh, carbon)
 
+    if not synth_flux_region:
+        print("\t\t MCMC_interface: chi_likelihood: synth_flux_region (teff={}, feh={}, carbon={})  return -np.inf".format(teff, feh, carbon))
+        return -np.inf
 
 
-    LL =  MLE_priors.ln_chi_square_sigma(spec_regions['CA']['norm'], synth_function(spec_regions['CA']['wave']), XI_CA) + \
-          MLE_priors.ln_chi_square_sigma(spec_regions['CH']['norm'], synth_function(spec_regions['CH']['wave']), XI_CH) + \
+    #print("\t\t MCMC_interface: INSIDE chi_likelihood: synthetic wave and norm_flux ", observed_spec_regions['CA']['wave'].values,synth_flux_region(observed_spec_regions['CA']['wave'].values))
+
+    LL =  MLE_priors.ln_chi_square_sigma(observed_spec_regions['CA']['norm'].values, synth_flux_region(observed_spec_regions['CA']['wave'].values), XI_CA) + \
+          MLE_priors.ln_chi_square_sigma(observed_spec_regions['CH']['norm'].values, synth_flux_region(observed_spec_regions['CH']['wave'].values), XI_CH) + \
           MLE_priors.teff_lnprior(teff, photo_teff, photo_teff_unc) + \
           MLE_priors.sigma_lnprior(XI_CA, SN_DICT['CA']['alpha'], SN_DICT['CA']['beta']) + \
           MLE_priors.sigma_lnprior(XI_CH, SN_DICT['CH']['alpha'], SN_DICT['CH']['beta']) + \
@@ -155,10 +169,13 @@ def chi_likelihood(theta, spec_regions, synth_wave,
         return LL
 
     else:
+        print("\t\t MCMC_interface: chi_likelihood return -np.inf")
         return -np.inf
 
 
-def chi_likelihood_C2(theta, spec_regions, synth_wave,
+
+
+def chi_likelihood_C2(theta, observed_spec_regions, synth_wave,
                    photo_teff,
                    photo_teff_unc,
                    SN_DICT, G_CLASS,
@@ -166,21 +183,20 @@ def chi_likelihood_C2(theta, spec_regions, synth_wave,
 
     ## This will get run when/if the AC is above 8
 
-    teff   = theta[0]
-    feh    = theta[1]
-    carbon = theta[2]
-    XI_CA  = theta[3]
-    XI_CH    = theta[4]
-    XI_C2    = theta[5]
+    teff, feh, carbon, XI_CA, XI_CH, XI_C2 = likelihood_params(theta, include_C2=True)
+    #print("\t\t MCMC_interface: INSIDE chi_likelihood_C2:  ", teff, feh, carbon, XI_CA, XI_CH, XI_C2)
 
+    synth_flux_region = interp1d_synth_flux(synth_wave, G_CLASS, teff, feh, carbon)
 
-    synth_function = interp1d(synth_wave,
-                              INTERPOLATOR[G_CLASS]([teff, feh, carbon])[0],
-                              kind = 'linear')
+    if not synth_flux_region:
+        print("\t\t MCMC_interface: chi_likelihood_C2: synth_flux_region (teff={}, feh={}, carbon={})  return -np.inf".format(teff, feh, carbon))
+        return -np.inf
 
-    LL =  MLE_priors.ln_chi_square_sigma(spec_regions['CA']['norm'], synth_function(spec_regions['CA']['wave']), XI_CA) + \
-          0.5*MLE_priors.ln_chi_square_sigma(spec_regions['CH']['norm'], synth_function(spec_regions['CH']['wave']), XI_CH) + \
-          0.5*MLE_priors.ln_chi_square_sigma(spec_regions['C2']['norm'], synth_function(spec_regions['C2']['wave']), XI_C2) + \
+    #print("\t\t MCMC_interface: INSIDE chi_likelihood: synthetic wave and norm_flux ", observed_spec_regions['CA']['wave'].values,synth_flux_region(observed_spec_regions['CA']['wave'].values))
+
+    LL =  MLE_priors.ln_chi_square_sigma(observed_spec_regions['CA']['norm'].values, synth_flux_region(observed_spec_regions['CA']['wave'].values), XI_CA) + \
+          0.5*MLE_priors.ln_chi_square_sigma(observed_spec_regions['CH']['norm'].values, synth_flux_region(observed_spec_regions['CH']['wave'].values), XI_CH) + \
+          0.5*MLE_priors.ln_chi_square_sigma(observed_spec_regions['C2']['norm'].values, synth_flux_region(observed_spec_regions['C2']['wave'].values), XI_C2) + \
           MLE_priors.teff_lnprior(teff,  photo_teff, photo_teff_unc) + \
           MLE_priors.sigma_lnprior(XI_CA, SN_DICT['CA']['alpha'], SN_DICT['CA']['beta']) + \
           MLE_priors.sigma_lnprior(XI_CH,   SN_DICT['CH']['alpha'], SN_DICT['CH']['beta']) + \
@@ -195,7 +211,7 @@ def chi_likelihood_C2(theta, spec_regions, synth_wave,
 
 
 
-def chi_ll_refine(theta, spec_regions, synth_wave,
+def chi_ll_refine(theta, observed_spec_regions, synth_wave,
                   PARAMS, G_CLASS,
                   bounds = 'default'):
     ## simply [Fe/H] and [C/Fe]
@@ -210,15 +226,16 @@ def chi_ll_refine(theta, spec_regions, synth_wave,
     feh    = theta[0]
     carbon = theta[1]
 
-
-    synth_function = interp1d(synth_wave,
-                              INTERPOLATOR[G_CLASS]([teff, feh, carbon])[0],
-                              kind = 'linear')
+    #print("\t\t MCMC_interface: chi_ll_refine: teff = {}, feh = {}, carbon = {}, XI_CA ={}, XI_CH = {}".format(teff, feh, carbon, XI_CA, XI_CH))
+    synth_flux_region = interp1d_synth_flux(synth_wave, G_CLASS, teff, feh, carbon)
+    if not synth_flux_region:
+        print("\t\t MCMC_interface: chi_ll_refine: synth_flux_region (teff={}, feh={}, carbon={})  return -np.inf".format(teff,feh, carbon ))
+        return -np.inf
 
     ### prior needs to change
 
-    LL =  MLE_priors.ln_chi_square_sigma(spec_regions['CA']['norm'], synth_function(spec_regions['CA']['wave']), XI_CA) + \
-          MLE_priors.ln_chi_square_sigma(spec_regions['CH']['norm'], synth_function(spec_regions['CH']['wave']), XI_CH) + \
+    LL =  MLE_priors.ln_chi_square_sigma(observed_spec_regions['CA']['norm'].values, synth_flux_region(observed_spec_regions['CA']['wave'].values), XI_CA) + \
+          MLE_priors.ln_chi_square_sigma(observed_spec_regions['CH']['norm'].values, synth_flux_region(observed_spec_regions['CH']['wave'].values), XI_CH) + \
           MLE_priors.default_feh_cfe_param_edges(feh, carbon)
 
 
@@ -229,7 +246,7 @@ def chi_ll_refine(theta, spec_regions, synth_wave,
         return -np.inf
 
 
-def chi_ll_refine_C2(theta, spec_regions, synth_wave,
+def chi_ll_refine_C2(theta, observed_spec_regions, synth_wave,
                      PARAMS, G_CLASS,
                      bounds = 'default'):
     ## simply [Fe/H] and [C/Fe]
@@ -245,16 +262,20 @@ def chi_ll_refine_C2(theta, spec_regions, synth_wave,
     feh    = theta[0]
     carbon = theta[1]
 
+    #print("\t\t MCMC_interface: chi_ll_refine_C2: teff = {}, feh = {}, carbon = {}, XI_CA ={}, XI_CH = {}, XI_C2 = {}".format(teff, feh, carbon, XI_CA, XI_CH, XI_C2))
+    
+    synth_flux_region = interp1d_synth_flux(synth_wave, G_CLASS, teff, feh, carbon)
 
-    synth_function = interp1d(synth_wave,
-                              INTERPOLATOR[G_CLASS]([teff, feh, carbon])[0],
-                              kind = 'linear')
+    if not synth_flux_region:
+        print("\t\t MCMC_interface: chi_11_refine_C2: synth_flux_region (teff={}, feh={}, carbon={}) return -np.inf".format(teff, feh, carbon))
+        return -np.inf
+
 
     ### prior needs to change
 
-    LL =  MLE_priors.ln_chi_square_sigma(spec_regions['CA']['norm'], synth_function(spec_regions['CA']['wave']), XI_CA) + \
-          0.5*MLE_priors.ln_chi_square_sigma(spec_regions['CH']['norm'], synth_function(spec_regions['CH']['wave']), XI_CH) + \
-          0.5*MLE_priors.ln_chi_square_sigma(spec_regions['C2']['norm'], synth_function(spec_regions['C2']['wave']), XI_C2) + \
+    LL =  MLE_priors.ln_chi_square_sigma(observed_spec_regions['CA']['norm'].values, synth_flux_region(observed_spec_regions['CA']['wave'].values), XI_CA) + \
+          0.5*MLE_priors.ln_chi_square_sigma(observed_spec_regions['CH']['norm'].values, synth_flux_region(observed_spec_regions['CH']['wave'].values), XI_CH) + \
+          0.5*MLE_priors.ln_chi_square_sigma(observed_spec_regions['C2']['norm'].values, synth_flux_region(observed_spec_regions['C2']['wave'].values), XI_C2) + \
           MLE_priors.default_feh_cfe_param_edges(feh, carbon)
 
 

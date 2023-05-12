@@ -8,17 +8,14 @@
 import os
 import interface_main, spectrum
 from astropy.io import fits
-from collections import namedtuple
 import numpy as np
-from matplotlib.backends.backend_pdf import PdfPages
 from texttable import Texttable
 import temp_calibrations as TC
 import plot_functions
-import io_functions
 import pandas as pd
 import GISIC_C as GISIC
 import EW
-
+from multiprocessing import Pool
 
 
 
@@ -298,8 +295,11 @@ class Batch():
     def archetype_classification(self):
         #io_functions.span_window()
         print('\n... determining archetype classification')
-
+        
         [interface_main.archetype_classify_MC(spec) for spec in self.spectra_array]
+        
+        #with Pool() as pool:
+        #    pool.imap(interface_main.archetype_classify_MC, self.spectra_array)
 
         ### prepare output table if it's reasonable
         #if len(self.spectra_array) < 30:

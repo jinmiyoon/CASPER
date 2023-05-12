@@ -4,10 +4,7 @@
 ################################################################################
 
 import matplotlib.pyplot as plt
-from mpl_toolkits.axes_grid1.inset_locator import inset_axes
-import pandas as pd
 import numpy as np
-from mpl_toolkits.mplot3d import Axes3D
 from scipy.interpolate import interp1d
 import corner
 import MCMC_interface

@@ -16,30 +16,19 @@ the parallelization methods described here so it can be good to turn that off
 import os, sys
 os.environ["OMP_NUM_THREADS"] = "1"
 
-from astropy.io import fits
-from scipy.interpolate import LinearNDInterpolator as NDLinear
 from scipy.interpolate import interp1d
 from scipy.optimize import minimize
-from multiprocessing import Pool, cpu_count
-import pickle as pkl
+from multiprocessing import Pool, cpu_count,current_process
 import numpy as np
 import ac
 import pandas as pd
-import matplotlib.pyplot as plt
 import time
 import MAD
-from os.path import isfile, join
 from statsmodels.nonparametric.kde import KDEUnivariate
-
-from collections import namedtuple
-#import GISIC   # Devin's original code
-#import GISIC_C as GISIC
-#custom class defs
 import MCMC_interface
-import spectrum
-import EW
 import emcee
 import synthetic_functions
+import spectrum
 
 ### GLOBAL ITEMS
 
@@ -56,12 +45,10 @@ LL_FUNCTION_DICT = {"COARSE": {"CH" : MCMC_interface.chi_likelihood, "CH+C2" : M
                     "REFINE": {"CH" : MCMC_interface.chi_ll_refine, "CH+C2" : MCMC_interface.chi_ll_refine_C2}
                     }
 
-INTERPOLATOR     = pkl.load(open("interface/libraries/MASTER_spec_interp.pkl", 'rb'))
+# import synthetic library interpolator
+INTERPOLATOR     = synthetic_functions.get_interp()
 
-SYNTH_WAVE = np.arange(3000, 5001, 1)
-
-
-
+SYNTH_WAVE = synthetic_functions.get_synth_wave() 
 
 
 def archetype_classify_MC(spectrum):
@@ -71,34 +58,68 @@ def archetype_classify_MC(spectrum):
 
 
     length = 100
-    #temp_span = np.linspace(bounds[0], bounds[1], length)
     temp_values = np.random.normal(spectrum.teff_irfm, spectrum.teff_irfm_unc, length)
-    span = np.ones(length)
 
-    ### Generate spectra (GI_SYNTH, GII_SYNTH,GIII_SYNTH)
+    ### Generate spectra (GI_NORM_SYNTH, GII_NORM_SYNTH,GIII_NORM_SYNTH)
     # J. Yoon Feb 25 2022
     #
     #    Here is buiding arrays of spectral parameters/grids within a Teff range
     #    ([TEFF_HARD - T_SIGMA, TEFF_HARD + T_SIGMA] or
     #    [TEFF_ADT - T_SIGMA, TEFF_ADT + T_SIGMA]) to generate synthetic spectra.
-    #    for example, GI_SYNTH will create len(span) of arrays, each value looks
+    #    for example, GI_NORM_SYNTH will create len(span) of arrays, each value looks
     #    like [4715.6, -2.5, 1.97] depending on gravity_class and galactic env mode.
 
     ### GI
+    
+    def synth_normalize(group, temp):
+        interp_flux = INTERPOLATOR[spectrum.gravity_class](temp, ARCHETYPE_PARAMS[spectrum.MODE][group]['FEH'], 
+                                                                            ARCHETYPE_PARAMS[spectrum.MODE][group]['CFE'])
+        if np.isfinite(interp_flux).all(): 
+            return synthetic_functions.normalize(SYNTH_WAVE, interp_flux)
+        else: 
+            print("Interpolated synthetic flux is not finite, params = ",temp, ARCHETYPE_PARAMS[spectrum.MODE][group]['FEH'], ARCHETYPE_PARAMS[spectrum.MODE][group]['CFE'])
+    
+    
+    # *****  NEW SYNTH 
+ 
+    start = time.time()
 
-    GI_SYNTH = INTERPOLATOR[spectrum.gravity_class](np.column_stack((temp_values,
+    GI_NORM_SYNTH =[synth_normalize('GI', temp) for temp in temp_values]
+    GII_NORM_SYNTH =[synth_normalize('GII', temp) for temp in temp_values]
+    GIII_NORM_SYNTH =[synth_normalize('GIII', temp) for temp in temp_values]
+
+
+    """
+    GI_temps = [['GI', temp] for temp in temp_values]
+    GII_temps = [['GII', temp] for temp in temp_values]
+    GIII_temps = [['GIII', temp] for temp in temp_values]
+    with Pool() as pool:
+        GI_NORM_SYNTH =pool.map(synth_normalize,  GI_temps)
+        GII_NORM_SYNTH =pool.map(synth_normalize,  GII_temps)
+        GIII_NORM_SYNTH =pool.map(synth_normalize,  GIII_temps)
+    """
+
+    end1 = time.time()
+    print("\t\t interface_main: archetype_classify_MC SYNTH: took {0:.1f} seconds".format(end1 - start))
+
+    """ # When using Devin's library
+    #span = np.ones(length)
+
+    GI_NORM_SYNTH = INTERPOLATOR[spectrum.gravity_class](np.column_stack((temp_values,
                                                 span * ARCHETYPE_PARAMS[spectrum.MODE]['GI']['FEH'],
                                                 span * ARCHETYPE_PARAMS[spectrum.MODE]['GI']['CFE'])))
 
 
-    GII_SYNTH = INTERPOLATOR[spectrum.gravity_class](np.column_stack((temp_values,
+    GII_NORM_SYNTH = INTERPOLATOR[spectrum.gravity_class](np.column_stack((temp_values,
                                                 span * ARCHETYPE_PARAMS[spectrum.MODE]['GII']['FEH'],
                                                 span * ARCHETYPE_PARAMS[spectrum.MODE]['GII']['CFE'])))
 
 
-    GIII_SYNTH = INTERPOLATOR[spectrum.gravity_class](np.column_stack((temp_values,
+    GIII_NORM_SYNTH = INTERPOLATOR[spectrum.gravity_class](np.column_stack((temp_values,
                                                 span * ARCHETYPE_PARAMS[spectrum.MODE]['GIII']['FEH'],
                                                 span * ARCHETYPE_PARAMS[spectrum.MODE]['GIII']['CFE'])))
+    
+    """
 
     # calculate log likelihood function for CA II and CH for MLE estimation for each group
     GI_LLs = np.array([synthetic_functions.CAII_CH_CHI_LH(obs=spectrum.frame,
@@ -106,22 +127,21 @@ def archetype_classify_MC(spectrum):
                                         CA_BOUNDS = spectrum.KP_bounds,
                                         CH_BOUNDS = [4222, 4322],
                                         CA_XI  = spectrum.SN_DICT['CA']['XI_AVG'],
-                                        CH_XI  = spectrum.SN_DICT['CH']['XI_AVG']) for SYNTH in GI_SYNTH])
+                                        CH_XI  = spectrum.SN_DICT['CH']['XI_AVG']) for SYNTH in GI_NORM_SYNTH])
 
     GII_LLs = np.array([synthetic_functions.CAII_CH_CHI_LH(obs=spectrum.frame,
                                         synth=pd.DataFrame({'wave': SYNTH_WAVE, 'norm' : SYNTH}),
                                         CA_BOUNDS = spectrum.KP_bounds,
                                         CH_BOUNDS = [4222, 4322],
                                         CA_XI  = spectrum.SN_DICT['CA']['XI_AVG'],
-                                        CH_XI  = spectrum.SN_DICT['CH']['XI_AVG']) for SYNTH in GII_SYNTH])
+                                        CH_XI  = spectrum.SN_DICT['CH']['XI_AVG']) for SYNTH in GII_NORM_SYNTH])
 
     GIII_LLs = np.array([synthetic_functions.CAII_CH_CHI_LH(obs=spectrum.frame,
                                         synth=pd.DataFrame({'wave': SYNTH_WAVE, 'norm' : SYNTH}),
                                         CA_BOUNDS = spectrum.KP_bounds,
                                         CH_BOUNDS = [4222, 4322],
                                         CA_XI  = spectrum.SN_DICT['CA']['XI_AVG'],
-                                        CH_XI  = spectrum.SN_DICT['CH']['XI_AVG']) for SYNTH in GIII_SYNTH])
-
+                                        CH_XI  = spectrum.SN_DICT['CH']['XI_AVG']) for SYNTH in GIII_NORM_SYNTH])
     #print(np.mean([GI_LLs, GII_LLs, GIII_LLs]))
     GI_LLs   = GI_LLs[np.isfinite(GI_LLs)]
     GII_LLs  = GII_LLs[np.isfinite(GII_LLs)]
@@ -130,7 +150,8 @@ def archetype_classify_MC(spectrum):
     spectrum.set_group_ll({"GI" :  [np.median(GI_LLs),  np.std(GI_LLs)],
                            "GII":  [np.median(GII_LLs),  np.std(GII_LLs)],
                            "GIII": [np.median(GIII_LLs), np.std(GIII_LLs)]})
-
+    end2 = time.time()
+    print("\t\t interface_main: archetype_classify_MC LLs: took {0:.1f} seconds".format(end2 - end1))
 
     return
 
@@ -152,7 +173,7 @@ def mcmc_determination(spectrum, mode='COARSE', burnin_factor=7):
     PARAMS = ARCHETYPE_PARAMS[spectrum.get_environ_mode()][spectrum.get_arch_group()]
 
     #### MAIN MODE BRANCH
-
+ 
     if mode=='COARSE':
         ## if it's coarse, then you need the photometric teff and the Sigma/Xi
         print('\t initializing with archetype parameters: ', PARAMS)
@@ -206,17 +227,11 @@ def mcmc_determination(spectrum, mode='COARSE', burnin_factor=7):
     ### Select the correct likelihood function
     LL_FUNCTION = LL_FUNCTION_DICT[mode][spectrum.get_carbon_mode()]
 
-    #if pool == 'MAX':
-        #cpu_cores = cpu_count()
-
-    #else:
-    #    cpu_cores = pool
-
-    #print("\t running on ", cpu_cores, " cores")
     n_cpu = cpu_count()
     print("\t number of cpu = ", n_cpu)
 
-    pos = initial + initial * (2e-2*np.random.rand(100, len(initial))) # Gaussian distribution
+    pos = initial + initial * (2e-2*np.random.rand(64, len(initial))) # Gaussian distribution
+    print("\t\t interface_main : pos = ", pos)
     #pos = initial + initial * (np.random.rand(25, len(initial))) # uniform spacing
     nwalkers, ndim = pos.shape
     bounds = 'default'
@@ -224,29 +239,17 @@ def mcmc_determination(spectrum, mode='COARSE', burnin_factor=7):
 
     print("\t running for ", spectrum.get_MCMC_iterations(), " iterations...")
 
-
-    """
-    sampler = emcee.EnsembleSampler(nwalkers, ndim,
-                                    LL_FUNCTION,
-                                    args=(ARGS))
-    ####
-    start = time.time()
-
-    _ = sampler.run_mcmc(pos, spectrum.get_MCMC_iterations())
-    end = time.time()
-    serial_time = end - start
-    print("\t\t MCMC Serial took {0:.1f} seconds".format(serial_time))
-    """
-
     with Pool() as pool:
+        print(f'Process {current_process().name} started working', flush=True)     
         sampler = emcee.EnsembleSampler(nwalkers, ndim, LL_FUNCTION,
             #moves=[(emcee.moves.KDEMove(), 1.0),],
             moves=[(emcee.moves.DEMove(), 0.8),(emcee.moves.DESnookerMove(), 0.2),],
             pool=pool, args=(ARGS))
         start = time.time()
-        _ = sampler.run_mcmc(pos, spectrum.get_MCMC_iterations())
+        _ = sampler.run_mcmc(pos, spectrum.get_MCMC_iterations(), progress=True)
         end = time.time()
         multi_time = end - start
+        print(f'Process {current_process().name} ended working', flush=True) 
         print("\t \t MCMC Multiprocessing took {0:.1f} seconds".format(multi_time))
 
     # want to print out the latest result from mcmc, 12/13/2021
@@ -311,15 +314,23 @@ def mcmc_determination(spectrum, mode='COARSE', burnin_factor=7):
 def generate_synthetic(spectrum):
     ### Generates the best synth spectrum, given the KDE MCMC params
 
-    ### grab those params
-    ### NEED TO FINISH!!!!!!!!!!!!!!!!!
-
-    SYNTH_FLUX = INTERPOLATOR[spectrum.get_gravity_class()](spectrum.MCMC_COARSE['TEFF'][0],
+    """ # when using Devin's interpolator
+    NORM_SYNTH_FLUX = INTERPOLATOR[spectrum.get_gravity_class()](spectrum.MCMC_COARSE['TEFF'][0],
                                                             spectrum.MCMC_REFINE['FEH'][0],
                                                             spectrum.MCMC_REFINE['CFE'][0])
+    """
+
+    # *****  NEW SYNTH 
+    # Here I need GISIC.normalize()
+   
+    synth_interp_flux = INTERPOLATOR[spectrum.get_gravity_class()](spectrum.MCMC_COARSE['TEFF'][0],
+                                                            spectrum.MCMC_REFINE['FEH'][0],
+                                                            spectrum.MCMC_REFINE['CFE'][0])
+    
+    NORM_SYNTH_FLUX = synthetic_functions.normalize(SYNTH_WAVE, synth_interp_flux)
 
 
-    spectrum.set_synth_spectrum(pd.DataFrame({'wave' : SYNTH_WAVE, 'norm' : SYNTH_FLUX.T}))
+    spectrum.set_synth_spectrum(pd.DataFrame({'wave' : SYNTH_WAVE, 'norm' : NORM_SYNTH_FLUX.T}))
 
 
     return

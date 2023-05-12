@@ -15,7 +15,6 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import numpy as np
 import MAD
-import synthetic_functions
 import pandas as pd
 import scipy.interpolate as interp
 from astropy.table import Table

@@ -14,11 +14,58 @@ import os
 import pickle as pkl
 from scipy.interpolate import LinearNDInterpolator as NDLinear
 import ac
+import GISIC_C as GISIC
 
-
+# Get synthetic flux interpolator 
 def get_interp():
     ###########
-    return pkl.load(open("interface/libraries/MASTER_spec_interp.pkl", 'rb'))
+    #return pkl.load(open("interface/libraries/MASTER_spec_interp.pkl", 'rb'))
+
+    """
+    # Devin's master spec interp
+    with open("interface/libraries/MASTER_spec_interp.pkl", 'rb') as devin_master_lib:
+        INTERPOLATOR = pkl.load(devin_master_lib)
+    """
+    # my New master spec interp
+
+    with open("interface/libraries/SYNTHETIC_SPEC_R2000_INTERP.pkl", 'rb') as my_master_lib:
+        INTERPOLATOR = pkl.load(my_master_lib)
+
+    
+    return INTERPOLATOR
+
+# wave_region of synthetic spectra
+def get_synth_wave():
+    return np.arange(3000., 5001., 1)
+
+# now let's normalize synthetic library with GISIC
+def normalize(synth_wave, synth_flux):
+    
+    # print("\t\t synthetic_function: synth_wave ={}".format(synth_wave))
+    # print("\t\t synthetic_function: synth_flux ={}".format(synth_flux))
+    cont_array = []
+
+    for SIGMA in np.linspace(15, 30, 10): #
+        _, _, cont_synth_flux= GISIC.normalize(synth_wave, synth_flux, 
+            sigma = SIGMA, k=1,cahk=False, band_check=True, flux_min=70, boost=True)
+        cont_array.append(cont_synth_flux)
+        
+    ### average the sigma runs together
+    cont = np.median(np.array(cont_array), axis=0)
+
+    synth_norm = np.divide(synth_flux, cont)
+
+    if len(synth_norm[synth_norm < 0.0])>1:
+
+        synth_norm[synth_norm < 0.0] = 1.
+
+    if len(synth_norm[synth_norm >2.0]) >1:
+
+        synth_norm[synth_norm >2.0] = 1.
+    
+    #print("\t\t synthetic_function: synth_norm ={}".format(synth_norm))
+    
+    return synth_norm
 
 
 
@@ -65,9 +112,13 @@ def CAII_CH_CHI_LH(obs, synth, CA_BOUNDS, CH_BOUNDS, CA_XI, CH_XI):
     return CHI_CA + CHI_CH
 
 
+###########################################################################################
+### The functions below are used in plot_functions only but not used in CASPER runs   #####
+###########################################################################################
 
 
 
+#unused func
 def determine_rChi_2(spec, synth, bounds, type='both'):
     ### Just accept dataframes
     ### linearly interpolate the synthetic spectra
@@ -116,61 +167,7 @@ def determine_rChi_2(spec, synth, bounds, type='both'):
         return FINAL
 
 
-def determine_rChi_2(spec, synth, bounds, type='both'):
-    ### Just accept dataframes
-    ### linearly interpolate the synthetic spectra
-
-
-    #### Build the synthetic function
-    synth_function = interp1d(synth['wave'], synth['norm'], kind='linear')
-
-    spec_trim = spec[spec['wave'].between(bounds[0], bounds[1], inclusive='both')]
-
-    #residual = spec_trim['norm'] - synth_function(spec_trim['wave'])
-
-    CHI = np.divide(np.square(spec_trim['norm'] - synth_function(spec_trim['wave'])), synth_function(spec_trim['wave']))
-    ### Experimental, trying to figure out what's wrong..
-
-    CHI = np.square(spec_trim['norm'] - synth_function(spec_trim['wave']))
-    CHI = np.divide(np.square(spec_trim['norm'] - synth_function(spec_trim['wave'])), spec_trim['norm'])
-    #trim = np.concatenate([CHI[spec_trim['wave'].between(3925, 3980, inclusive='both')], CHI[spec_trim['wave'].between(4222, 4322, inclusive='both')]])
-    #trim1 = CHI[spec_trim['wave'].between(3925, 3980, inclusive='both')]
-    ## adjusting CaII for the K18 index
-    trim1 = CHI[spec_trim['wave'].between(3927.7, 3939.7, inclusive='both')]
-    trim2 = CHI[spec_trim['wave'].between(4222, 4322, inclusive='both')]
-
-    if type=="CAII":
-        #FINAL = np.mean([np.mean(CHI[spec_trim['wave'].between(3925, 3980, inclusive='both')]),
-        #        np.mean(CHI[spec_trim['wave'].between(4222, 4322, inclusive='both')])])
-        FINAL = trim1.sum()/len(trim1)
-
-        #print(CHI)
-        return FINAL
-
-    elif type=="both":
-        FINAL = trim.sum()/len(trim)
-        return FINAL
-
-    elif type=="median":
-        FINAL = np.median(trim[np.isfinite(trim)])
-        return FINAL
-
-    elif type=="mean":
-        FINAL = np.mean(trim[np.isfinite(trim)])
-        return FINAL
-
-    elif type=="weight":
-        FINAL = np.mean([trim1.sum()/len(trim1), trim2.sum()/len(trim2)])
-        return FINAL
-
-
-    elif type=="CH":
-
-
-        FINAL = trim2.sum()/len(trim2)
-        return FINAL
-
-
+# unused func
 def compute_synthetic_array(spectrum, synth_array, filenames, bounds, caHK_CH=False):
     ### Store the statistics in a dictionary or something
     temperatures = [float(name.split("T")[1].split("g")[0]) for name in filenames]
@@ -186,7 +183,7 @@ def compute_synthetic_array(spectrum, synth_array, filenames, bounds, caHK_CH=Fa
                          "feh":feh}).sort_values(by='feh')
 
 
-
+# unused func
 def determine_rChi(spec, wave, flux, bounds, type="norm"):
     ### Just accept dataframes
     ### linearly interpolate the synthetic spectra
@@ -222,13 +219,13 @@ def determine_rChi(spec, wave, flux, bounds, type="norm"):
 
         return np.mean(CHI)
 
-
+# unused func
 def compute_hd5f_array(spec, waves, fluxes, bounds, type='norm'):
 
     return [determine_rChi(spec, wave, flux, bounds, type=type) for wave, flux in zip(waves, fluxes)]
 
 
-
+# unused func
 def run(path, obs, group, bounds, type='both'):
     synth_array = [pd.read_csv(path + group + filename) for filename in os.listdir(path + group)]
     filenames = [filename for filename in os.listdir(path + group)]
@@ -247,6 +244,8 @@ group_bounds = {
             'GII' : {"T": [4000, 5000], "FEH": [-4.5, -2.0],  'CARBON': [-1.0, 1.5]},
             'GIII': {"T": [4000, 5000], "FEH": [-4.5, -3.0],  'CARBON': [ 6.0, 7.5]}
 }
+
+# unused func
 ### July 11th upgrade to run function
 def interp_run(obs, tbounds = [4000, 5000], length=20, type='weight'):
 
@@ -295,12 +294,12 @@ def interp_run(obs, tbounds = [4000, 5000], length=20, type='weight'):
     return chi_frame
 #    return {key: [chi_interp_arch(obs, spec, bounds = [3900, 4500]) for spec in arch_lib[key]] for key in ['GI_D', 'GI_G', 'GII_D', 'GII_G', 'GIII_D', 'GIII_G']}
 
-
+# unused func
 def chi_interp_arch(obs, specs, bounds = [3900, 4500], type='both'):
     ## Precondition: obs is a Dataframe, specs is an array of spectra straight from the interpolator
     #print('... doing')
     #print(len(specs))
-    synth_frame = [pd.DataFrame({'wave' : np.arange(3000, 5001, 1), 'norm': spec}) for spec in specs]
+    synth_frame = [pd.DataFrame({'wave' : get_synth_wave(), 'norm': spec}) for spec in specs]
     chi_array = []
     for synth in synth_frame:
         chi_array.append(determine_rChi_2(obs, synth, bounds, type=type))
@@ -308,7 +307,7 @@ def chi_interp_arch(obs, specs, bounds = [3900, 4500], type='both'):
     return chi_array
 
 
-
+# unused func
 def get_group_specs(tbounds = [4000, 5000], length=20):
 
     ### first we need to generate the archetype
@@ -318,7 +317,7 @@ def get_group_specs(tbounds = [4000, 5000], length=20):
     print("interp run")
 
     arch_lib = {}
-    arch_lib['wave'] = np.arange(3000, 5001, 1)
+    arch_lib['wave'] = get_synth_wave()
     ### Load ever archetype spectrum from T= 4000 - 5000
     arch_lib['GI_D'] = arch_int['GI_D'](np.r_[[np.linspace(tbounds[0], tbounds[1], length),
                             np.ones(length) * group_dict['GI']['FEH'],
@@ -352,7 +351,7 @@ def get_group_specs(tbounds = [4000, 5000], length=20):
 
     return arch_lib
 
-
+# unused func
 def determine_crit_params(spec, group_class, type='weight'):
     ## Precondition: group_class: ['GI_D', 'GI_G', 'GII_D', 'GII_G', 'etc.']
     ### assume the Group and logg class have been determined
@@ -403,7 +402,3 @@ def determine_crit_params(spec, group_class, type='weight'):
 
 
 
-
-######
-## I want to implement MCMC for the CVn paper.. I need to do it.
-######

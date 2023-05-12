@@ -16,37 +16,33 @@ io_paths = 'interface/io_paths.py'
 
 import os, sys
 
-sys.path.append("interface")
-import GISIC_C as GISIC
-import interface_main
-import io_functions
-import archetype_interface
-import plot_functions
+sys.path.append("./interface")
 from batch import Batch
+from multiprocessing import freeze_support
 import time
 
 # We need the below line to attempt to start a new process before the current
 # process has finished its bootstrapping phase. This line allows multiprocessing
 # in interface_mcmc.run_mcmc_determination(). J. Yoon 03/11/2022
 if __name__ == "__main__":
-
+    freeze_support()
 
     start_time = time.time()
 
 
     # Create directory
     dirName = 'outputs/logs'
-
+    """
     try:
         # Create target Directory
         os.mkdir(dirName)
         print("Directory " , dirName ,  " Created \n ")
     except FileExistsError:
         print("Directory " , dirName ,  " already exists \n")
-
+    """
     # save the CASPER progress printouts in to a log file.
-    print("Started CASPER and logging! \n\n")
     sys.stdout=open(dirName+'/casper_run_'+time.strftime("%Y-%m-%d-%H:%M:%S")+'.log', 'wt')
+    print("Started CASPER and logging! \n\n")
 
     print("### CAPER starts now: ###")
     print("\n ... initializing spectra batch")

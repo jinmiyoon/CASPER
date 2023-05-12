@@ -13,7 +13,7 @@ from scipy.stats import beta
 # J. Yoon 03/28/2022
 # I need to change Teff bounds. Need to find other places to change along with this too.
 native_bounds = {
-                 "teff" : [4000, 5500], # Teff raised from 5000K to 5500K J. Yoon Sep 9 2023
+                 "teff" : [4000., 5500.], # Teff raised from 5000K to 5500K J. Yoon Sep 9 2023
                  "feh"  : [-4.5, -1.0],
                  "cfe"  : [-0.5, 4.5]
                 }

@@ -41,7 +41,7 @@ class Spectrum():
 
         ### Uniformally bin the spectrum. Maybe outdated.
         self.segments = [Segment(wl, flux) for wl, flux in zip(np.array_split(self.wavelength, bins), np.array_split(self.flux, bins))]
-        print(self.segments)
+        #print(self.segments)
         ### Need to handle the end points!!!!!!
         self.segments[0].is_edge("left")
         self.segments[-1].is_edge('right')
