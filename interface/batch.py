@@ -5,7 +5,6 @@
 #### this is the class definition for the Batch class.
 #### just bundling the Spectrum objects and normalization/analysis routines
 
-import os
 import interface_main, spectrum
 from astropy.io import fits
 import numpy as np
@@ -15,8 +14,8 @@ import plot_functions
 import pandas as pd
 import GISIC_C as GISIC
 import EW
-from multiprocessing import Pool
-
+import time
+import config
 
 
 class Batch():
@@ -136,7 +135,7 @@ class Batch():
             #print('    correcting RV= %7.3f km/s:  done' %float(self.param_file[self.param_file['name'] == name]['RV']))
 
 
-    def build_frames(self, bounds = [3000,5000]):
+    def build_frames(self, bounds = config.WAVE_BOUNDS):
         ### I'd rather not modify the original wavelength and flux arrays
         ### plus it's nice to work with dataframes, so I'm just gonna dump arrays to member frames
         ### might as well trim the wavelength coverage here to match the synthetic spectra
@@ -154,15 +153,16 @@ class Batch():
         ### Default specfies whether any GISIC values should be taken from the param_file
         ## for now I'm just going to write the default case
         #for spectrum in self.spectrum:
-
+        start_time= time.time()
         if default:
+
             for spec in self.spectra_array:
                 cont_array = []
 
                 #Devin's original setting for normalization
-                for SIGMA in np.linspace(15, 30, 10): #
-                    wave, norm, cont = GISIC.normalize(spec.get_frame_wave(), spec.get_frame_flux(), 
-                        sigma = SIGMA, k=1,cahk=False, band_check=True, flux_min=70, boost=True)
+                for SIGMA in config.SIGMA: #
+                    _, norm, cont = GISIC.normalize(spec.get_frame_wave(), spec.get_frame_flux(), 
+                        sigma = SIGMA, k=config.k,cahk=config.cahk, band_check=config.cahk, flux_min=config.flux_min, boost=config.boost)
 
                     cont_array.append(cont)
 
@@ -187,7 +187,7 @@ class Batch():
         else:
             print("\t Sorry - can't customize GISIC normalization yet...")
 
-
+        print("\t\t batch: Time spent normalizing the observed spectra is {0:.1f}".format(time.time()-start_time))
         return
 
     def ebv_correction(self):
@@ -295,6 +295,7 @@ class Batch():
     def archetype_classification(self):
         #io_functions.span_window()
         print('\n... determining archetype classification')
+        start_time = time.time()
         
         [interface_main.archetype_classify_MC(spec) for spec in self.spectra_array]
         
@@ -316,6 +317,7 @@ class Batch():
         if len(self.spectra_array) < 30: print(table.draw())
         # save into a file
         print(table.draw(), file=open(self.output_name + "_archetype_likelihood_table.txt", "a"))
+        print("\t\t interface_main: Time spent for archetype classification is {0:.1f}".format(time.time()-start_time))
 
         return
 
@@ -327,7 +329,7 @@ class Batch():
         ### Main iterative method for the mcmc_determination
         #io_functions.span_window()
         print('\n... performing MCMC determinations')
-
+        start_time = time.time()
         [spec.prepare_regions() for spec in self.spectra_array]
 
         #[interface_main.mcmc_determination(spec, mode='COARSE', pool=pool)  for spec in self.spectra_array]
@@ -346,6 +348,7 @@ class Batch():
         [interface_main.generate_kde_params(spec, mode='REFINE') for spec in self.spectra_array]
 
         #io_functions.span_window()
+        print("\t\t batch: Time spent for mcmc determination is {0:.1f}".format(time.time()-start_time))
         print("... complete")
         #io_functions.span_window()
         return

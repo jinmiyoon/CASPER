@@ -101,7 +101,7 @@ class Spectrum():
 
         if cahk:
             # Ca HK
-            print("\tadding CaII H&K continuum points")
+            #print("\tadding CaII H&K continuum points")
             SEG1 = self.frame[self.frame['wave'].between(3916 - cahkwidth, 3916 + cahkwidth, inclusive='both')]
             SEG2 = self.frame[self.frame['wave'].between(3991 - cahkwidth, 3991 + cahkwidth, inclusive='both')]
 
@@ -220,7 +220,7 @@ class Spectrum():
 
 ###############################################################
     def get_continuum_points(self):
-        print("continuum_points")
+        # print("continuum_points")
         for i in range(len(self.midpoints)):
             print(i, ": ", self.midpoints[i], self.fluxpoints[i])
 

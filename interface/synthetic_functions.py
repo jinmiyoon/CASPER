@@ -7,36 +7,31 @@
 #### Here are the functions for the synthetic minimization
 
 import numpy as np
-import scipy.interpolate as interp
-import pandas as pd
 from scipy.interpolate import interp1d
-import os
 import pickle as pkl
-from scipy.interpolate import LinearNDInterpolator as NDLinear
-import ac
 import GISIC_C as GISIC
+import config
 
 # Get synthetic flux interpolator 
 def get_interp():
     ###########
     #return pkl.load(open("interface/libraries/MASTER_spec_interp.pkl", 'rb'))
 
-    """
+    '''
     # Devin's master spec interp
     with open("interface/libraries/MASTER_spec_interp.pkl", 'rb') as devin_master_lib:
         INTERPOLATOR = pkl.load(devin_master_lib)
-    """
+    '''
     # my New master spec interp
-
+    """
+    New interpolator using the new spectral library
+    """
     with open("interface/libraries/SYNTHETIC_SPEC_R2000_INTERP.pkl", 'rb') as my_master_lib:
         INTERPOLATOR = pkl.load(my_master_lib)
 
     
     return INTERPOLATOR
 
-# wave_region of synthetic spectra
-def get_synth_wave():
-    return np.arange(3000., 5001., 1)
 
 # now let's normalize synthetic library with GISIC
 def normalize(synth_wave, synth_flux):
@@ -45,9 +40,9 @@ def normalize(synth_wave, synth_flux):
     # print("\t\t synthetic_function: synth_flux ={}".format(synth_flux))
     cont_array = []
 
-    for SIGMA in np.linspace(15, 30, 10): #
+    for SIGMA in config.SIGMA: #
         _, _, cont_synth_flux= GISIC.normalize(synth_wave, synth_flux, 
-            sigma = SIGMA, k=1,cahk=False, band_check=True, flux_min=70, boost=True)
+            sigma = SIGMA, k=config.k, cahk=config.cahk, band_check=config.band_check, flux_min=config.flux_min, boost=config.boost)
         cont_array.append(cont_synth_flux)
         
     ### average the sigma runs together
@@ -117,6 +112,17 @@ def CAII_CH_CHI_LH(obs, synth, CA_BOUNDS, CH_BOUNDS, CA_XI, CH_XI):
 ###########################################################################################
 
 
+"""
+
+import config
+import pandas as pd
+import os
+import ac
+
+
+# wave_region of synthetic spectra
+def get_synth_wave():
+    return config.SYNTH_WAVE
 
 #unused func
 def determine_rChi_2(spec, synth, bounds, type='both'):
@@ -401,4 +407,4 @@ def determine_crit_params(spec, group_class, type='weight'):
 
 
 
-
+"""

@@ -27,28 +27,30 @@ import MAD
 from statsmodels.nonparametric.kde import KDEUnivariate
 import MCMC_interface
 import emcee
-import synthetic_functions
-import spectrum
+from synthetic_functions import get_interp,  CAII_CH_CHI_LH, normalize 
+#import spectrum
+import config
 
 ### GLOBAL ITEMS
-
-ARCHETYPE_PARAMS = {"HALO" : {'GI'  : {'FEH': -2.5, 'CFE': 1.97, 'AC' : 7.9},
-                              'GII' : {'FEH': -3.5, 'CFE': 0.97, 'AC' : 5.9},
-                              'GIII': {'FEH': -4.3, 'CFE': 2.87, 'AC' : 7.0}},
-
-                    "UFD"  : {'GI'  : {'FEH': -1.5, 'CFE': 1.07, 'AC' : 8.0},
-                              'GII' : {'FEH': -3.0, 'CFE': 0.87, 'AC' : 6.3},
-                              'GIII': {'FEH': -3.5, 'CFE': 2.37, 'AC' : 7.3}}}
-
+ARCHETYPE_PARAMS = config.ARCHETYPE_PARAMS
 
 LL_FUNCTION_DICT = {"COARSE": {"CH" : MCMC_interface.chi_likelihood, "CH+C2" : MCMC_interface.chi_likelihood_C2},
                     "REFINE": {"CH" : MCMC_interface.chi_ll_refine, "CH+C2" : MCMC_interface.chi_ll_refine_C2}
                     }
 
 # import synthetic library interpolator
-INTERPOLATOR     = synthetic_functions.get_interp()
+INTERPOLATOR = get_interp()
 
-SYNTH_WAVE = synthetic_functions.get_synth_wave() 
+SYNTH_WAVE = config.SYNTH_WAVE
+
+def synth_normalize(spectrum, group, temp):
+    interp_flux = INTERPOLATOR[spectrum.gravity_class](temp, ARCHETYPE_PARAMS[spectrum.MODE][group]['FEH'], 
+                                                                        ARCHETYPE_PARAMS[spectrum.MODE][group]['CFE'])
+    if np.isfinite(interp_flux).all(): 
+        return normalize(SYNTH_WAVE, interp_flux[config.id_start_wave:])
+    else: 
+        print("Interpolated synthetic flux is not finite, params = ",temp, ARCHETYPE_PARAMS[spectrum.MODE][group]['FEH'], ARCHETYPE_PARAMS[spectrum.MODE][group]['CFE'])
+
 
 
 def archetype_classify_MC(spectrum):
@@ -70,23 +72,23 @@ def archetype_classify_MC(spectrum):
     #    like [4715.6, -2.5, 1.97] depending on gravity_class and galactic env mode.
 
     ### GI
-    
+    """
     def synth_normalize(group, temp):
         interp_flux = INTERPOLATOR[spectrum.gravity_class](temp, ARCHETYPE_PARAMS[spectrum.MODE][group]['FEH'], 
                                                                             ARCHETYPE_PARAMS[spectrum.MODE][group]['CFE'])
         if np.isfinite(interp_flux).all(): 
-            return synthetic_functions.normalize(SYNTH_WAVE, interp_flux)
+            return normalize(SYNTH_WAVE, interp_flux[config.id_start_wave:])
         else: 
             print("Interpolated synthetic flux is not finite, params = ",temp, ARCHETYPE_PARAMS[spectrum.MODE][group]['FEH'], ARCHETYPE_PARAMS[spectrum.MODE][group]['CFE'])
-    
+    """
     
     # *****  NEW SYNTH 
  
     start = time.time()
 
-    GI_NORM_SYNTH =[synth_normalize('GI', temp) for temp in temp_values]
-    GII_NORM_SYNTH =[synth_normalize('GII', temp) for temp in temp_values]
-    GIII_NORM_SYNTH =[synth_normalize('GIII', temp) for temp in temp_values]
+    GI_NORM_SYNTH =[synth_normalize(spectrum, 'GI', temp) for temp in temp_values]
+    GII_NORM_SYNTH =[synth_normalize(spectrum, 'GII', temp) for temp in temp_values]
+    GIII_NORM_SYNTH =[synth_normalize(spectrum,'GIII', temp) for temp in temp_values]
 
 
     """
@@ -122,24 +124,24 @@ def archetype_classify_MC(spectrum):
     """
 
     # calculate log likelihood function for CA II and CH for MLE estimation for each group
-    GI_LLs = np.array([synthetic_functions.CAII_CH_CHI_LH(obs=spectrum.frame,
+    GI_LLs = np.array([CAII_CH_CHI_LH(obs=spectrum.frame,
                                         synth=pd.DataFrame({'wave': SYNTH_WAVE, 'norm' : SYNTH}),
                                         CA_BOUNDS = spectrum.KP_bounds,
-                                        CH_BOUNDS = [4222, 4322],
+                                        CH_BOUNDS = config.CH_BOUNDS,
                                         CA_XI  = spectrum.SN_DICT['CA']['XI_AVG'],
                                         CH_XI  = spectrum.SN_DICT['CH']['XI_AVG']) for SYNTH in GI_NORM_SYNTH])
 
-    GII_LLs = np.array([synthetic_functions.CAII_CH_CHI_LH(obs=spectrum.frame,
+    GII_LLs = np.array([CAII_CH_CHI_LH(obs=spectrum.frame,
                                         synth=pd.DataFrame({'wave': SYNTH_WAVE, 'norm' : SYNTH}),
                                         CA_BOUNDS = spectrum.KP_bounds,
-                                        CH_BOUNDS = [4222, 4322],
+                                        CH_BOUNDS = config.CH_BOUNDS,
                                         CA_XI  = spectrum.SN_DICT['CA']['XI_AVG'],
                                         CH_XI  = spectrum.SN_DICT['CH']['XI_AVG']) for SYNTH in GII_NORM_SYNTH])
 
-    GIII_LLs = np.array([synthetic_functions.CAII_CH_CHI_LH(obs=spectrum.frame,
+    GIII_LLs = np.array([CAII_CH_CHI_LH(obs=spectrum.frame,
                                         synth=pd.DataFrame({'wave': SYNTH_WAVE, 'norm' : SYNTH}),
                                         CA_BOUNDS = spectrum.KP_bounds,
-                                        CH_BOUNDS = [4222, 4322],
+                                        CH_BOUNDS = config.CH_BOUNDS,
                                         CA_XI  = spectrum.SN_DICT['CA']['XI_AVG'],
                                         CH_XI  = spectrum.SN_DICT['CH']['XI_AVG']) for SYNTH in GIII_NORM_SYNTH])
     #print(np.mean([GI_LLs, GII_LLs, GIII_LLs]))
@@ -194,6 +196,7 @@ def mcmc_determination(spectrum, mode='COARSE', burnin_factor=7):
         initial = np.concatenate([initial,
                                  [spectrum.SN_DICT['CA']['XI_AVG'],
                                   spectrum.SN_DICT['CH']['XI_AVG']]])
+        n_step = spectrum.get_MCMC_iterations()
 
 
 
@@ -216,6 +219,7 @@ def mcmc_determination(spectrum, mode='COARSE', burnin_factor=7):
                 PARAMS_0, spectrum.get_gravity_class())
 
         initial = [spectrum.MCMC_COARSE['FEH'][0], spectrum.MCMC_COARSE['CFE'][0]]
+        n_step= int(spectrum.get_MCMC_iterations()/4)
 
     else:
         print("Invalid mode")
@@ -234,10 +238,9 @@ def mcmc_determination(spectrum, mode='COARSE', burnin_factor=7):
     print("\t\t interface_main : pos = ", pos)
     #pos = initial + initial * (np.random.rand(25, len(initial))) # uniform spacing
     nwalkers, ndim = pos.shape
-    bounds = 'default'
+    #bounds = 'default'
 
-
-    print("\t running for ", spectrum.get_MCMC_iterations(), " iterations...")
+    print("\t running for ", n_step, " iterations...")
 
     with Pool() as pool:
         print(f'Process {current_process().name} started working', flush=True)     
@@ -246,7 +249,9 @@ def mcmc_determination(spectrum, mode='COARSE', burnin_factor=7):
             moves=[(emcee.moves.DEMove(), 0.8),(emcee.moves.DESnookerMove(), 0.2),],
             pool=pool, args=(ARGS))
         start = time.time()
-        _ = sampler.run_mcmc(pos, spectrum.get_MCMC_iterations(), progress=True)
+
+
+        _ = sampler.run_mcmc(pos, n_step, progress=True)
         end = time.time()
         multi_time = end - start
         print(f'Process {current_process().name} ended working', flush=True) 
@@ -284,9 +289,9 @@ def mcmc_determination(spectrum, mode='COARSE', burnin_factor=7):
     
     # if n_discard is larger than the mcmc iterations, it should be fixed to a random value, 
     # perhaps, discard the first half runs. This can be revisited
-    if n_discard >= 0.5 * spectrum.get_MCMC_iterations() :
+    if n_discard >= 0.5 * n_step :
         print("\t\t interface_main: n_discard is larger than the mcmc iterations! Setting n_discard to half the iterations. ") 
-        n_discard = int(0.5 * spectrum.get_MCMC_iterations())
+        n_discard = int(0.5 * n_step)
     print("\t\t mcmc mode = ", mode)
     mean_acc_fraction= np.mean(sampler.acceptance_fraction)
     print("\t\t interface_main: mean acceptance fraction: {0:.3f}".format(mean_acc_fraction))
@@ -323,11 +328,16 @@ def generate_synthetic(spectrum):
     # *****  NEW SYNTH 
     # Here I need GISIC.normalize()
    
-    synth_interp_flux = INTERPOLATOR[spectrum.get_gravity_class()](spectrum.MCMC_COARSE['TEFF'][0],
+    interp_flux = INTERPOLATOR[spectrum.get_gravity_class()](spectrum.MCMC_COARSE['TEFF'][0],
                                                             spectrum.MCMC_REFINE['FEH'][0],
                                                             spectrum.MCMC_REFINE['CFE'][0])
     
-    NORM_SYNTH_FLUX = synthetic_functions.normalize(SYNTH_WAVE, synth_interp_flux)
+    # NORM_SYNTH_FLUX = normalize(SYNTH_WAVE, synth_interp_flux[config.id_start_wave:])
+    if np.isfinite(interp_flux).all(): 
+        NORM_SYNTH_FLUX =normalize(SYNTH_WAVE, interp_flux[config.id_start_wave:])
+    else: 
+        print("Interpolated synthetic flux is not finite, params = ",spectrum.MCMC_COARSE['TEFF'][0], 
+              spectrum.MCMC_REFINE['FEH'][0],spectrum.MCMC_REFINE['CFE'][0])
 
 
     spectrum.set_synth_spectrum(pd.DataFrame({'wave' : SYNTH_WAVE, 'norm' : NORM_SYNTH_FLUX.T}))

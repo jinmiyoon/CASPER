@@ -12,16 +12,10 @@
 
 
 import pandas as pd
-import matplotlib.pyplot as plt
 import numpy as np
 import MAD
 import pandas as pd
-import scipy.interpolate as interp
-from astropy.table import Table
-from scipy.ndimage.filters import gaussian_filter
-
-### import structures
-from data_structures import *
+import config
 
 ###############################
 #Spectrum Class Definition
@@ -40,8 +34,7 @@ def obtain_flux(data):
         return data[0].flatten()
 
 class Spectrum():
-    def __init__(self, spec, name, wl_range=[3800, 6000], is_fits=True):
-        # changed from wl_range=[3800,6200] J. Yoon 06-17-2020
+    def __init__(self, spec, name, is_fits=True):
 
         self.name = name
         print("\n... initializing:  ", name)
@@ -141,7 +134,8 @@ class Spectrum():
 
 
     ############################################################
-    def trim_frame(self, bounds= [3000, 5000]):
+    #def trim_frame(self, bounds= [3000, 5000]):
+    def trim_frame(self, bounds= config.WAVE_BOUNDS):
         self.frame = self.frame[self.frame['wave'].between(bounds[0], bounds[1], inclusive='both')]
         return
 
@@ -216,6 +210,7 @@ class Spectrum():
         ## should be a list
         self.KP_bounds = input_bounds
         return
+    #def set_CH_bounds(self, )
 
     # created this function to provide an option to manually set
     # carbon_mode: CH or CH+C2 modes   J. Yoon

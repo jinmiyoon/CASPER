@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from scipy.interpolate import interp1d
 import corner
-import MCMC_interface
+from MCMC_interface import kde_param
 from matplotlib.backends.backend_pdf import PdfPages
 from astropy import units as u
 
@@ -302,8 +302,8 @@ def plot_single_corner(spectrum, io_path, n_thin= 1):
     MEDIAN = np.median(samples, axis=0)
 
     #### MEDIAN is depreciated here, since I use a different estimate in kde_param
-    value2 = [MCMC_interface.kde_param(row, x0 = x0)['result'] for row, x0 in zip(samples.T, MEDIAN)]
-    kde_array = [MCMC_interface.kde_param(row, x0 = x0)['kde'] for row, x0 in zip(samples.T, MEDIAN)]
+    value2 = [kde_param(row, x0 = x0)['result'] for row, x0 in zip(samples.T, MEDIAN)]
+    kde_array = [kde_param(row, x0 = x0)['kde'] for row, x0 in zip(samples.T, MEDIAN)]
 
     std =    np.std(samples, axis=0)
 
@@ -681,8 +681,8 @@ def plot_mcmc_samples(sampler, burnin = 0.25, params=None, suptitle=None, filena
 
 
     MEDIAN = np.median(samples, axis=0)
-    value2 = [MCMC_interface.kde_param(row, x0 = x0)['result'] for row, x0 in zip(samples.T, MEDIAN)]
-    kde_array = [MCMC_interface.kde_param(row, x0 = x0)['kde'] for row, x0 in zip(samples.T, MEDIAN)]
+    value2 = [kde_param(row, x0 = x0)['result'] for row, x0 in zip(samples.T, MEDIAN)]
+    kde_array = [kde_param(row, x0 = x0)['kde'] for row, x0 in zip(samples.T, MEDIAN)]
 
     std =    np.std(samples, axis=0)
 

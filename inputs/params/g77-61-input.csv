@@ -1,4 +1,2 @@
 sequence,name,J-K,H-K,g-r,EBV_SFD,TEFF_SET,T_SIGMA,RV,SN_CA,SN_CH,SN_C2,class,mode,carbon_mode,MCMC_iter
-1,g77-61_m1b_casper.fits,0.9373,0.3267,,0.1089,4127,200,-10.4,  NaN, NaN, NaN,DWARF, HALO,CH,2000
-2,g77-61_m2b_casper.fits,0.9373,0.3267,,0.1089,4127,200,20.2,  NaN, NaN, NaN,DWARF, HALO,CH, 2000
-3,g77-61_coadd_spectrum.csv,0.9373,0.3267,,0.1089,4127,200,20.2,  NaN, NaN, NaN,DWARF, HALO,CH, 2000
+2,g77-61_blue_sum.fits,0.9373,0.3267,,0.1089,,250,20.2,NaN,NaN,NaN,DWARF,HALO,CH,1000

@@ -31,6 +31,7 @@ if __name__ == "__main__":
 
 
     # Create directory
+    
     dirName = 'outputs/logs'
     """
     try:

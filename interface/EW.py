@@ -5,10 +5,9 @@
 ## Functions related to the equivalent-width determinations
 
 import numpy as np
-import matplotlib.pyplot as plt
 import scipy.integrate as integrate
 from scipy.interpolate import interp1d
-import sys
+import config
 
 
 
@@ -21,7 +20,7 @@ KP_BOUNDS = {"K6"  : [3930.7, 3936.7],
 '''
 
 
-def GBAND_QUAD(wave, flux, bounds = [4222, 4322]):
+def GBAND_QUAD(wave, flux, bounds = config.CH_BOUNDS):
     ## takes normalized flux and computes a quick G-band
 
 
@@ -70,7 +69,7 @@ def GBAND_QUAD(wave, flux, bounds = [4222, 4322]):
                           points=list(wave[(wave > bounds[0]) & (wave <  bounds[1])]))[0], EW_subtract
 
 
-def GBAND_vanilla(wave, flux, bounds = [4222, 4322]):
+def GBAND_vanilla(wave, flux, bounds = config.CH_BOUNDS):
     trim = flux[(wave > bounds[0]) & (wave < bounds[1])]
 
     return (1-trim).sum()
@@ -124,11 +123,7 @@ def CAII_K18_v(wave, flux):
 def get_KP_band(spectrum):
     ### simply return the CAII band range for the chi fit, based on Beers 1999
     ### updated to utilize the spectrum.Spectrum() class
-
-    KP_BOUNDS = {"K6"  : [3930.7, 3936.7],
-                 "K12" : [3927.7, 3939.7],
-                 "K18" : [3924.7, 3942.7]}
-
+    KP_BOUNDS = config.KP_BOUNDS
 
     K6 =  CAII_K6(spectrum.frame['wave'], spectrum.frame['norm'])
     K12 = CAII_K12(spectrum.frame['wave'], spectrum.frame['norm'])
@@ -166,7 +161,7 @@ def set_CH_procedure(spectrum):
     # Revised by Jinmi Yoon, July 17 2020
     # The default CH_EW =40 was used for the Yoon+2020 paper,
     # but I realized that EW changes depending on the level of continuum.
-    # So it has to be changed a bit to prevent an unnecessarily large EW value
+    # So it has to change a bit to prevent an unnecessarily large EW value
     # to switch the mode. I meant to modify GBAND_QUAD calculation slightly to
     # tackle the problem with this issue.
     # However, the problem is that this function appears to be used other places.

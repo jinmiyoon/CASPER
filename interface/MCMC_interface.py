@@ -9,14 +9,14 @@
 import numpy as np
 from scipy.interpolate import interp1d
 import scipy
-import pickle as pkl
 from statsmodels.nonparametric.kde import KDEUnivariate
 import MLE_priors
-import synthetic_functions
+from synthetic_functions import get_interp, normalize
+import config
 
 
 # import synthetic library interpolator 
-INTERPOLATOR = synthetic_functions.get_interp()
+INTERPOLATOR = get_interp()
 
 def kde_param(distribution, x0):
     ### kde_param tries to ensure correct handling of multimodal distributions
@@ -120,11 +120,12 @@ def beta_param_spec(spectrum, hard_var = None):
 def interp1d_synth_flux(synth_wave, G_CLASS, teff, feh, carbon):
 
     if np.isfinite(INTERPOLATOR[G_CLASS]([teff, feh, carbon])).all():
-        norm_synth_flux = synthetic_functions.normalize(synth_wave, INTERPOLATOR[G_CLASS]([teff, feh, carbon])[0])
+        synth_flux = INTERPOLATOR[G_CLASS]([teff, feh, carbon])[0]
+        norm_synth_flux = normalize(synth_wave, synth_flux[config.id_start_wave:])
 
         return interp1d(synth_wave, norm_synth_flux, kind = 'linear')
     
-    else : print("\t\t MCMC_interface: inter1d_synth_flux: Interpolated synthetic flux is not finite")
+    else : print("\t\t MCMC_interface: interp1d_synth_flux: Interpolated synthetic flux is not finite")
 
 def likelihood_params(theta, include_C2 = False):
     if include_C2:
