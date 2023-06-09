@@ -121,11 +121,11 @@ class Spectrum():
             print("\t corrected :", self.get_name())
 
 
-            self.PHOTO_0['J-K'] = float(row['J-K']) - (float(A_EBV["A_J"]) - float(A_EBV['A_K'])) * float(row['EBV_SFD'])
+            self.PHOTO_0['J-K'] = float(row['J-K']) - (float(config.A_EBV["A_J"]) - float(config.A_EBV['A_K'])) * float(row['EBV_SFD'])
 
-            self.PHOTO_0['H-K'] = float(row['H-K']) - (float(A_EBV["A_H"]) - float(A_EBV['A_K'])) * float(row['EBV_SFD'])
+            self.PHOTO_0['H-K'] = float(row['H-K']) - (float(config.A_EBV["A_H"]) - float(config.A_EBV['A_K'])) * float(row['EBV_SFD'])
 
-            self.PHOTO_0['g-r'] = float(row['g-r']) - (float(A_EBV["A_g"]) - float(A_EBV['A_r'])) * float(row['EBV_SFD'])
+            self.PHOTO_0['g-r'] = float(row['g-r']) - (float(config.A_EBV["A_g"]) - float(config.A_EBV['A_r'])) * float(row['EBV_SFD'])
 
         else:
             ## THEN ASSUME COLORS ARE ALREADY CORRECTED

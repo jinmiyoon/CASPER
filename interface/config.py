@@ -36,5 +36,13 @@ ARCHETYPE_PARAMS = {"HALO" : {'GI'  : {'FEH': -2.5, 'CFE': 1.97, 'AC' : 7.9},
 SIGMA = np.linspace(15, 30, 10)
 k,flux_min = 1, 70
 #cahk = True
-band_check, boost, cahk = True, True, False
+band_check, boost, cahk = False, True, True
 #boost = True
+
+
+## Extinction correction
+A_EBV = {"A_J" : 0.709,
+         "A_H" : 0.449,
+         "A_K" : 0.302,
+         "A_g" : 3.303,
+         "A_r" : 2.285}

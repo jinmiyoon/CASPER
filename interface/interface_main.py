@@ -245,7 +245,7 @@ def mcmc_determination(spectrum, mode='COARSE', burnin_factor=7):
     with Pool() as pool:
         print(f'Process {current_process().name} started working', flush=True)     
         sampler = emcee.EnsembleSampler(nwalkers, ndim, LL_FUNCTION,
-            #moves=[(emcee.moves.KDEMove(), 1.0),],
+            #moves=[(emcee.moves.DEMove(), 1.0),],
             moves=[(emcee.moves.DEMove(), 0.8),(emcee.moves.DESnookerMove(), 0.2),],
             pool=pool, args=(ARGS))
         start = time.time()
