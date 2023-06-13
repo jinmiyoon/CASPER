@@ -1,2 +1,2 @@
 sequence,name,J-K,H-K,g-r,EBV_SFD,TEFF_SET,T_SIGMA,RV,SN_CA,SN_CH,SN_C2,class,mode,carbon_mode,MCMC_iter
-2,g77-61_blue_sum.fits,0.9373,0.3267,,0.1089,,250,20.2,NaN,NaN,NaN,DWARF,HALO,CH,254
+2,g77-61_blue_sum.fits,0.9373,0.3267,,0.1089,,250,20.2,NaN,NaN,NaN,DWARF,HALO,CH,1024
