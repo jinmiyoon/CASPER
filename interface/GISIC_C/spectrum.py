@@ -191,13 +191,13 @@ class Spectrum():
 
 
 
-        return np.array(self.midpoints, dtype=np.float)
+        return np.array(self.midpoints, dtype=float)
 
     def set_segment_continuum(self):
         self.fluxpoints = [segment.continuum_point for segment in self.segments]
         ## add fluxpoints
 
-        return np.array(self.fluxpoints, dtype=np.float)
+        return np.array(self.fluxpoints, dtype=float)
 
 
     def add_continuum_point(self, point):

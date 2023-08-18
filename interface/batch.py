@@ -353,6 +353,11 @@ class Batch():
         #io_functions.span_window()
         return
 
+    def estimate_logg(self):
+        print("\n... estimating log g")
+
+        [interface_main.estimate_logg(spec) for spec in self.spectra_array] 
+    
 
     def generate_synthetic(self):
 
@@ -362,17 +367,18 @@ class Batch():
 
         return
 
+
     def generate_plots(self):
         #io_functions.span_window()
-        print("\n... generating plots")
-
-        plot_functions.plot_spectra(self)
+ 
+        print("... generating corner plots")
+        plot_functions.plot_corner_array(self)
 
         print("... generating mcmc trace plots")
         plot_functions.plot_mcmc_trace_array(self)
 
-        print("... generating corner plots")
-        plot_functions.plot_corner_array(self)
+        print("\n... generating plots")
+        plot_functions.plot_spectra(self)
 
 
 
@@ -383,6 +389,10 @@ class Batch():
         print("\n... generating outputs")
 
         final = pd.concat([spec.get_output_row() for spec in self.spectra_array])
+ 
+        with open('outputs/npsave/parameters_output.npy', 'wb') as f:
+            np.save(f, final)
+
         try:
             final.to_csv( self.output_name + "_out.csv", index=False)
 

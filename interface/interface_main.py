@@ -27,7 +27,7 @@ import MAD
 from statsmodels.nonparametric.kde import KDEUnivariate
 import MCMC_interface
 import emcee
-from synthetic_functions import get_interp,  CAII_CH_CHI_LH, normalize 
+from synthetic_functions import get_interp, get_grav_interp, CAII_CH_CHI_LH, normalize 
 #import spectrum
 import config
 
@@ -40,6 +40,7 @@ LL_FUNCTION_DICT = {"COARSE": {"CH" : MCMC_interface.chi_likelihood, "CH+C2" : M
 
 # import synthetic library interpolator
 INTERPOLATOR = get_interp()
+GRAV_INTERP = get_grav_interp()
 
 SYNTH_WAVE = config.SYNTH_WAVE
 
@@ -60,7 +61,7 @@ def archetype_classify_MC(spectrum):
 
 
     length = 100
-    temp_values = np.random.normal(spectrum.teff_irfm, spectrum.teff_irfm_unc, length)
+    temp_values = np.random.normal(spectrum.teff_irfm, spectrum.teff_irfm_err, length)
 
     ### Generate spectra (GI_NORM_SYNTH, GII_NORM_SYNTH,GIII_NORM_SYNTH)
     # J. Yoon Feb 25 2022
@@ -180,7 +181,7 @@ def mcmc_determination(spectrum, mode='COARSE', burnin_factor=7):
         ## if it's coarse, then you need the photometric teff and the Sigma/Xi
         print('\t initializing with archetype parameters: ', PARAMS)
 
-        # spectrum.get_photo_temp() returns self.teff_irfm, self.teff_irfm_unc
+        # spectrum.get_photo_temp() returns self.teff_irfm, self.teff_irfm_err
         # so photo_teff[0] and photo_teff[1] respectively.
         photo_teff = spectrum.get_photo_temp()
         # inserted 01/04/2022 for comparison
@@ -313,9 +314,6 @@ def mcmc_determination(spectrum, mode='COARSE', burnin_factor=7):
     return
 
 
-
-
-
 def generate_synthetic(spectrum):
     ### Generates the best synth spectrum, given the KDE MCMC params
 
@@ -335,16 +333,37 @@ def generate_synthetic(spectrum):
     # NORM_SYNTH_FLUX = normalize(SYNTH_WAVE, synth_interp_flux[config.id_start_wave:])
     if np.isfinite(interp_flux).all(): 
         NORM_SYNTH_FLUX =normalize(SYNTH_WAVE, interp_flux[config.id_start_wave:])
+        spectrum.set_synth_spectrum(pd.DataFrame({'wave' : SYNTH_WAVE, 'norm' : NORM_SYNTH_FLUX.T}))
     else: 
-        print("Interpolated synthetic flux is not finite, params = ",spectrum.MCMC_COARSE['TEFF'][0], 
+        print("generate_synthetic: Interpolated synthetic flux is not finite, params = ",spectrum.MCMC_COARSE['TEFF'][0], 
               spectrum.MCMC_REFINE['FEH'][0],spectrum.MCMC_REFINE['CFE'][0])
-
-
-    spectrum.set_synth_spectrum(pd.DataFrame({'wave' : SYNTH_WAVE, 'norm' : NORM_SYNTH_FLUX.T}))
-
+        print(f"the sequence is {spectrum.get_sequence()} and the star name is {spectrum.get_name()}")
+        # somehow the final params could be np.nan due to a slight deviation from the grids. 
+        # In that case, the synthetic flux is nan. So we need to get around this problem for 
+        spectrum.set_synth_spectrum(pd.DataFrame({'wave' : SYNTH_WAVE, 'norm' : np.nan* np.ones_like(SYNTH_WAVE)}))
+    
 
     return
 
+def estimate_logg(spectrum):
+    # interpolate logg value based on the mcmc parameters
+
+    spectrum.logg = GRAV_INTERP[spectrum.get_gravity_class()](spectrum.MCMC_COARSE['TEFF'][0],spectrum.MCMC_REFINE['FEH'][0])
+    print(f"\t\t interface_main: logg = {spectrum.logg} " )
+    
+    #  Only COARSE would work because the size of REFINE dist is different from COARSE. I cannot use teff_coarse and feh_refine for calculating logg.
+    samples_COARSE= spectrum.MCMC_COARSE_sampler.get_chain(discard= spectrum.mcmc_coarse_n_discard, thin=1, flat=True)
+    teff_dist = samples_COARSE[:,0]
+    feh_COARSE_dist = samples_COARSE[:,1]
+    logg_COARSE_dist = GRAV_INTERP[spectrum.get_gravity_class()](teff_dist,feh_COARSE_dist)
+    spectrum.logg_err = MAD.S_MAD(logg_COARSE_dist)
+    logg_err_std = np.std(logg_COARSE_dist)
+    logg_err_mad = MAD.MAD(logg_COARSE_dist)
+    
+    print(f"\t\t interface_main: logg = {spectrum.logg} +/- {spectrum.logg_err} " )
+    print(f"\t\t interface_main: logg_std = {logg_err_std}, logg_mad = {logg_err_mad} ")
+
+    return 
 
 def kde_param_reflection(distro):
     ### this version is very susceptible to local maxima...

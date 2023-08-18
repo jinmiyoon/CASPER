@@ -32,6 +32,14 @@ def get_interp():
     
     return INTERPOLATOR
 
+def get_grav_interp():
+
+    # load logg interpolator of isochrones
+    with open("interface/libraries/grav_interp.pkl", 'rb') as grav_lib:    
+        GRAV_INTERP = pkl.load(grav_lib)
+        
+        return GRAV_INTERP
+
 
 # now let's normalize synthetic library with GISIC
 def normalize(synth_wave, synth_flux):

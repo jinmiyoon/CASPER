@@ -10,6 +10,8 @@ import corner
 from MCMC_interface import kde_param
 from matplotlib.backends.backend_pdf import PdfPages
 from astropy import units as u
+import config
+
 
 #####
 ### This is just useful for many of the functions. Wanna keep format consistent
@@ -28,15 +30,8 @@ def produce_title(spectrum):
     ## just returns a nice looking string for the plot title
     MCMC_DICT = spectrum.get_mcmc_dict(mode='BOTH')
 
-    # 11-13-2021 J. Yoon, revised the return value to include sequence numbers.
-    # 01-04-2022 J. Yoon, need to find out why Teff value is from MCMC_DICT[0] (COARSE), not from MCMC_DICT[1](REFINE)
-    '''
-    return "#"+spectrum.get_sequence()+" "+ spectrum.get_name() + "  " + \
-    "   Teff : %.0F  [Fe/H] : %.2F   [C/Fe] : %.2F   A(C) : %.2F" % (MCMC_DICT[0]['TEFF'][0] , MCMC_DICT[1]['FEH'][0], MCMC_DICT[1]['CFE'][0], MCMC_DICT[1]['AC'][0]) + \
-    "   MODE:  " + spectrum.get_carbon_mode() + "   CLASS: " + spectrum.get_gravity_class()+ "  "+spectrum.get_arch_group()  + " (tentative)"
-    '''
     return "#"+spectrum.get_sequence()+"  "+ spectrum.get_name() + "  " + \
-    " Teff : %.0F K [Fe/H] : %.2F [C/Fe] : %.2F A(C) : %.2F" % (MCMC_DICT[0]['TEFF'][0] , MCMC_DICT[1]['FEH'][0], MCMC_DICT[1]['CFE'][0], MCMC_DICT[1]['AC'][0]) + \
+    " Teff : %.0F K log g: %.2F [Fe/H] : %.2F [C/Fe] : %.2F A(C) : %.2F" % (MCMC_DICT[0]['TEFF'][0] , spectrum.logg, MCMC_DICT[1]['FEH'][0], MCMC_DICT[1]['CFE'][0], MCMC_DICT[1]['AC'][0]) + \
     "   MODE:" + spectrum.get_carbon_mode() + " CLASS:" + spectrum.get_gravity_class()+ "  RV: "+ str(spectrum.get_rv()) +" km/s" + " N_iter:"+str(spectrum.MCMC_iterations)
 
 
@@ -60,7 +55,6 @@ def plot_spectra(spectra_batch):
         if i % rows == 0: ## if new page required
             fig, ax = plt.subplots(rows, columns, figsize=(8.5, 11), dpi=200)
             fig.subplots_adjust(hspace=0.7)
-
 
 
             [label.set_ylim([0.0, 1.2]) for label in np.concatenate(ax[:, 1:])]
@@ -92,17 +86,18 @@ def plot_spectra(spectra_batch):
 
         ##### MAIN PLOT SECTION
         ax[index, 0].set_yticks([0.0, max(spec.frame['flux'])])
-        [label.set_xticks(np.linspace(min(spec.frame['wave']), max(spec.frame['wave']),5)) for label in ax[index,0:2]]
-
+        #[label.set_xticks(np.linspace(spec.frame['wave'][0], spec.frame['wave'][-1],5)) for label in ax[index,0:2]]
+        [label.set_xticks(np.linspace(config.WAVE_BOUNDS[0], config.WAVE_BOUNDS[1],7)) for label in ax[index,0:2]]
         ang = u.Unit('Angstrom')
         [label.set_xlabel("wavelength ({:s})".format(ang.to_string(format='Latex')), labelpad=1, fontsize=6) for label in ax[index,0:5]]
 
         ### Set title
-        ax[index, 2].set_title(produce_title(spec), fontsize=8)
+        ax[index, 2].set_title(produce_title(spec), fontsize=7)
 
         ### Continuum Plot
         ax[index, 0].plot(spec.frame['wave'], spec.frame['flux'], linewidth=LINEW, color='black')
         ax[index, 0].plot(spec.frame['wave'], spec.frame['cont'], linewidth=LINEW)
+        ax[index, 0].set_xticks(np.arange(4000, 4800, 250))
 
 
         ### Normalization Plot
@@ -173,7 +168,7 @@ def plot_spectra(spectra_batch):
 
 ########## To check burnt-in from the sampler chain
 def plot_mcmc_trace_array(spec_batch):
-    plt.rcParams.update({'font.size': 8, 'font.family':'monospace'})
+    #plt.rcParams.update({'font.size': 8, 'font.family':'monospace'})
 
     # this function uses plot_single_corner function
     pp = PdfPages(spec_batch.output_name + '_mcmc_trace.pdf')
@@ -328,7 +323,19 @@ def plot_single_corner(spectrum, io_path, n_thin= 1):
     [label.tick_params(direction='in', right=True, top=True) for label in axes.flatten()]
 
     #plt.subplots_adjust(top=0.9)
-
+    
+    # this will be done later. I need to create a function to estimate errors. 
+    #params_str = '\n'.join((
+    #    r'T$_{eff}=%f$' % (spectrum.MCMC_COARSE['TEFF'][0],spectrum.MCMC_COARSE['TEFF'][1] ),
+    #    r'log$g$=%.2f \pm %.2f $' % (spectrum.logg,spectrum.logg_err ),
+    #    r'[Fe/H]=%.2f' % (feh, ),
+    #    r'[C/Fe]=%.2f' % (cfe, ),
+    #    r'A(C)=%.2f' % (ac, ),
+    #    r'$\xi_{CaII}=%.2f$' % (xi_caii, ),
+    #    r'$\xi_{CH}=%.2f$' % (xi_ch, ),
+    #    ))
+    #plt.gcf().figtext(0.7,0.7, params_str)
+    
     plt.close()
     return fig
 
@@ -677,7 +684,7 @@ def plot_mcmc_samples(sampler, burnin = 0.25, params=None, suptitle=None, filena
 
 
     if suptitle != None:
-        fig.suptitle(suptitle, fontsize=15)
+        fig.suptitle(suptitle, fontsize=14)
 
 
     MEDIAN = np.median(samples, axis=0)

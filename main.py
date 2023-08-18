@@ -88,12 +88,17 @@ if __name__ == "__main__":
     #spec_batch.mcmc_determination(pool=20) # no need of pool
     spec_batch.mcmc_determination()
 
+    # interpolate gravity logg from isochrone
+    spec_batch.estimate_logg()
+ 
     ################################################################################
     ##### generate output files
     spec_batch.generate_synthetic()
-    spec_batch.generate_plots()
+
     spec_batch.generate_output_files()
 
+    spec_batch.generate_plots()
+ 
 
     print("The total time for this CASPER run is {:.2f}s".format(time.time()-start_time))
 

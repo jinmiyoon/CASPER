@@ -3,8 +3,9 @@ import numpy as np
 
 ## wavelength setting ##
 
-# constraining the wavelength range of interest
+# constraining the wavelength range of interest for both obs and synthetic wave
 WAVE_BOUNDS = [3800., 5000.]
+#WAVE_BOUNDS = [3900., 4800.]
 SYNTH_WAVE = np.arange(WAVE_BOUNDS[0],WAVE_BOUNDS[1]+1,1)
 
 # synthetic model wavelength range

@@ -80,7 +80,7 @@ class Spectrum():
             print("\t csv file, ")
             self.spec = spec
             self.flux = self.spec['flux']
-            self.wavelength = np.array(self.spec['wave'], dtype=np.float)
+            self.wavelength = np.array(self.spec['wave'], dtype=float)
             self.original_wavelength = self.wavelength
 
         #### Defined in generate_segments
@@ -203,9 +203,6 @@ class Spectrum():
         return
 
 
-
-
-
     def set_KP_bounds(self, input_bounds):
         ## should be a list
         self.KP_bounds = input_bounds
@@ -239,7 +236,7 @@ class Spectrum():
         ### for use with the calibrate_temperatures function
         ### input_dict:  {"Casagrande":, "Hernandez":, "Bergeat": }
         self.teff_irfm = input_temp
-        self.teff_irfm_unc = sigma
+        self.teff_irfm_err = sigma
 
         '''
         # 12/13/2021, J Yoon.
@@ -248,16 +245,17 @@ class Spectrum():
 
         if hard == True:
             self.teff_irfm = input_temp
-            self.teff_irfm_unc = sigma
+            self.teff_irfm_err = sigma
             return
 
         else:
             self.teff_irfm = input_temp
-            self.teff_irfm_unc = sigma
+            self.teff_irfm_err = sigma
 
         '''
 
         return
+    
 
     def prepare_regions(self):
         ### prepares the CaII, CH, and C2 regions according to KP_bounds and carbon_mode
@@ -324,11 +322,13 @@ class Spectrum():
 
     def set_flux(self, input_flux):
         ## Just a hard set function in case of format problems with the fits data section
+        # observed flux
         self.flux = input_flux
         return
 
     def set_norm(self, input_flux):
         ## intended for the external batch normalization
+        # observed norm flux
         self.norm = input_flux
 
         return
@@ -357,8 +357,6 @@ class Spectrum():
         self.frame.loc[:, 'cont'] = input_cont
         return
 
-
-
     def set_synth_spectrum(self, synth):
         self.synth_spectrum = synth
         return
@@ -372,6 +370,7 @@ class Spectrum():
         #return self.name.ljust(20)
 
     def get_wave(self):
+        # wavelength of observed spectra
         return self.wavelength
 
     def get_norm(self):
@@ -408,7 +407,7 @@ class Spectrum():
         return self.ARCH_GROUP
 
     def get_photo_temp(self):
-        return self.teff_irfm, self.teff_irfm_unc
+        return self.teff_irfm, self.teff_irfm_err
 
     def get_rv(self):
         return self.rv
@@ -439,11 +438,18 @@ class Spectrum():
 
     def get_MCMC_iterations(self):
         return self.MCMC_iterations
+    '''
+    def get_errors(self):
 
-
+        self.feh_err = max([self.MCMC_REFINE['FEH'][1], self.MCMC_COARSE['FEH'][1]])
+        self.cfe_err = max([self.MCMC_REFINE['CFE'][1], self.MCMC_COARSE['CFE'][1]])
+        self.ac_err = max([self.MCMC_REFINE['AC'][1], self.MCMC_COARSE['AC'][1]])
+        
+        return
+        '''
     def get_output_row(self):
         ## simply produces a dataframe row with the desired outputs
-        # 01-04-2022 added  a missing suffix ('_UNC') for TEFF_IRFM_UNC
+        # 01-04-2022 added  a missing suffix ('_UNC') for TEFF_IRFM_UNC 
         return pd.DataFrame({
                         "SEQUENCE" : [self.get_sequence()],
                         "NAME"     : [self.get_name()],
@@ -452,18 +458,25 @@ class Spectrum():
                         'CEMP_GRP_TENT'    : [self.get_arch_group()],
                         'CLASS'    : [self.get_gravity_class()],
                         'TEFF'     : [round(self.MCMC_COARSE['TEFF'][0], 0)],
-                        'TEFF_ERR' : [round(self.MCMC_COARSE['TEFF'][1], 2)],
+                        'TEFF_ERR' : [round(self.MCMC_COARSE['TEFF'][1], 0)],
                         'TEFF_ADT': [round(self.teff_irfm)],
-                        'TEFF_ADT_UNC': [self.teff_irfm_unc],
+                        'TEFF_ADT_ERR': [self.teff_irfm_err],
+                        'LOGG'     : [round(self.logg.item(),2)],
+                        'LOGG_ERR'     : [round(self.logg_err ,2)],
                         'FEH'      : [round(self.MCMC_REFINE['FEH'][0], 2)],
-                        'FEH_ERR'  : [round(max([self.MCMC_REFINE['FEH'][1], self.MCMC_COARSE['FEH'][1]]), 4)],
+                        'FEH_ERR'  : [round(max([self.MCMC_REFINE['FEH'][1], self.MCMC_COARSE['FEH'][1]]), 2)],
                         'CFE'      : [round(self.MCMC_REFINE['CFE'][0], 2)],
-                        'CFE_ERR'  : [round(max([self.MCMC_REFINE['CFE'][1], self.MCMC_COARSE['CFE'][1]]), 4)],
+                        'CFE_ERR'  : [round(max([self.MCMC_REFINE['CFE'][1], self.MCMC_COARSE['CFE'][1]]), 2)],
                         'AC'       : [round(self.MCMC_REFINE['AC'][0], 2)],
-                        'AC_ERR'   : [round(max([self.MCMC_REFINE['AC'][1], self.MCMC_COARSE['AC'][1]]), 4)],
-                        'RV'       : [self.get_rv()]
-                    })
-
+                        'AC_ERR'   : [round(max([self.MCMC_REFINE['AC'][1], self.MCMC_COARSE['AC'][1]]), 2)],
+                        'RV'       : [self.get_rv()],
+                        'OBSERVED_WAVE' : [self.frame['wave'].values.tolist()],
+                        'OBSERVED_FLUX' : [self.frame['norm'].values.tolist()],
+                        'SYNTH_WAVE'    : [self.synth_spectrum['wave'].values.tolist()],
+                        'SYNTHETIC_FLUX': [self.synth_spectrum['norm'].values.tolist()],
+                        'XI_CH'         : [self.MCMC_COARSE['XI_CH']],
+                        'XI_CA'         : [self.MCMC_COARSE['XI_CA']]
+                   })
     ###### PRINT METHODS
     def print_KP_bounds(self):
         return str(self.KP_bounds[0]) + " - " + str(self.KP_bounds[1])
