@@ -5,7 +5,10 @@
 #### this is the class definition for the Batch class.
 #### just bundling the Spectrum objects and normalization/analysis routines
 
-import interface_main, spectrum
+import time
+
+import interface_main
+from spectrum import Spectrum
 from astropy.io import fits
 import numpy as np
 from texttable import Texttable
@@ -14,7 +17,6 @@ import plot_functions
 import pandas as pd
 import GISIC_C as GISIC
 import EW
-import time
 import config
 
 
@@ -68,7 +70,7 @@ class Batch():
 
 
         ### I only want the spectra in the param file
-        self.spectra_names =  self.param_file['name'].tolist()
+        self.spectra_names =  self.param_file['filename'].tolist()
 
         
         def spectra_input(pathname, current):
@@ -76,21 +78,15 @@ class Batch():
             file_ext = current.split('.')[1] 
             if file_ext == 'fits': 
                 with fits.open(pathname) as hdu:
-                    return spectrum.Spectrum(hdu, name=current, is_fits=True)
+                    return Spectrum(hdu, filename=current, is_fits=True)
             elif file_ext =='csv': 
-                return spectrum.Spectrum(pd.read_csv(pathname), name=current, is_fits=False)
+                return Spectrum(pd.read_csv(pathname), filename=current, is_fits=False)
             else: 
                 raise Exception("Invalid file format extension. Currently only .fits and .csv files are supported")
 
         self.spectra_array = [spectra_input(self.spectra_path + current, current) for current in self.spectra_names] 
 
         print("\t\t batch: what is spectra_arry - ", self.spectra_array)
-        '''
-        else:
-            #print("input spectra files are of csv format") 
-            self.spectra_array = [spectrum.Spectrum(pd.read_csv(self.spectra_path + current),
-                name=current, is_fits=False) for current in self.spectra_names]
-        '''
         self.length = len(self.spectra_array)
 
         return
@@ -104,19 +100,20 @@ class Batch():
         for i, row in self.param_file.iterrows():
             spec = self.spectra_array[i]
 
-            assert spec.name == row['name'].strip(), 'Parameter error in calibrate_temperatures()'
+            assert spec.filename == row['filename'].strip(), 'Name is not found!'
             SEQUENCE = row['sequence']
+            STARNAME = row['starname']
             JK = row['J-K']
             CLASS = row['class'].strip()
             MODE  = row['mode'].strip()
-            INPUT_CARBON_MODE = row['carbon_mode'].strip()  # 09-09-2020 J. Yoon
+            INPUT_CARBON_MODE = row['carbon_mode'].strip() 
             ITER  = row['MCMC_iter']
             T_SIGMA = row['T_SIGMA']
             HARD_TEFF = row['TEFF_SET']
 
             #spec.set_params(CLASS = CLASS, JK = JK, MODE=MODE, iter=ITER, T_SIGMA=T_SIGMA, HARD_TEFF=HARD_TEFF)
             # 09-09-2020, 11-13-2021 J. yoon
-            spec.set_params(SEQUENCE = SEQUENCE, CLASS = CLASS, JK = JK, MODE=MODE,
+            spec.set_params(SEQUENCE = SEQUENCE, STARNAME = STARNAME, CLASS = CLASS, JK = JK, MODE=MODE,
                 INPUT_CARBON_MODE=INPUT_CARBON_MODE, iter=ITER, T_SIGMA=T_SIGMA, HARD_TEFF=HARD_TEFF)
 
 
@@ -130,8 +127,9 @@ class Batch():
         for sequence, spec in zip(self.sequence, self.spectra_array):
 
             radial_velocity = float(self.param_file[self.param_file['sequence'] == sequence]['RV'])
+            # radial_velocity = float(self.param_file[self.param_file['sequence'].iloc(sequence)]['RV'])
             spec.radial_correction(radial_velocity)
-            print('\t For {:s},  RV = {:7.2f} km/s'.format(sequence+': '+spec.name, radial_velocity))
+            print('\t For {:s},  RV = {:7.2f} km/s'.format(sequence+': '+spec.filename, radial_velocity))
             #print('    correcting RV= %7.3f km/s:  done' %float(self.param_file[self.param_file['name'] == name]['RV']))
 
 
@@ -143,6 +141,7 @@ class Batch():
         print("\n ... build dataframes")
         [spec.set_frame(wave=spec.get_wave(), flux=spec.get_flux()) for spec in self.spectra_array]
         [spec.trim_frame(bounds) for spec in self.spectra_array]
+        # [print(spec.get_frame_wave()) for spec in self.spectra_array]
 
         return
 
@@ -182,7 +181,7 @@ class Batch():
 
                 spec.set_frame_norm(norm)
                 spec.set_frame_cont(cont)
-                print('\t {:20s}'.format(spec.name), ":  okay")
+                print('\t {:20s}'.format(spec.filename), ":  okay")
 
         else:
             print("\t Sorry - can't customize GISIC normalization yet...")
@@ -216,7 +215,7 @@ class Batch():
 
             spec = self.spectra_array[i]
 
-            assert spec.name == row['name'], 'Parameter error in calibrate_temperatures()'
+            assert spec.filename == row['filename'], 'Parameter error in calibrate_temperatures()'
             #print("\t setting photometric temperature sigma: ", spec.T_SIGMA)
             print("\t setting input temperature sigma: ", spec.T_SIGMA) #J.Yoon 02/11/2022
 
@@ -224,23 +223,22 @@ class Batch():
 
             #### remember that there is a class definition here too
 
+            # set the photo teff here.
+            spec.set_temp_frame(TC.calibrate_temp_frame(float(spec.PHOTO_0['J-K']),
+                                        float(spec.PHOTO_0['g-r']),
+                                        CLASS = CLASS))
+
             # Here sets temp with HARD_TEFF if the value exists.
             if np.isfinite(spec.HARD_TEFF):
-                spec.set_temp_frame(TC.calibrate_temp_frame(float(spec.PHOTO_0['J-K']),
-                                          float(spec.PHOTO_0['g-r']),
-                                          CLASS = CLASS))
 
                 spec.TEMP_FRAME.loc['HARD_TEFF', 'VALUE'] = spec.HARD_TEFF # added for extra table column J.Yoon 02/11/2022
                 spec.TEMP_FRAME.loc['ADOPTED', 'VALUE'] = spec.HARD_TEFF
 
-                spec.set_temperature(spec.HARD_TEFF, spec.T_SIGMA, hard=True)
+                spec.set_temperature(spec.HARD_TEFF, spec.T_SIGMA)
                 print("\t setting and adopting hard teff:   ", spec.HARD_TEFF)
 
             #Here sets temp with one of the photometric temps.
             else:
-                spec.set_temp_frame(TC.calibrate_temp_frame(float(spec.PHOTO_0['J-K']),
-                                          float(spec.PHOTO_0['g-r']),
-                                          CLASS = CLASS))
                 spec.TEMP_FRAME.loc['HARD_TEFF', 'VALUE'] = np.nan  # added for extra table column J.Yoon 02/11/2022
                 spec.set_temperature(spec.TEMP_FRAME.loc['ADOPTED', 'VALUE'], sigma=spec.T_SIGMA)
                 print("\t setting and adopting photo teff:   ", spec.TEMP_FRAME.loc['ADOPTED', 'VALUE'] )
@@ -253,7 +251,7 @@ class Batch():
         output_table = HEADER
 
         for spec in self.spectra_array:
-            row = np.concatenate([[spec.get_name().split(".fits")[0]],[spec.TEMP_FRAME.loc[CURRENT].values[0] for CURRENT in HEADER[1:]]])
+            row = np.concatenate([[spec.get_filename().split(".fits")[0]],[spec.TEMP_FRAME.loc[CURRENT].values[0] for CURRENT in HEADER[1:]]])
             output_table = np.vstack([output_table, row])
 
         table = Texttable()
@@ -283,8 +281,21 @@ class Batch():
     def estimate_sn(self):
         print("\n... estimating S/N")
         [spec.estimate_sn() for spec in self.spectra_array]
+
         return
 
+    def get_sn(self):
+        snr = pd.concat([spec.get_sn() for spec in self.spectra_array])
+
+        try:
+            snr.to_csv( self.output_name + "_snr.csv", index=False)
+
+        except:
+            snr.to_csv(self.output_name + "1_snr.csv", index=False)
+        
+        return
+
+    
     def set_mcmc_args(self):
         print('\n... bulding mcmc_args dict')
         [spec.set_mcmc_args() for spec in self.spectra_array]
@@ -308,7 +319,7 @@ class Batch():
         output_table = ['NAME', "GI", "GII", "GIII"]
 
         for spec in self.spectra_array:
-            row = np.concatenate([[spec.get_name()], [spec.LL_DICT[key][0].round(0) for key in ["GI", "GII", "GIII"]]])
+            row = np.concatenate([[spec.get_filename()], [spec.LL_DICT[key][0].round(0) for key in ["GI", "GII", "GIII"]]])
             output_table = np.vstack([output_table, row])
 
         table = Texttable()
@@ -390,7 +401,7 @@ class Batch():
 
         final = pd.concat([spec.get_output_row() for spec in self.spectra_array])
  
-        with open('outputs/npsave/parameters_output.npy', 'wb') as f:
+        with open('outputs/npsave/'+ self.io_params['output_file_name']+ 'parameters_output.npy', 'wb') as f:
             np.save(f, final)
 
         try:
@@ -398,3 +409,22 @@ class Batch():
 
         except:
             final.to_csv(self.output_name + "1_out.csv", index=False)
+        
+        return
+
+    def generate_output_spectra(self):
+
+        print("\n... generating output spectra")
+
+        final_spectra = pd.concat([spec.get_spectra_row() for spec in self.spectra_array]) 
+        
+        with open('outputs/npsave/'+ self.io_params['output_file_name']+ 'spectra_output.npy', 'wb') as f:
+            np.save(f, final_spectra)
+
+        try:
+            final_spectra.to_csv( self.output_name + "_spectra_output.csv", index=False)
+
+        except:
+            final_spectra.to_csv(self.output_name + "spectra_output_1.csv", index=False)
+        
+        return

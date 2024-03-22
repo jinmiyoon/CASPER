@@ -1,2 +1,0 @@
-sequence,name,J-K,H-K,g-r,EBV_SFD,TEFF_SET,T_SIGMA,RV,SN_CA,SN_CH,SN_C2,class,mode,carbon_mode,MCMC_iter
-15,jy1926_coadd_spectrum.csv,1.0496,0.3192,1.58,0.0454,3945,250,2.6,  NaN, NaN, NaN,DWARF, HALO,CH+C2,1024

@@ -1,2 +1,0 @@
-sequence,name,J-K,H-K,g-r,EBV_SFD,TEFF_SET,T_SIGMA,RV,SN_CA,SN_CH,SN_C2,class,mode,carbon_mode,MCMC_iter
-8,jy0768_med_casper.fits,0.8765,0.1808,1.478,0.0118,3973,250,-33.9,  NaN, NaN, NaN,DWARF, HALO, ,300

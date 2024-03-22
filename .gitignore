@@ -1,0 +1,11 @@
+# ignore log files
+logs/
+inspect/
+*.txt
+*.pyc
+.ipynb_checkpoints/
+inputs/.DS_Store
+__pycache__/
+directory_tree.txt
+.vscode/launch.json
+.DS_Store

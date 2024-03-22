@@ -1,2 +1,0 @@
-sequence,name,J-K,H-K,g-r,EBV_SFD,TEFF_SET,T_SIGMA,RV,SN_CA,SN_CH,SN_C2,class,mode,carbon_mode,MCMC_iter
-18,jy2309_sum_casper.fits,0.6137,-0.048,0.735,0.0438,4908.86,250,-60,  NaN, NaN, NaN,GIANT, HALO,CH ,100

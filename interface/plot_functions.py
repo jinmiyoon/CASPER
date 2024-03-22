@@ -30,8 +30,8 @@ def produce_title(spectrum):
     ## just returns a nice looking string for the plot title
     MCMC_DICT = spectrum.get_mcmc_dict(mode='BOTH')
 
-    return "#"+spectrum.get_sequence()+"  "+ spectrum.get_name() + "  " + \
-    " Teff : %.0F K log g: %.2F [Fe/H] : %.2F [C/Fe] : %.2F A(C) : %.2F" % (MCMC_DICT[0]['TEFF'][0] , spectrum.logg, MCMC_DICT[1]['FEH'][0], MCMC_DICT[1]['CFE'][0], MCMC_DICT[1]['AC'][0]) + \
+    return "#"+spectrum.get_sequence()+"  "+ spectrum.get_starname() + "  " + \
+    "T$_{\\rm eff}$ : %.0F K log $g$: %.2F [Fe/H] : %.2F [C/Fe] : %.2F $A$(C) : %.2F" % (MCMC_DICT[0]['TEFF'][0] , spectrum.logg, MCMC_DICT[1]['FEH'][0], MCMC_DICT[1]['CFE'][0], MCMC_DICT[1]['AC'][0]) + \
     "   MODE:" + spectrum.get_carbon_mode() + " CLASS:" + spectrum.get_gravity_class()+ "  RV: "+ str(spectrum.get_rv()) +" km/s" + " N_iter:"+str(spectrum.MCMC_iterations)
 
 
@@ -95,32 +95,33 @@ def plot_spectra(spectra_batch):
         ax[index, 2].set_title(produce_title(spec), fontsize=7)
 
         ### Continuum Plot
-        ax[index, 0].plot(spec.frame['wave'], spec.frame['flux'], linewidth=LINEW, color='black')
-        ax[index, 0].plot(spec.frame['wave'], spec.frame['cont'], linewidth=LINEW)
-        ax[index, 0].set_xticks(np.arange(4000, 4800, 250))
+        ax[index, 0].plot(spec.frame['wave'], spec.frame['flux'], linewidth=LINEW, color='black', alpha=0.7)
+        ax[index, 0].plot(spec.frame['wave'], spec.frame['cont'], linewidth=LINEW+0.1, linestyle= '-', color= 'teal', alpha = 1)
+        ax[index, 0].set_xticks(np.linspace(config.WAVE_BOUNDS[0], config.WAVE_BOUNDS[1],7))
 
 
         ### Normalization Plot
-        ax[index, 1].axhline(1.00, linewidth=0.75, linestyle='--', color='red')
-        ax[index, 1].plot(spec.frame['wave'], spec.frame['norm'], linewidth=LINEW, color='black')
+        ax[index, 1].axhline(1.00, linewidth=0.5, linestyle='dotted', color='teal', alpha=1)
+        ax[index, 1].plot(spec.frame['wave'], spec.frame['norm'], linewidth=LINEW, color='black', alpha=0.7)
+        ax[index, 1].set_xticks(np.linspace(config.WAVE_BOUNDS[0], config.WAVE_BOUNDS[1],7))
 
         ### CaII Plot
 
-        ax[index, 2].axhline(1.00, linewidth=0.75, linestyle='--', color='red')
+        ax[index, 2].axhline(1.00, linewidth=0.5, linestyle='dotted', color='teal', alpha=1)
         ax[index, 2].plot(spec.frame['wave'],spec.frame['norm'],
-                                             linewidth=LINEW_zoom, color='black')
+                                             linewidth=LINEW_zoom, color='black', alpha=0.7)
 
         ### CH Plot
-        ax[index, 3].axhline(1.00, linewidth=0.75, linestyle='--', color='red')
+        ax[index, 3].axhline(1.00, linewidth=0.5, linestyle='dotted', color='teal', alpha=1)
         ax[index, 3].plot(spec.frame['wave'][spec.frame['wave'].between(4150, 4500, inclusive='both')],
                                              spec.frame['norm'][spec.frame['wave'].between(4150, 4500, inclusive='both')],
-                                             linewidth=LINEW_zoom, color='black')
+                                             linewidth=LINEW_zoom, color='black', alpha=0.7)
 
         ### C2 Plot
-        ax[index, 4].axhline(1.00, linewidth=0.75, linestyle='--', color='red')
+        ax[index, 4].axhline(1.00, linewidth=0.5, linestyle='dotted', color='teal', alpha=1)
         ax[index, 4].plot(spec.frame['wave'][spec.frame['wave'].between(4650, 4850, inclusive='both')],
                                              spec.frame['norm'][spec.frame['wave'].between(4650, 4850, inclusive='both')],
-                                             linewidth=LINEW_zoom, color='black')
+                                             linewidth=LINEW_zoom, color='black', alpha=0.7)
 
         ###### SIGMA SHADING SECTION
         ############################
@@ -130,29 +131,30 @@ def plot_spectra(spectra_batch):
         CA_WAVE = np.linspace(*spec.KP_bounds, 30)
         ax[index, 2].fill_between(CA_WAVE, synth_function(CA_WAVE) * (1. - spec.MCMC_COARSE['XI_CA'][0]),
                                            synth_function(CA_WAVE) * (1. + spec.MCMC_COARSE['XI_CA'][0]),
-                                                      color='purple', alpha=0.25)
+                                                      color='palevioletred', alpha=0.5)
 
-        [ax[index, 2].axvline(edge, linestyle='dotted', linewidth=0.75, alpha=0.8) for edge in CA_WAVE[[0,-1]]]
+        # [ax[index, 2].axvline(edge, linestyle='dotted', linewidth=0.75, alpha=0.8) for edge in CA_WAVE[[0,-1]]]
+        [ax[index, 2].axvspan(CA_WAVE[0], CA_WAVE[-1],color='black', alpha =0.25 )]
 
         #CH
         CH_WAVE = np.linspace(*list(spec.regions['CH']['wave'].iloc[[0,-1]]), 30)
         ax[index, 3].fill_between(CH_WAVE, synth_function(CH_WAVE) * (1. - spec.MCMC_COARSE['XI_CH'][0]),
                                            synth_function(CH_WAVE) * (1. + spec.MCMC_COARSE['XI_CH'][0]),
-                                                      color='purple', alpha=0.25)
+                                                      color='palevioletred', alpha=0.5)
 
 
         # CH lineband from Beers+1990
-        [ax[index, 3].axvspan(4297.5, 4312.5, linewidth=0.75, alpha=0.2, color ='k', hatch='/')]
+        #[ax[index, 3].axvspan(4297.5, 4312.5, linewidth=0.75, alpha=0.2, color ='k', hatch='/')]
 
 
         ###
         #if spec.get_carbon_mode()   == "CH":
-        #    [label.plot(spec.synth_spectrum['wave'], spec.synth_spectrum['norm'], color='purple', linewidth=0.75, alpha=0.75) for label in ax[index, 1:-1]]
+        #    [label.plot(spec.synth_spectrum['wave'], spec.synth_spectrum['norm'], color='palevioletred', linewidth=0.75, alpha=0.75) for label in ax[index, 1:-1]]
 
 
         #elif spec.get_carbon_mode() == "CH+C2":
         [label.plot(spec.synth_spectrum['wave'], spec.synth_spectrum['norm'],
-                    color='purple', linewidth=LINEW, alpha=0.75) for label in ax[index, 1:]]
+                    color='palevioletred', linewidth=LINEW, alpha=1) for label in ax[index, 1:]]
 
         ax[index,1].set_xlim([spec.frame['wave'].iloc[0], spec.frame['wave'].iloc[-1]])
 
@@ -176,7 +178,7 @@ def plot_mcmc_trace_array(spec_batch):
     fig_handle = []
 
     for item in spec_batch.spectra_array:
-        fig_handle.append(plot_single_mcmc_trace(item, spec_batch.output_name))
+        fig_handle.append(plot_single_mcmc_trace(item))
 
     plt.close()
     [pp.savefig(fig) for fig in fig_handle]
@@ -185,7 +187,7 @@ def plot_mcmc_trace_array(spec_batch):
 
     return
 
-def plot_single_mcmc_trace(spectrum, io_path, n_thin= 1):
+def plot_single_mcmc_trace(spectrum, n_thin= 1):
     ### There are three conditions, based on ndim
     ### get number of dimensions
 
@@ -196,22 +198,19 @@ def plot_single_mcmc_trace(spectrum, io_path, n_thin= 1):
 
     if ndim == 6:
         ### COARSE run with CH+C2 mode
-        labels = [r'$T_{\rm eff}$', '[Fe/H]', '[C/Fe]', r'S/N$_{\rm CaII}$', r'S/N$_{\rm CH}$', r'S/N$_{\rm C2}$']  #r'$\xi_{\rm CaII}$', r'$\xi_{\rm CH}$', r'$\xi_{\rm C2}$'
+        labels = [r'$T_{\rm eff}$', '[Fe/H]', '[C/Fe]', r'$\xi_{\rm Ca II}$', r'$\xi_{\rm CH}$', r'$\xi_{\rm C_{2}}$']  
 
     elif ndim == 5:
         ### COARSE run with CH mode
-        labels = [r'$T_{\rm eff}$', '[Fe/H]', '[C/Fe]', r'S/N$_{\rm CaII}$', r'S/N$_{\rm CH}$']
+        labels = [r'$T_{\rm eff}$', '[Fe/H]', '[C/Fe]', r'$\xi_{\rm Ca II}$', r'$\xi_{\rm CH}$']
 
     elif ndim == 2:
         ### Fine parameters case
         labels = ['[Fe/H]', '[C/Fe]']
 
-    name = spectrum.get_name()
-    sequence = spectrum.get_sequence()
-
     #add add_subplots for tracing steps and chain
     fig, axes = plt.subplots(ndim,1, figsize= (6,8), sharex=True)
-    fig.suptitle("COARSE run trace plot: #"+sequence+"  "+name, fontsize=10)
+    fig.suptitle("COARSE run trace plot: #"+spectrum.get_sequence()+"  "+ spectrum.get_filename(), fontsize=10)
 
     for i in range(ndim) :
         axes[i].plot(samples_all[:,:,i], "k", lw= 0.3, alpha=0.2)
@@ -270,12 +269,12 @@ def plot_single_corner(spectrum, io_path, n_thin= 1):
 
 
     if ndim == 6:
-        labels = [r'$T_{\rm eff}$', '[Fe/H]', '[C/Fe]', r'S/N$_{\rm CaII}$', r'S/N$_{\rm CH}$', r'S/N$_{\rm C2}$']  #r'$\xi_{\rm CaII}$', r'$\xi_{\rm CH}$', r'$\xi_{\rm C2}$'
+        labels = [r'${\rm T}_{\rm eff}$', '[Fe/H]', '[C/Fe]',r'$\xi_{\rm CaII}$', r'$\xi_{\rm CH}$', r'$\xi_{\rm C_{2}}$' ]  #r'S/N$_{\rm CaII}$', r'S/N$_{\rm CH}$', r'S/N$_{\rm C2}$'
         #for i in range(3, ndim):
         #    samples[:, i] = np.divide(1., samples[:, i])
 
     elif ndim == 5:
-        labels = [r'$T_{\rm eff}$', '[Fe/H]', '[C/Fe]', r'S/N$_{\rm CaII}$', r'S/N$_{\rm CH}$']
+        labels = [r'${\rm T}_{\rm eff}$', '[Fe/H]', '[C/Fe]', r'$\xi_{\rm Ca II}$', r'$\xi_{\rm CH}$']
         #for i in range(3, ndim):
         #    samples[:, i] = np.divide(1., samples[:, i])
 
@@ -289,9 +288,8 @@ def plot_single_corner(spectrum, io_path, n_thin= 1):
                         labels=labels,
                         color='black', hist_kwargs={'density': True})
 
-    name = spectrum.get_name()
-    sequence = spectrum.get_sequence()
-    fig.suptitle("#"+sequence+"  "+name, fontsize=10)
+    fig.suptitle("#"+spectrum.get_sequence()+"  "+spectrum.get_starname(), fontsize=20)
+
 
 
     MEDIAN = np.median(samples, axis=0)
@@ -318,23 +316,24 @@ def plot_single_corner(spectrum, io_path, n_thin= 1):
     for i in range(ndim):
         span = np.linspace(min(samples.T[i]), max(samples.T[i]), 30)
         axes[i,i].axvline(value2[i], color='r', alpha=0.75)
-        axes[i,i].plot(span, kde_array[i].evaluate(span))
+        axes[i,i].plot(span, kde_array[i].evaluate(span), color='teal')
 
     [label.tick_params(direction='in', right=True, top=True) for label in axes.flatten()]
 
     #plt.subplots_adjust(top=0.9)
-    
-    # this will be done later. I need to create a function to estimate errors. 
-    #params_str = '\n'.join((
-    #    r'T$_{eff}=%f$' % (spectrum.MCMC_COARSE['TEFF'][0],spectrum.MCMC_COARSE['TEFF'][1] ),
-    #    r'log$g$=%.2f \pm %.2f $' % (spectrum.logg,spectrum.logg_err ),
-    #    r'[Fe/H]=%.2f' % (feh, ),
-    #    r'[C/Fe]=%.2f' % (cfe, ),
-    #    r'A(C)=%.2f' % (ac, ),
-    #    r'$\xi_{CaII}=%.2f$' % (xi_caii, ),
-    #    r'$\xi_{CH}=%.2f$' % (xi_ch, ),
-    #    ))
-    #plt.gcf().figtext(0.7,0.7, params_str)
+    output_row = spectrum.get_output_row()
+    legend = output_row.loc[output_row["SEQUENCE"] == spectrum.get_sequence()]
+    key_params = [("T$_{eff}$(K)","TEFF"),("log $g$", "LOGG"), ("[Fe/H]","FEH"),("[C/Fe]", "CFE"), ("$A$(C)","AC"),("$\\xi_{\\rm Ca II}$", "XI_CA"), ("$\\xi_{\\rm CH}$","XI_CH")]  # Only include base parameter names
+    if spectrum.INPUT_CARBON_MODE == "CH+C2":
+        key_params = key_params + [("$\\xi_{\\rm C_{2}}$","XI_C2")]
+
+    # Note: Ensure your matplotlib setup supports LaTeX. If there are issues rendering LaTeX, you may need
+    # to install a LaTeX distribution and/or adjust matplotlib settings.
+
+    params_str = '\n'.join([f"{latex_key}" + f" = ${legend.iloc[0, legend.columns.get_loc(key)]} \\pm {legend.iloc[0, legend.columns.get_loc(key +'_ERR')]}$" for latex_key, key in key_params if key in legend and key + '_ERR' in legend])
+
+
+    plt.figtext(0.7, 0.8, params_str, fontsize=15, ha='left', va ='top')
     
     plt.close()
     return fig

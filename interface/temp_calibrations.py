@@ -184,15 +184,11 @@ def determine_effective(TEMP_FRAME):
 
     INDEX = int(len(FINITE_FRAME)/2)  # to adopt the middle teff value.
 
-    print("\t\t adopting photo teff from : ", FINITE_FRAME.index.values[INDEX])
     value = float(FINITE_FRAME.iloc[INDEX]["VALUE"])
-    #print(value)
 
     assert np.isfinite(value), "\t\t ERROR, PHOTO TEMP NOT FINITE"
-    TEMP_FRAME = TEMP_FRAME.append(pd.DataFrame(data = [value],
-                                   columns = ['VALUE'], index=['ADOPTED']))
-
-    #print(TEMP_FRAME)
+    TEMP_FRAME = pd.concat([TEMP_FRAME, pd.DataFrame(data = [value],
+                                                     columns = ['VALUE'], index=['ADOPTED'])])
     return TEMP_FRAME
 
 

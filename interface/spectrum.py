@@ -14,7 +14,7 @@
 import pandas as pd
 import numpy as np
 import MAD
-import pandas as pd
+from scipy.interpolate import interp1d
 import config
 
 ###############################
@@ -34,10 +34,10 @@ def obtain_flux(data):
         return data[0].flatten()
 
 class Spectrum():
-    def __init__(self, spec, name, is_fits=True):
+    def __init__(self, spec, filename, is_fits=True):
 
-        self.name = name
-        print("\n... initializing:  ", name)
+        self.filename = filename
+        print("\n... initializing:  ", filename)
         ################################################################################
         if is_fits:
             ## This is a cumbersome attempt to accomodate multiple fits data formats..
@@ -118,7 +118,7 @@ class Spectrum():
 
         if float(row['EBV_SFD']) > 0:
             ### Then perform the correction
-            print("\t corrected :", self.get_name())
+            print("\t corrected :", self.get_filename())
 
 
             self.PHOTO_0['J-K'] = float(row['J-K']) - (float(config.A_EBV["A_J"]) - float(config.A_EBV['A_K'])) * float(row['EBV_SFD'])
@@ -129,13 +129,13 @@ class Spectrum():
 
         else:
             ## THEN ASSUME COLORS ARE ALREADY CORRECTED
-            print("\t already corrected:  ", self.get_name())
+            print("\t already corrected:  ", self.get_filename())
 
 
 
     ############################################################
     #def trim_frame(self, bounds= [3000, 5000]):
-    def trim_frame(self, bounds= config.WAVE_BOUNDS):
+    def trim_frame(self, bounds= config.WAVE_BOUNDS):       
         self.frame = self.frame[self.frame['wave'].between(bounds[0], bounds[1], inclusive='both')]
         return
 
@@ -146,20 +146,16 @@ class Spectrum():
         #### determines the first guess SN estimates for each region of interest
         #### defines SN_DICT member variable
 
-        ### might define SIDEBANDS in another file at some point
-        SIDEBANDS = {'CA' : [[3884, 3923], [3995, 4045]],
-                     'CH' : [[4000, 4080], [4440, 4500]],
-                     'C2' : [[4500, 4600], [4760, 4820]]}
 
-        self.SN_DICT = {key : [] for key in SIDEBANDS.keys()}
-        for key in SIDEBANDS.keys():
+        self.SN_DICT = {key : [] for key in config.SIDEBANDS.keys()}
+        for key in config.SIDEBANDS.keys():
 
-            if (SIDEBANDS[key][0][0] > min(self.frame['wave'])) and (SIDEBANDS[key][1][1] < max(self.frame['wave'])):
+            if (config.SIDEBANDS[key][0][0] > min(self.frame['wave'])) and (config.SIDEBANDS[key][1][1] < max(self.frame['wave'])):
 
-                SN_LEFT  = np.sqrt(self.frame['flux'][self.frame['wave'].between(*SIDEBANDS[key][0], inclusive='both')])
-                SN_RIGHT = np.sqrt(self.frame['flux'][self.frame['wave'].between(*SIDEBANDS[key][1], inclusive='both')])
+                SN_LEFT  = np.sqrt(self.frame['flux'][self.frame['wave'].between(*config.SIDEBANDS[key][0], inclusive='both')])
+                SN_RIGHT = np.sqrt(self.frame['flux'][self.frame['wave'].between(*config.SIDEBANDS[key][1], inclusive='both')])
 
-                ### Average the left and right sidebands
+                ### Average the left and right config.SIDEBANDS
 
                 self.SN_DICT[key] = {'SN_AVG' : np.mean([np.median(SN_LEFT), np.median(SN_RIGHT)]),
                                      'SN_STD' : max([MAD.S_MAD(SN_LEFT), MAD.S_MAD(SN_RIGHT)]),
@@ -179,24 +175,39 @@ class Spectrum():
                                      'XI_STD' : np.nan,
                                      'alpha'  : np.nan,
                                      'beta'   : np.nan}
-
-
         return
+    
+    def get_sn(self) -> pd.DataFrame:
+        return pd.DataFrame({
+                "SEQUENCE" : [self.get_sequence()],
+                "FILENAME"     : [self.get_filename()],
+                'SN_AVG_CA'     : [round(self.SN_DICT['CA']['SN_AVG'],0)],
+                'SN_STD_CH'     : [round(self.SN_DICT['CA']['SN_STD'],0)],
+                'SN_AVG_CA'     : [round(self.SN_DICT['CH']['SN_AVG'],0)],
+                'SN_STD_CH'     : [round(self.SN_DICT['CH']['SN_STD'],0)],
+                'XI_AVG_CA'     : [round(self.SN_DICT['CA']['XI_AVG'],4)],
+                'XI_STD_CA'     : [round(self.SN_DICT['CA']['XI_STD'],4)],
+                'XI_AVG_CH'     : [round(self.SN_DICT['CH']['XI_AVG'],4)],
+                'XI_STD_CH'     : [round(self.SN_DICT['CH']['XI_STD'],4)],
+                'XI_AVG_C2'     : [round(self.SN_DICT['C2']['XI_AVG'],4)],
+                'XI_STD_C2'     : [round(self.SN_DICT['C2']['XI_STD'],4)],
+             })
 
 
     #################################################
     ### Total mutators
-    def set_params(self,SEQUENCE, CLASS, JK, MODE, INPUT_CARBON_MODE, iter, T_SIGMA, HARD_TEFF):
+    def set_params(self,SEQUENCE, STARNAME, CLASS, JK, MODE, INPUT_CARBON_MODE, iter, T_SIGMA, HARD_TEFF):
     #def set_params(self,CLASS, JK, MODE, iter, T_SIGMA, HARD_TEFF):
         self.SEQUENCE = str(SEQUENCE)
-        self.gravity_class = str(CLASS)
+        self.STARNAME = str(STARNAME)
+        self.G_CLASS = str(CLASS)
         self.JK = JK
         self.MODE = str(MODE)
         self.INPUT_CARBON_MODE = str(INPUT_CARBON_MODE)
         self.MCMC_iterations = iter
         self.T_SIGMA = float(T_SIGMA)
         self.HARD_TEFF = float(HARD_TEFF)
-        assert (self.gravity_class == 'GIANT') or (self.gravity_class == 'DWARF'), "Invalid gravity class: {}".format(self.gravity_class)
+        assert (self.G_CLASS == 'GIANT') or (self.G_CLASS == 'DWARF'), "Invalid gravity class: {}".format(self.G_CLASS)
         assert (self.MODE == 'UFD') or (self.MODE == 'HALO'), "Invalid Galactic Environment"
         #assert (self.INPUT_CARBON_MODE =='CH') or (self.INPUT_CARBON_MODE =='CH+C2'), "Invalid Enviornment: {}".format(self.carbon_mode)
 
@@ -223,18 +234,17 @@ class Spectrum():
 
         GROUP = ['GI', 'GII', 'GIII'][LLs.index(max(LLs))]
 
-        print('\t ' + self.get_name().ljust(20) + ": ", GROUP, ["%.2F" % val for val in LLs])
+        print('\t ' + self.get_filename().ljust(20) + ": ", GROUP, ["%.2F" % val for val in LLs])
 
         self.ARCH_GROUP = GROUP
 
 
         return
 
-
-
-    def set_temperature(self, input_temp, sigma, hard=False):
+    def set_temperature(self, input_temp, sigma):
         ### for use with the calibrate_temperatures function
         ### input_dict:  {"Casagrande":, "Hernandez":, "Bergeat": }
+        print(f"\t\t batch.set_temperatue(): temp={input_temp}, sigma={sigma}")
         self.teff_irfm = input_temp
         self.teff_irfm_err = sigma
 
@@ -256,7 +266,6 @@ class Spectrum():
 
         return
     
-
     def prepare_regions(self):
         ### prepares the CaII, CH, and C2 regions according to KP_bounds and carbon_mode
 
@@ -269,12 +278,10 @@ class Spectrum():
 
         return
 
-
     def set_temp_frame(self, TEMP_FRAME):
+        #print(f"\t\t batch.set_temp_frame(): temp={TEMP_FRAME}")
         self.TEMP_FRAME = TEMP_FRAME
         return
-
-
 
     def set_mcmc_args(self, input_dict = None):
         ## I'll finish if necessary
@@ -332,22 +339,32 @@ class Spectrum():
         self.norm = input_flux
 
         return
+
     def set_GBAND(self, input):
         ## might be interesting someday..
         self.GBAND_EW = input
         return
 
     def set_frame(self, wave, flux):
-        self.frame = pd.DataFrame({'wave': wave, 'flux': flux})
+
+        # Trim the frame within the wave bounds we are interested in.
+        # Since the observed wave array size is different from the synthetic wave, 
+        # we need to set they are the same size. Future work below. FRAME_WAVE should be the same as SYNTH_WAVE
+        #new_frame_wave = config.FRAME_WAVE
+        #new_frame_flux = interp1d(config.FRAME_WAVE, flux, kind='linear')
+        #self.frame = pd.DataFrame({'wave': config.FRAME_WAVE, 'flux': new_frame_flux})
+ 
+        # setting pandas DF of the original spectra
+        self.frame = pd.DataFrame({'wave': wave, 'flux': flux}) 
         return
 
-    def set_frame_wave(self, input_wave):
-        self.frame.loc[:, 'wave'] = input_wave
-        return
+    # def set_frame_wave(self, input_wave):
+    #     self.frame.loc[:, 'wave'] = input_wave
+    #     return
 
-    def set_frame_flux(self, input_flux):
-        self.frame.loc[:, 'flux'] = input_flux
-        return
+    # def set_frame_flux(self, input_flux):
+    #     self.frame.loc[:, 'flux'] = input_flux
+    #     return
 
     def set_frame_norm(self, input_norm):
         self.frame.loc[:, 'norm'] = input_norm
@@ -361,38 +378,47 @@ class Spectrum():
         self.synth_spectrum = synth
         return
 
-    ################################################################
     def get_sequence(self):
         return "{:s}".format(self.SEQUENCE)
 
-    def get_name(self):
-        return "{:<20}".format(self.name)
-        #return self.name.ljust(20)
+    def get_filename(self):
+        return "{:<20}".format(self.filename)
+
+    def get_starname(self):
+        return "{:<25}".format(self.STARNAME)
 
     def get_wave(self):
         # wavelength of observed spectra
         return self.wavelength
 
-    def get_norm(self):
-        return self.norm
+    # def get_norm(self):
+    #     return self.norm
 
     def get_flux(self):
+        # observed flux
         return self.flux
 
     def get_frame(self):
+        # get pandas frame of wavelength and flux of interest (limited for CASPER analysis)
         return self.frame
 
     def get_frame_wave(self):
+        # get frame (limited) wavelength for CASPER analysis
         return self.frame['wave']
 
     def get_frame_flux(self):
+        # get frame (limited) flux for CASPER analysis
         return self.frame['flux']
 
     def get_frame_norm(self):
+        # get frame (limited) normalized flux for CASPER analysis
         return self.norm['norm']
 
     def get_gravity_class(self):
-        return self.gravity_class
+        return self.G_CLASS
+
+    def get_logg(self):
+        return self.logg.item(), self.logg_err
 
     def get_carbon_mode(self):
         return self.carbon_mode
@@ -421,7 +447,6 @@ class Spectrum():
 
         return self.KDE_COARSE
 
-
     def get_mcmc_dict(self, mode='COARSE'):
         if mode == 'COARSE':
             return self.MCMC_COARSE
@@ -438,6 +463,7 @@ class Spectrum():
 
     def get_MCMC_iterations(self):
         return self.MCMC_iterations
+
     '''
     def get_errors(self):
 
@@ -447,36 +473,67 @@ class Spectrum():
         
         return
         '''
+
+    def get_spectra_row(self):
+        output_spectra = pd.DataFrame({
+                        'OBSERVED_WAVE' : [self.frame['wave'].values.tolist()],
+                        'OBSERVED_FLUX' : [self.frame['norm'].values.tolist()],
+                        'SYNTH_WAVE'    : [self.synth_spectrum['wave'].values.tolist()],
+                        'SYNTHETIC_FLUX': [self.synth_spectrum['norm'].values.tolist()],
+        })
+        return output_spectra
+    
     def get_output_row(self):
         ## simply produces a dataframe row with the desired outputs
         # 01-04-2022 added  a missing suffix ('_UNC') for TEFF_IRFM_UNC 
-        return pd.DataFrame({
+        output = pd.DataFrame({
                         "SEQUENCE" : [self.get_sequence()],
-                        "NAME"     : [self.get_name()],
+                        "FILENAME"     : [self.get_filename()],
+                        "STARNAME" : [self.get_starname()],
                         "ENV_MODE" : [self.get_environ_mode()],
                         "CAR_MODE" : [self.get_carbon_mode()],
                         'CEMP_GRP_TENT'    : [self.get_arch_group()],
-                        'CLASS'    : [self.get_gravity_class()],
+                        'GCLASS'    : [self.get_gravity_class()],
                         'TEFF'     : [round(self.MCMC_COARSE['TEFF'][0], 0)],
                         'TEFF_ERR' : [round(self.MCMC_COARSE['TEFF'][1], 0)],
                         'TEFF_ADT': [round(self.teff_irfm)],
                         'TEFF_ADT_ERR': [self.teff_irfm_err],
                         'LOGG'     : [round(self.logg.item(),2)],
                         'LOGG_ERR'     : [round(self.logg_err ,2)],
+                        # 'LOGG'     : [round(self.get_logg()[0], 2)],
+                        # 'LOGG_ERR'     : [round(self.get_logg()[1], 2)],
                         'FEH'      : [round(self.MCMC_REFINE['FEH'][0], 2)],
                         'FEH_ERR'  : [round(max([self.MCMC_REFINE['FEH'][1], self.MCMC_COARSE['FEH'][1]]), 2)],
                         'CFE'      : [round(self.MCMC_REFINE['CFE'][0], 2)],
                         'CFE_ERR'  : [round(max([self.MCMC_REFINE['CFE'][1], self.MCMC_COARSE['CFE'][1]]), 2)],
                         'AC'       : [round(self.MCMC_REFINE['AC'][0], 2)],
                         'AC_ERR'   : [round(max([self.MCMC_REFINE['AC'][1], self.MCMC_COARSE['AC'][1]]), 2)],
-                        'RV'       : [self.get_rv()],
+                        'RV'       : [round(self.get_rv(),1)],
                         'OBSERVED_WAVE' : [self.frame['wave'].values.tolist()],
                         'OBSERVED_FLUX' : [self.frame['norm'].values.tolist()],
                         'SYNTH_WAVE'    : [self.synth_spectrum['wave'].values.tolist()],
                         'SYNTHETIC_FLUX': [self.synth_spectrum['norm'].values.tolist()],
-                        'XI_CH'         : [self.MCMC_COARSE['XI_CH']],
-                        'XI_CA'         : [self.MCMC_COARSE['XI_CA']]
+                        'XI_CA'         : [round(self.SN_DICT['CA']['XI_AVG'],4)],
+                        'XI_CA_ERR'     : [round(self.SN_DICT['CA']['XI_STD'],4)],
+                        'XI_CH'         : [round(self.SN_DICT['CH']['XI_AVG'],4)],
+                        'XI_CH_ERR'     : [round(self.SN_DICT['CH']['XI_STD'],4)],
                    })
+        if self.INPUT_CARBON_MODE == "CH+C2":
+            c2_output = pd.DataFrame({
+                        'XI_C2'         : [round(self.SN_DICT['C2']['XI_AVG'],4)],
+                        'XI_C2_ERR'     : [round(self.SN_DICT['C2']['XI_STD'],4)],
+
+            })
+            output =pd.concat([output, c2_output], axis=1)
+
+        sn_output = pd.DataFrame({
+                        'SN_AVG_CA'     : [round(self.SN_DICT['CA']['SN_AVG'],0)],
+                        'SN_AVG_CH'     : [round(self.SN_DICT['CH']['SN_AVG'],0)]
+        })
+        output = pd.concat([output, sn_output], axis=1)
+
+        return output
+
     ###### PRINT METHODS
     def print_KP_bounds(self):
         return str(self.KP_bounds[0]) + " - " + str(self.KP_bounds[1])

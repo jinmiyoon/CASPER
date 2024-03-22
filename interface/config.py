@@ -5,13 +5,15 @@ import numpy as np
 
 # constraining the wavelength range of interest for both obs and synthetic wave
 WAVE_BOUNDS = [3800., 5000.]
-#WAVE_BOUNDS = [3900., 4800.]
+#WAVE_BOUNDS = [3850., 4850.]
 SYNTH_WAVE = np.arange(WAVE_BOUNDS[0],WAVE_BOUNDS[1]+1,1)
+#FRAME_WAVE = np.arange(WAVE_BOUNDS[0],WAVE_BOUNDS[1]+1,1)
 
 # synthetic model wavelength range
 INTERPOLATOR_WAVE = np.arange(3000., 5001., 1)
 # need to define the index of wavelength for synthetic flux
 id_start_wave =  np.where( INTERPOLATOR_WAVE == WAVE_BOUNDS[0])[0][0]
+id_end_wave =  np.where( INTERPOLATOR_WAVE == WAVE_BOUNDS[1])[0][0]
 
 
 ## wavelength ranges for CH and Ca lines ## 
@@ -19,6 +21,11 @@ CH_BOUNDS = [4222., 4322.]
 KP_BOUNDS = {"K6"  : [3930.7, 3936.7],
             "K12" : [3927.7, 3939.7],
             "K18" : [3924.7, 3942.7]}
+
+### SIDEBANDS for SN and XI calculations
+SIDEBANDS = {'CA' : [[3884, 3923], [3995, 4045]],
+                'CH' : [[4000, 4080], [4440, 4500]],
+                'C2' : [[4500, 4600], [4760, 4820]]}
 
 
 

@@ -14,17 +14,19 @@
 io_paths = 'interface/io_paths.py'
 
 
-import os, sys
+import os
+import sys
 
 sys.path.append("./interface")
-from batch import Batch
 from multiprocessing import freeze_support
 import time
+from batch import Batch
 
 # We need the below line to attempt to start a new process before the current
 # process has finished its bootstrapping phase. This line allows multiprocessing
 # in interface_mcmc.run_mcmc_determination(). J. Yoon 03/11/2022
 if __name__ == "__main__":
+
     freeze_support()
 
     start_time = time.time()
@@ -33,6 +35,7 @@ if __name__ == "__main__":
     # Create directory
     
     dirName = 'outputs/logs'
+
     """
     try:
         # Create target Directory
@@ -48,13 +51,16 @@ if __name__ == "__main__":
     print("### CAPER starts now: ###")
     print("\n ... initializing spectra batch")
 
+    # instantiate a Batch object of spectra
     spec_batch = Batch(io_paths)
+
+    # set io path
     spec_batch.set_io_paths()
 
     ################################################################################
     ### load spectra + params
     spec_batch.load_params()
-    print("spectra name:  ", spec_batch.param_file['name'])
+    print("spectra name:  ", spec_batch.param_file['filename'])
     spec_batch.load_spectra()
     spec_batch.set_params()
 
@@ -75,6 +81,10 @@ if __name__ == "__main__":
     spec_batch.set_carbon_mode()
 
     spec_batch.estimate_sn()
+    spec_batch.get_sn()
+
+    #sys.exit()
+    
     spec_batch.ebv_correction()
 
     ################################################################################
@@ -83,9 +93,10 @@ if __name__ == "__main__":
     # is this procedure done for once for initial param for archetype_classification?
     spec_batch.calibrate_temperatures()
 
+    # decide the tentative archetype classification
     spec_batch.archetype_classification()
 
-    #spec_batch.mcmc_determination(pool=20) # no need of pool
+    # spec_batch.mcmc_determination(pool=20) # no need of pool
     spec_batch.mcmc_determination()
 
     # interpolate gravity logg from isochrone
@@ -93,10 +104,17 @@ if __name__ == "__main__":
  
     ################################################################################
     ##### generate output files
+
+    # generate synthetic spectra
     spec_batch.generate_synthetic()
 
+    # generate a file of both observed and synthetic spectra for later plot manipulation
+    spec_batch.generate_output_spectra()
+
+    # generate an output file of stellar parameters and other parameters
     spec_batch.generate_output_files()
 
+    # generate plots: spectral fit, corner plot, trace plot
     spec_batch.generate_plots()
  
 

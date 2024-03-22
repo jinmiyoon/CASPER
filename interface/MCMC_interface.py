@@ -121,7 +121,7 @@ def interp1d_synth_flux(synth_wave, G_CLASS, teff, feh, carbon):
 
     if np.isfinite(INTERPOLATOR[G_CLASS]([teff, feh, carbon])).all():
         synth_flux = INTERPOLATOR[G_CLASS]([teff, feh, carbon])[0]
-        norm_synth_flux = normalize(synth_wave, synth_flux[config.id_start_wave:])
+        norm_synth_flux = normalize(synth_wave, synth_flux[config.id_start_wave:config.id_end_wave+1])
 
         return interp1d(synth_wave, norm_synth_flux, kind = 'linear')
     

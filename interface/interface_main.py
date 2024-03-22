@@ -45,10 +45,10 @@ GRAV_INTERP = get_grav_interp()
 SYNTH_WAVE = config.SYNTH_WAVE
 
 def synth_normalize(spectrum, group, temp):
-    interp_flux = INTERPOLATOR[spectrum.gravity_class](temp, ARCHETYPE_PARAMS[spectrum.MODE][group]['FEH'], 
+    interp_flux = INTERPOLATOR[spectrum.G_CLASS](temp, ARCHETYPE_PARAMS[spectrum.MODE][group]['FEH'], 
                                                                         ARCHETYPE_PARAMS[spectrum.MODE][group]['CFE'])
     if np.isfinite(interp_flux).all(): 
-        return normalize(SYNTH_WAVE, interp_flux[config.id_start_wave:])
+        return normalize(SYNTH_WAVE, interp_flux[config.id_start_wave:config.id_end_wave+1])
     else: 
         print("Interpolated synthetic flux is not finite, params = ",temp, ARCHETYPE_PARAMS[spectrum.MODE][group]['FEH'], ARCHETYPE_PARAMS[spectrum.MODE][group]['CFE'])
 
@@ -75,10 +75,10 @@ def archetype_classify_MC(spectrum):
     ### GI
     """
     def synth_normalize(group, temp):
-        interp_flux = INTERPOLATOR[spectrum.gravity_class](temp, ARCHETYPE_PARAMS[spectrum.MODE][group]['FEH'], 
+        interp_flux = INTERPOLATOR[spectrum.G_CLASS](temp, ARCHETYPE_PARAMS[spectrum.MODE][group]['FEH'], 
                                                                             ARCHETYPE_PARAMS[spectrum.MODE][group]['CFE'])
         if np.isfinite(interp_flux).all(): 
-            return normalize(SYNTH_WAVE, interp_flux[config.id_start_wave:])
+            return normalize(SYNTH_WAVE, interp_flux[config.id_start_wave:config.id_end_wave+1])
         else: 
             print("Interpolated synthetic flux is not finite, params = ",temp, ARCHETYPE_PARAMS[spectrum.MODE][group]['FEH'], ARCHETYPE_PARAMS[spectrum.MODE][group]['CFE'])
     """
@@ -108,17 +108,17 @@ def archetype_classify_MC(spectrum):
     """ # When using Devin's library
     #span = np.ones(length)
 
-    GI_NORM_SYNTH = INTERPOLATOR[spectrum.gravity_class](np.column_stack((temp_values,
+    GI_NORM_SYNTH = INTERPOLATOR[spectrum.G_CLASS](np.column_stack((temp_values,
                                                 span * ARCHETYPE_PARAMS[spectrum.MODE]['GI']['FEH'],
                                                 span * ARCHETYPE_PARAMS[spectrum.MODE]['GI']['CFE'])))
 
 
-    GII_NORM_SYNTH = INTERPOLATOR[spectrum.gravity_class](np.column_stack((temp_values,
+    GII_NORM_SYNTH = INTERPOLATOR[spectrum.G_CLASS](np.column_stack((temp_values,
                                                 span * ARCHETYPE_PARAMS[spectrum.MODE]['GII']['FEH'],
                                                 span * ARCHETYPE_PARAMS[spectrum.MODE]['GII']['CFE'])))
 
 
-    GIII_NORM_SYNTH = INTERPOLATOR[spectrum.gravity_class](np.column_stack((temp_values,
+    GIII_NORM_SYNTH = INTERPOLATOR[spectrum.G_CLASS](np.column_stack((temp_values,
                                                 span * ARCHETYPE_PARAMS[spectrum.MODE]['GIII']['FEH'],
                                                 span * ARCHETYPE_PARAMS[spectrum.MODE]['GIII']['CFE'])))
     
@@ -169,7 +169,7 @@ def mcmc_determination(spectrum, mode='COARSE', burnin_factor=7):
     # mode here means either "coarse" or "fine" , 09/02/2020, J. Yoon
     print("\t * MCMC run mode =  ", mode)
     # spectrum and its info
-    print('\t ' + spectrum.get_name().ljust(20) + ":  " + spectrum.get_gravity_class() + " : " + spectrum.get_carbon_mode() + " : " + spectrum.print_KP_bounds())
+    print('\t ' + spectrum.get_starname() + ":  " + spectrum.get_gravity_class() + " : " + spectrum.get_carbon_mode() + " : " + spectrum.print_KP_bounds())
 
 
     ## FOR initial FEH and CFE values, for temp use photometric temp.
@@ -252,7 +252,7 @@ def mcmc_determination(spectrum, mode='COARSE', burnin_factor=7):
         start = time.time()
 
 
-        _ = sampler.run_mcmc(pos, n_step, progress=True)
+        _ = sampler.run_mcmc(pos, n_step, skip_initial_state_check= False, progress=True)
         end = time.time()
         multi_time = end - start
         print(f'Process {current_process().name} ended working', flush=True) 
@@ -332,12 +332,12 @@ def generate_synthetic(spectrum):
     
     # NORM_SYNTH_FLUX = normalize(SYNTH_WAVE, synth_interp_flux[config.id_start_wave:])
     if np.isfinite(interp_flux).all(): 
-        NORM_SYNTH_FLUX =normalize(SYNTH_WAVE, interp_flux[config.id_start_wave:])
+        NORM_SYNTH_FLUX =normalize(SYNTH_WAVE, interp_flux[config.id_start_wave:config.id_end_wave+1])
         spectrum.set_synth_spectrum(pd.DataFrame({'wave' : SYNTH_WAVE, 'norm' : NORM_SYNTH_FLUX.T}))
     else: 
         print("generate_synthetic: Interpolated synthetic flux is not finite, params = ",spectrum.MCMC_COARSE['TEFF'][0], 
               spectrum.MCMC_REFINE['FEH'][0],spectrum.MCMC_REFINE['CFE'][0])
-        print(f"the sequence is {spectrum.get_sequence()} and the star name is {spectrum.get_name()}")
+        print(f"the sequence is {spectrum.get_sequence()} and the star name is {spectrum.get_starname()}")
         # somehow the final params could be np.nan due to a slight deviation from the grids. 
         # In that case, the synthetic flux is nan. So we need to get around this problem for 
         spectrum.set_synth_spectrum(pd.DataFrame({'wave' : SYNTH_WAVE, 'norm' : np.nan* np.ones_like(SYNTH_WAVE)}))
