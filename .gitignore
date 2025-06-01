@@ -11,3 +11,4 @@ directory_tree.txt
 .DS_Store
 *.csv
 inputs/*.csv
+outputs/
