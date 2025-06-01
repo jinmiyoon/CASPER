@@ -178,7 +178,7 @@ class Spectrum():
         return
     
     def get_sn(self) -> pd.DataFrame:
-        return pd.DataFrame({
+        sn_output = pd.DataFrame({
                 "SEQUENCE" : [self.get_sequence()],
                 "FILENAME"     : [self.get_filename()],
                 'SN_AVG_CA'     : [round(self.SN_DICT['CA']['SN_AVG'],0)],
@@ -192,6 +192,14 @@ class Spectrum():
                 'XI_AVG_C2'     : [round(self.SN_DICT['C2']['XI_AVG'],4)],
                 'XI_STD_C2'     : [round(self.SN_DICT['C2']['XI_STD'],4)],
              })
+        if self.INPUT_CARBON_MODE == "CH+C2":
+            sn_c2_output = pd.DataFrame({
+                        'XI_C2'         : [round(self.SN_DICT['C2']['XI_AVG'],4)],
+                        'XI_C2_ERR'     : [round(self.SN_DICT['C2']['XI_STD'],4)],
+
+            })
+            sn_output =pd.concat([sn_output, sn_c2_output], axis=1)
+        return sn_output
 
 
     #################################################
