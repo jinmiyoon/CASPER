@@ -9,3 +9,5 @@ __pycache__/
 directory_tree.txt
 .vscode/launch.json
 .DS_Store
+*.csv
+inputs/*.csv
