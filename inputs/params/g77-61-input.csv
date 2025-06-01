@@ -1,5 +1,0 @@
-sequence,filename,starname,J-K,H-K,g-r,EBV_SFD,TEFF_SET,T_SIGMA,RV,SN_CA,SN_CH,SN_C2,class,mode,carbon_mode,MCMC_iter
-1,g77-61_coadd_spectrum.csv,G77-61,0.9373,0.3267,,0.1089,4127,250,-10.4,  NaN, NaN, NaN,DWARF, HALO,CH ,512
-2,g77-61_coadd_spectrum.csv,G77-61,0.9373,0.3267,,0.1089,4127,250,-10.4,  NaN, NaN, NaN,DWARF, HALO,CH+C2 ,512
-3,g77-61_blue_sum.fits,G77-61,0.9373,0.3267,,0.1089,4127,250,-10.4,NaN,NaN,NaN,DWARF,HALO,CH,1024
-4,g77-61_blue_sum.fits,G77-61,0.9373,0.3267,,0.1089,4127,250,-10.4,NaN,NaN,NaN,DWARF,HALO,CH+C2,1024
