@@ -1,6 +1,0 @@
-06/24/2021 J. Yoon
-
-Not USED scripts in the CASPER package
-
-synthetic_MLE.py
-chi_mcmc.py
