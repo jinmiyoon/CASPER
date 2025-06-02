@@ -5,7 +5,7 @@
 "spectra_dir_path" : "inputs/spectra/test_spectra/",
 # set input parameter path
 "param_path"  : "inputs/params/param_file_test.dat",
-"output_dir_path"   : "outputs/samples/",
+"output_dir_path"   : "outputs/",
 "output_file_name"  : "test"
 #
 }

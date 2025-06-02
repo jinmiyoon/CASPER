@@ -11,11 +11,12 @@
 ## This routine is under CASPER/interface/
 
 
-import pandas as pd
-import numpy as np
-import MAD
-from scipy.interpolate import interp1d
 import config
+import MAD
+import numpy as np
+import pandas as pd
+from scipy.interpolate import interp1d
+
 
 ###############################
 #Spectrum Class Definition
@@ -71,7 +72,7 @@ class Spectrum():
 
             if self.flux.dtype.byteorder == ">":
                 print('... correcting endian mismatch')
-                self.flux = self.flux.byteswap().newbyteorder()
+                self.flux = self.flux.byteswap().view(self.flux.dtype.newbyteorder())
 
             #print(self.flux.dtype.byteorder == self.wavelength.dtype.byteorder)
         ################################################################################

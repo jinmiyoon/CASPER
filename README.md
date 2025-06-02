@@ -1,15 +1,48 @@
 ###  CEMP Group Assignment and Stellar Parameter Estimation Routine (CASPER)
 #### Main Developers: Devin D. Whitten, Jinmi Yoon
-#### Collaborators : Joseph Zepeda
 #### Email: devin.d.whitten@gmail.com, jinmi.yoon@gmail.com
 
 This script package, CASPER, is designed to determine reliable stellar parameters (temperature, metallicity, surface gravity, and carbon abundance) of low/medium-resolution stellar spectra for cool Carbon-Enhanced Metal-Poor (CEMP) stars (Teff < 5000K). This package is under development for public use and thus needs more testings and refinements (Whitten, Yoon, et al. in prep). The description of the CASPER methodology can be found in Yoon, Whitten, et al. 2020 (The Astrophysical Journal, 894,7). The detailed documentation, along with the codes, will be available for public use in the near future.
 
-### Required python packages
-If you installed anaconda3, you will need to install these packages.
-- conda install -c astropy emcee
-- conda install -c astropy corner
-- conda install -c conda-forge texttable
+### Python environment setup
+- The required python packages can be found in [caper311.yml](casper311.yml).
+
+- If you use `conda`, run this command to create an conda environment.
+
+```shell
+conda env create -f casper311.yml
+```
+
+
+- If you want to create a lightweight python environment, you can use `micromamba`, which is fast alternative to conda, written in C++, that implements the same CLI interface. Follow this [instructions](https://mamba.readthedocs.io/en/latest/installation/micromamba-installation.html) to install `micromamba. You can create the CASPER environment by running this command.
+
+```shell
+micromamba create --file casper311.yml
+``` 
+
+### How to run CASPER
+
+First, you can set up your custom input parameters and spectra and the output directory and file name prefix in `interface/io_paths.py`.
+You will need to create the `outputs` folder on the main directory where `main.py` is found.
+
+To run CASPER, run this command on your terminal.
+
+```shell
+python main.py
+```
+
+### Output files
+Once you run CASPER, you will have several output files.
+
+- `*_archetype_likelihood_table.txt`: a table of CEMP group archetype likelihood
+- `*_corner.pdf` : a resulting corner plot
+- `*_mcmc_trace.pdf`: a mcmc trace plot
+- `*_out.csv` : a stellar parameter output file
+- `*_snr.csv`: a CSV file of the SNRs of Ca K line, CH band, and C2 bands
+- `*_spec.pdf`: a pdf file of the plots of spectral fits
+- `*_spectra_output.csv`: an extracted output of observed and synthetic spectra
+- `*_temp_cal_table.txt`: a table of temperature calibration
+
 
 ### Collaboration, Scientific Use
 If you want to use this package for your scientific use and/or help to complete the development, please contact first both Devin Whitten (devin.d.whitten@gmail.com) and Jinmi Yoon (jinmi.yoon@gmail.com).
