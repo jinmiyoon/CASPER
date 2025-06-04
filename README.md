@@ -5,7 +5,7 @@
 This script package, CASPER, is designed to determine reliable stellar parameters (temperature, metallicity, surface gravity, and carbon abundance) of low/medium-resolution stellar spectra for cool Carbon-Enhanced Metal-Poor (CEMP) stars (Teff < 5000K). This package is under development for public use and thus needs more testings and refinements (Whitten, Yoon, et al. in prep). The description of the CASPER methodology can be found in Yoon, Whitten, et al. 2020 (The Astrophysical Journal, 894,7). The detailed documentation, along with the codes, will be available for public use in the near future.
 
 ### Python environment setup
-- The required python packages can be found in [caper311.yml](casper311.yml).
+- The required python packages can be found in [caper_requirement.yml](casper_requirement.yml).
 
 - If you use `conda`, run this command to create an conda environment.
 
