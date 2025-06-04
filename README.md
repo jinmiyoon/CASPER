@@ -10,14 +10,14 @@ This script package, CASPER, is designed to determine reliable stellar parameter
 - If you use `conda`, run this command to create an conda environment.
 
 ```shell
-conda env create -f casper311.yml
+conda env create -f caper_requirement.yml
 ```
 
 
 - If you want to create a lightweight python environment, you can use `micromamba`, which is fast alternative to conda, written in C++, that implements the same CLI interface. Follow this [instructions](https://mamba.readthedocs.io/en/latest/installation/micromamba-installation.html) to install `micromamba. You can create the CASPER environment by running this command.
 
 ```shell
-micromamba create --file casper311.yml
+micromamba create --file caper_requirement.yml
 ``` 
 
 ### How to run CASPER
