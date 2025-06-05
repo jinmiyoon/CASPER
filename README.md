@@ -19,7 +19,7 @@ conda env create -f casper_requirement.yml
 ```shell
 micromamba create --file casper_requirement.yml
 ``` 
-To activate the environment, run:
+To activate the environment, run in the Casper directory:
 ```shell
 micromamba activate casper311
 ``` 
