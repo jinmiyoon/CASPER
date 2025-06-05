@@ -19,14 +19,25 @@ conda env create -f caper_requirement.yml
 ```shell
 micromamba create --file caper_requirement.yml
 ``` 
-
+To activate the environment, run:
+```shell
+micromamba activate casper311
+``` 
 ### How to run CASPER
 
 First, you can set up your custom input parameters and spectra and the output directory and file name prefix in `interface/io_paths.py`.
 You will need to create the `outputs` folder on the main directory where `main.py` is found.
 
-To run CASPER, run this command on your terminal.
+CASPER uses .pkl files tracked with Git Large File Storage. Make sure to install the lfs.
 
+```shell
+brew install git-lfs
+```
+```shell
+git lfs install
+git lfs pull
+``` 
+To run CASPER, run this command on your terminal. 
 ```shell
 python main.py
 ```
