@@ -5,19 +5,19 @@
 This script package, CASPER, is designed to determine reliable stellar parameters (temperature, metallicity, surface gravity, and carbon abundance) of low/medium-resolution stellar spectra for cool Carbon-Enhanced Metal-Poor (CEMP) stars (Teff < 5000K). This package is under development for public use and thus needs more testings and refinements (Whitten, Yoon, et al. in prep). The description of the CASPER methodology can be found in Yoon, Whitten, et al. 2020 (The Astrophysical Journal, 894,7). The detailed documentation, along with the codes, will be available for public use in the near future.
 
 ### Python environment setup
-- The required python packages can be found in [caper_requirement.yml](casper_requirement.yml).
+- The required python packages can be found in [casper_requirement.yml](casper_requirement.yml).
 
 - If you use `conda`, run this command to create an conda environment.
 
 ```shell
-conda env create -f caper_requirement.yml
+conda env create -f casper_requirement.yml
 ```
 
 
 - If you want to create a lightweight python environment, you can use `micromamba`, which is fast alternative to conda, written in C++, that implements the same CLI interface. Follow this [instructions](https://mamba.readthedocs.io/en/latest/installation/micromamba-installation.html) to install `micromamba. You can create the CASPER environment by running this command.
 
 ```shell
-micromamba create --file caper_requirement.yml
+micromamba create --file casper_requirement.yml
 ``` 
 To activate the environment, run:
 ```shell
