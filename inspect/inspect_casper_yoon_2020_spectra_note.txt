@@ -1,1 +1,0 @@
- There are some inconsistencies for RA/Dec from the fits header. The two stars have wrong RA/Dec and other stars also have slightly different coordinates from the current postion of the stars.
