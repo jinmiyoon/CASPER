@@ -19,7 +19,8 @@ dependencies = [
     "numpy-2.3.0",
     "pandas-2.3.0",
     "statsmodels-0.14.4",
-    
+    "astropy-7.1.0",
+
 
  
 
