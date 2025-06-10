@@ -167,3 +167,6 @@ npsave/
 
 # logs folder
 logs/
+
+# inspect folder
+inspect/
