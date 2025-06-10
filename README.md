@@ -30,6 +30,13 @@ To run CASPER, run this command on your terminal.
 ```shell
 python main.py
 ```
+```shell
+brew install git-lfs
+```
+```shell
+git lfs install
+git lfs pull
+``` 
 
 ### Output files
 Once you run CASPER, you will have several output files.
