@@ -14,7 +14,14 @@ license = { file = "licenses/LICENSE.rst" }
 authors = [
   { name = "Taylor Webb", email = "taylorw0525@gmail.com" },
 ]
-dependencies = []
+dependencies = [
+    "scipy-1.15.3",
+    "numpy-2.3.0",
+    "pandas-2.3.0",
+
+ 
+
+]
 dynamic = ["version"]
 
 [project.scripts]
