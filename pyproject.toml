@@ -15,19 +15,15 @@ authors = [
   { name = "Taylor Webb", email = "taylorw0525@gmail.com" },
 ]
 dependencies = [
-    "scipy-1.15.3",
-    "numpy-2.3.0",
-    "pandas-2.3.0",
-    "statsmodels-0.14.4",
-    "astropy-7.1.0",
-    "emcee-3.1.6",
-    "texttable-1.7.0",
-    "matplotlib-3.10.3",
-    "corner-2.2.3",
-
-
-
- 
+    "scipy==1.15.3",
+    "numpy==2.3.0",
+    "pandas==2.3.0",
+    "statsmodels==0.14.4",
+    "astropy==7.1.0",
+    "emcee==3.1.6",
+    "texttable==1.7.0",
+    "matplotlib==3.10.3",
+    "corner==2.2.3",
 
 ]
 dynamic = ["version"]
