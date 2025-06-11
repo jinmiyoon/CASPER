@@ -21,3 +21,4 @@ dependencies:
     - flask
     - boto3
     - statsmodels
+    - scipy

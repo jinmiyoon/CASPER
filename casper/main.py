@@ -11,6 +11,7 @@
 # output directory and the ouput files.
 # io_paths lets you prepend the output name for parameter file as .csv,
 # casper fit as .pdf file, and cornerplot for mcmc calculations for the best parameters.
+
 io_paths = 'interface/io_paths.py'
 
 
@@ -20,21 +21,29 @@ import sys
 sys.path.append("./interface")
 from multiprocessing import freeze_support
 import time
-from batch import Batch
+from interface.batch import Batch
 
 # We need the below line to attempt to start a new process before the current
 # process has finished its bootstrapping phase. This line allows multiprocessing
 # in interface_mcmc.run_mcmc_determination(). J. Yoon 03/11/2022
+
+PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+
+LOG_DIR = os.path.join(PROJECT_ROOT, 'logs')
+NPSAVE_DIR = os.path.join(PROJECT_ROOT, 'npsave')
+OUTPUT_DIR = os.path.join(PROJECT_ROOT, 'outputs')
+
+os.makedirs(LOG_DIR, exist_ok=True)
+os.makedirs(NPSAVE_DIR, exist_ok=True)
+os.makedirs(OUTPUT_DIR, exist_ok=True)
+
+
 if __name__ == "__main__":
 
     freeze_support()
 
     start_time = time.time()
 
-
-    # Create directory
-    
-    dirName = 'outputs/logs'
 
     """
     try:
@@ -45,7 +54,9 @@ if __name__ == "__main__":
         print("Directory " , dirName ,  " already exists \n")
     """
     # save the CASPER progress printouts in to a log file.
-    sys.stdout=open(dirName+'/casper_run_'+time.strftime("%Y-%m-%d-%H:%M:%S")+'.log', 'wt')
+
+    log_filename = f"casper_run_{time.strftime('%Y-%m-%d-%H-%M-%S')}.log"
+    sys.stdout = open(os.path.join(LOG_DIR, log_filename), 'wt')
     print("Started CASPER and logging! \n\n")
 
     print("### CAPER starts now: ###")
