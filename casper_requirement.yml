@@ -1,0 +1,24 @@
+name: casper311
+channels:
+  - apple
+  - conda-forge
+  - astropy
+dependencies:
+    - python=3.11
+    - pip
+    - astropy
+    - jupyter
+    - matplotlib
+    - ipykernel
+    - pip
+    - emcee
+    - corner
+    - pandas
+    - scikit-learn
+    - texttable
+    - h5py
+    - pyyaml
+    - flask
+    - boto3
+    - statsmodels
+    - scipy
