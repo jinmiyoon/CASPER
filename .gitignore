@@ -159,14 +159,11 @@ cython_debug/
 #  option (not recommended) you can uncomment the following to ignore the entire idea folder.
 #.idea/
 
-# outputs folder
+# vscode
+.vscode/launch.json
+# CASPER
+
 outputs/
-
-# npsave folder
 npsave/
-
-# logs folder
 logs/
-
-# inspect folder
 inspect/
