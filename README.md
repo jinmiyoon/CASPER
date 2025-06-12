@@ -24,7 +24,7 @@ micromamba create -n env_name python=3.11
 micromamba activate env_name
 ```
 
-### casper installation
+### CASPER installation
 #### Installation for users
 The **casper** directory contains the python package itself, installable via pip. This will install the core dependencies defined in `pyproject.toml` fur running `casper`.
 
