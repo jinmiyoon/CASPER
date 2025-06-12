@@ -34,6 +34,10 @@ dynamic = ["version"]
 open_astronomy_package_template_example = "casper.example_mod:main"
 
 [project.optional-dependencies]
+dev = [
+    "ruff == 0.11.13",
+    "pre-commit == 4.2.0"
+]
 test = [
     "pytest",
     "pytest-doctestplus",
@@ -43,6 +47,26 @@ docs = [
     "sphinx",
     "sphinx-automodapi",
 ]
+
+all = ["casper[dev, test, docs]"]
+
+[tool.ruff]
+line-length = 120
+
+[tool.ruff.lint]
+select = [
+    "E4",     # pycodestyle (E4xx): Various style errors (like indentation)
+    "E7",     # pycodestyle (E7xx): Statement issues (e.g., multiple statements on one line)
+    "E9",     # pycodestyle (E9xx): Syntax errors detected
+    "F",      # Pyflakes checks: General code correctness
+    "I",      # Import-related checks (e.g., isort ordering)
+    "PL",     # Pylint checks (if integrated)
+    "C901",   # McCabe complexity check: function too complex
+    "RUF010", # Ruff-specific code checks (e.g., invalid `noqa` directives)
+    "W291"    # pycodestyle trailing whitespace errors
+    ]
+ignore = ["PLR"]  # Ignore specific Pylint refactor messages
+
 [project.urls]
 repository = "https://github.com/jinmiyoon/new-casper"
 

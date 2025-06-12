@@ -4,39 +4,90 @@
 
 This script package, CASPER, is designed to determine reliable stellar parameters (temperature, metallicity, surface gravity, and carbon abundance) of low/medium-resolution stellar spectra for cool Carbon-Enhanced Metal-Poor (CEMP) stars (Teff < 5000K). This package is under development for public use and thus needs more testings and refinements (Whitten, Yoon, et al. in prep). The description of the CASPER methodology can be found in Yoon, Whitten, et al. 2020 (The Astrophysical Journal, 894,7). The detailed documentation, along with the codes, will be available for public use in the near future.
 
-### Python environment setup
-- The required python packages can be found in [caper311.yml](casper311.yml).
+## Installation
+### Required packages and versions
+- See required packages found in the [pyproject.toml](pyproject.toml) or [caper311.yml](casper311.yml).
 
-- If you use `conda`, run this command to create an conda environment.
+### Python environment installation
+You can use `conda` to create and activate the CASPER environment.
+Change `env_name` below to your preferred name, run these commands on your terminal.
 
 ```shell
-conda env create -f casper311.yml
+conda create -n env_name python=3.11
+conda activate env_name
 ```
 
-
-- If you want to create a lightweight python environment, you can use `micromamba`, which is fast alternative to conda, written in C++, that implements the same CLI interface. Follow this [instructions](https://mamba.readthedocs.io/en/latest/installation/micromamba-installation.html) to install `micromamba. You can create the CASPER environment by running this command.
+If you want to create a lightweight python environment, you can use `micromamba`, which is fast alternative to conda, written in C++, that implements the same CLI interface. Follow this [instructions](https://mamba.readthedocs.io/en/latest/installation/micromamba-installation.html) to install `micromamba. You can create and activate the CASPER environment by running this command.
 
 ```shell
-micromamba create --file casper311.yml
-``` 
+micromamba create -n env_name python=3.11
+micromamba activate env_name
+```
+
+### casper installation
+#### Installation for users
+The **casper** directory contains the python package itself, installable via pip. This will install the core dependencies defined in `pyproject.toml` fur running `casper`.
+
+```shell
+pip install .
+```
+#### Installation for developers
+If you are interested in developing and contributing to **casper**, you should install this package with `-e`, it allows you to work on the package's source code and see changes reflected immediately without needing to reinstall.
+
+```shell
+pip install -e . # install editable mode
+```
+To install the optional dependencies for pytest or Sphinx autodoc, run the command below in addition to pip install in editable mode above.
+
+```shell
+pip install .[dev,test,docs] # install the dependencies of dev, test, docs
+```
+or
+```shell
+pip install .[all] # "all" includes the dependencies of dev, test, docs
+```
+
+## pre-commit for development
+
+[pre-commit](https://pre-commit.com/) allows all collaborators push their commits compliant with the same set of lint and format rules in **pyproject.toml** by checking all files in the project at different stages of the git workflow. It runs commands specified in the **.pre-commit-config.yaml** config file and runs checks before committing or pushing, to catch errors that would have caused a build failure before they reach CI.
+
+### Install pre-commit
+You will need to install `pre-commit` manually.
+```bash
+pip install pre-commit # if you haven't already installed the package
+```
+
+```bash
+pre-commit install # install default hooks, `pre-commit`, `pre-push`, and `commit-msg`, as specified in the config file.
+```
+
+If this is your first time running, you should run the hooks against for all files and it will fix all files based on your setting.
+```bash
+pre-commit run --all-files
+```
+Finally, you will need to update `pre-commit` regularly by running
+```bash
+pre-commit autoupdate
+```
+For other configuration options and more detailed information, check out at the [pre-commit](https://pre-commit.com/) page.
 
 ### How to run CASPER
 
-First, you can set up your custom input parameters and spectra and the output directory and file name prefix in `interface/io_paths.py`.
-You will need to create the `outputs` folder on the main directory where `main.py` is found.
+First, you can set up your custom input parameters and spectra and the output directory and file name prefix in [io_paths.py](interface/io_paths.py).
+
+Then, you will need to pull the spectral library files from [Git Large File Storage (LFS)](https://git-lfs.com/).
+If you don't already haven't installed `git-lfs`, run
+```shell
+brew install git-lfs
+git lfs install
+git lfs pull
+``` 
 
 To run CASPER, run this command on your terminal.
 
 ```shell
 python main.py
 ```
-```shell
-brew install git-lfs
-```
-```shell
-git lfs install
-git lfs pull
-``` 
 
 ### Output files
 Once you run CASPER, you will have several output files.
