@@ -8,7 +8,7 @@
 import numpy as np
 
 
-class Segment():
+class Segment:
     #### This class will store relavent statistics about the wavelength region,
     #### and determine the best approximation of the continuum point for iterative spline interpolation
 
@@ -29,24 +29,27 @@ class Segment():
             self.midpoint = np.array(self.wl)[0]
 
         elif which == "right":
-
             self.midpoint = np.array(self.wl)[-1]
 
         else:
             print("Error in edge definition")
 
-
     def get_statistics(self, lower=85):
         ### Scale
-        self.mad = np.median(np.absolute(self.flux - np.median(self.flux)))   #An absorption feature would like have a larger MAD
+        self.mad = np.median(
+            np.absolute(self.flux - np.median(self.flux))
+        )  # An absorption feature would like have a larger MAD
 
         ### basic percentile clip in the median
-        self.flux_med = np.median(self.flux[np.where((self.flux >= np.percentile(self.flux, lower)) & (self.flux <= np.percentile(self.flux, 98)))])
+        self.flux_med = np.median(
+            self.flux[
+                np.where((self.flux >= np.percentile(self.flux, lower)) & (self.flux <= np.percentile(self.flux, 98)))
+            ]
+        )
 
         ### get robust min/max estimate for the flux in segment
         self.flux_min = np.percentile(self.flux, lower)
         self.flux_max = np.percentile(self.flux, 98)
-
 
     def define_cont_point(self, mad_min, mad_range):
         ### Here's the idea, the greater the flux variation in the segment,
@@ -54,7 +57,7 @@ class Segment():
         ### there for, for larger variation, we want to bias the flux point assigned
         ### increasingly torwards the maximum flux in the segment
 
-        self.mad_normal = (self.mad - mad_min)/mad_range
+        self.mad_normal = (self.mad - mad_min) / mad_range
 
-        self.continuum_point = (self.flux_max - self.flux_med)*self.mad_normal + self.flux_med
+        self.continuum_point = (self.flux_max - self.flux_med) * self.mad_normal + self.flux_med
         print

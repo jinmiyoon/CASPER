@@ -6,74 +6,79 @@
 
 #### Here are the functions for the synthetic minimization
 
+import pickle as pkl
+
+import config
+import GISIC_C as GISIC
 import numpy as np
 from scipy.interpolate import interp1d
-import pickle as pkl
-import GISIC_C as GISIC
-import config
 
-# Get synthetic flux interpolator 
+
+# Get synthetic flux interpolator
 def get_interp():
     ###########
-    #return pkl.load(open("interface/libraries/MASTER_spec_interp.pkl", 'rb'))
+    # return pkl.load(open("interface/libraries/MASTER_spec_interp.pkl", 'rb'))
 
-    '''
+    """
     # Devin's master spec interp
     with open("interface/libraries/MASTER_spec_interp.pkl", 'rb') as devin_master_lib:
         INTERPOLATOR = pkl.load(devin_master_lib)
-    '''
+    """
     # my New master spec interp
     """
     New interpolator using the new spectral library
     """
-    with open("interface/libraries/SYNTHETIC_SPEC_R2000_INTERP.pkl", 'rb') as my_master_lib:
+    with open("interface/libraries/SYNTHETIC_SPEC_R2000_INTERP.pkl", "rb") as my_master_lib:
         INTERPOLATOR = pkl.load(my_master_lib)
 
-    
     return INTERPOLATOR
 
-def get_grav_interp():
 
+def get_grav_interp():
     # load logg interpolator of isochrones
-    with open("interface/libraries/grav_interp.pkl", 'rb') as grav_lib:    
+    with open("interface/libraries/grav_interp.pkl", "rb") as grav_lib:
         GRAV_INTERP = pkl.load(grav_lib)
-        
+
         return GRAV_INTERP
 
 
 # now let's normalize synthetic library with GISIC
 def normalize(synth_wave, synth_flux):
-    
     # print("\t\t synthetic_function: synth_wave ={}".format(synth_wave))
     # print("\t\t synthetic_function: synth_flux ={}".format(synth_flux))
     cont_array = []
 
-    for SIGMA in config.SIGMA: #
-        _, _, cont_synth_flux= GISIC.normalize(synth_wave, synth_flux, 
-            sigma = SIGMA, k=config.k, cahk=config.cahk, band_check=config.band_check, flux_min=config.flux_min, boost=config.boost)
+    for SIGMA in config.SIGMA:  #
+        _, _, cont_synth_flux = GISIC.normalize(
+            synth_wave,
+            synth_flux,
+            sigma=SIGMA,
+            k=config.k,
+            cahk=config.cahk,
+            band_check=config.band_check,
+            flux_min=config.flux_min,
+            boost=config.boost,
+        )
         cont_array.append(cont_synth_flux)
-        
+
     ### average the sigma runs together
     cont = np.median(np.array(cont_array), axis=0)
 
     synth_norm = np.divide(synth_flux, cont)
 
-    if len(synth_norm[synth_norm < 0.0])>1:
+    if len(synth_norm[synth_norm < 0.0]) > 1:
+        synth_norm[synth_norm < 0.0] = 1.0
 
-        synth_norm[synth_norm < 0.0] = 1.
+    if len(synth_norm[synth_norm > 2.0]) > 1:
+        synth_norm[synth_norm > 2.0] = 1.0
 
-    if len(synth_norm[synth_norm >2.0]) >1:
+    # print("\t\t synthetic_function: synth_norm ={}".format(synth_norm))
 
-        synth_norm[synth_norm >2.0] = 1.
-    
-    #print("\t\t synthetic_function: synth_norm ={}".format(synth_norm))
-    
     return synth_norm
 
 
-
-
 ################################################################################
+
 
 def ln_chi_square_sigma(flux, synth, xi):
     ### J. Yoon 02/25/2022
@@ -87,12 +92,11 @@ def ln_chi_square_sigma(flux, synth, xi):
     #  smaller synth, means smaller effective sigma, which should prioritize the centers of the absorption features.
 
     dof = len(flux) - 1
-    chi = np.square(np.divide(flux - synth, xi*synth)).sum()
-    if chi > 0.:
-        return (0.5 * dof - 1) * np.log(chi) - 0.5*chi
+    chi = np.square(np.divide(flux - synth, xi * synth)).sum()
+    if chi > 0.0:
+        return (0.5 * dof - 1) * np.log(chi) - 0.5 * chi
     else:
         return -np.inf
-
 
 
 def CAII_CH_CHI_LH(obs, synth, CA_BOUNDS, CH_BOUNDS, CA_XI, CH_XI):
@@ -101,16 +105,14 @@ def CAII_CH_CHI_LH(obs, synth, CA_BOUNDS, CH_BOUNDS, CA_XI, CH_XI):
     #### CA_XI, CH_XI : the inverse signal to noise
 
     ### create linearly interpolated spectra J. Yoon 02/25/2022
-    synth_function = interp1d(synth['wave'], synth['norm'])
-
+    synth_function = interp1d(synth["wave"], synth["norm"])
 
     ### Break the segments
-    CA_FRAME = obs[obs['wave'].between(*CA_BOUNDS, inclusive='both')]
-    CH_FRAME = obs[obs['wave'].between(*CH_BOUNDS, inclusive='both')]
+    CA_FRAME = obs[obs["wave"].between(*CA_BOUNDS, inclusive="both")]
+    CH_FRAME = obs[obs["wave"].between(*CH_BOUNDS, inclusive="both")]
 
-    CHI_CA = ln_chi_square_sigma(CA_FRAME['norm'], synth_function(CA_FRAME['wave']), CA_XI)
-    CHI_CH = ln_chi_square_sigma(CH_FRAME['norm'], synth_function(CH_FRAME['wave']), CH_XI)
-
+    CHI_CA = ln_chi_square_sigma(CA_FRAME["norm"], synth_function(CA_FRAME["wave"]), CA_XI)
+    CHI_CH = ln_chi_square_sigma(CH_FRAME["norm"], synth_function(CH_FRAME["wave"]), CH_XI)
 
     return CHI_CA + CHI_CH
 

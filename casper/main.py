@@ -12,26 +12,27 @@
 # io_paths lets you prepend the output name for parameter file as .csv,
 # casper fit as .pdf file, and cornerplot for mcmc calculations for the best parameters.
 
-io_paths = 'interface/io_paths.py'
+io_paths = "interface/io_paths.py"
 
 
 import os
 import sys
 
 sys.path.append("./interface")
-from multiprocessing import freeze_support
 import time
+from multiprocessing import freeze_support
+
 from interface.batch import Batch
 
 # We need the below line to attempt to start a new process before the current
 # process has finished its bootstrapping phase. This line allows multiprocessing
 # in interface_mcmc.run_mcmc_determination(). J. Yoon 03/11/2022
 
-PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 
-LOG_DIR = os.path.join(PROJECT_ROOT, 'logs')
-NPSAVE_DIR = os.path.join(PROJECT_ROOT, 'npsave')
-OUTPUT_DIR = os.path.join(PROJECT_ROOT, 'outputs')
+LOG_DIR = os.path.join(PROJECT_ROOT, "logs")
+NPSAVE_DIR = os.path.join(PROJECT_ROOT, "npsave")
+OUTPUT_DIR = os.path.join(PROJECT_ROOT, "outputs")
 
 os.makedirs(LOG_DIR, exist_ok=True)
 os.makedirs(NPSAVE_DIR, exist_ok=True)
@@ -39,11 +40,9 @@ os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 
 if __name__ == "__main__":
-
     freeze_support()
 
     start_time = time.time()
-
 
     """
     try:
@@ -56,7 +55,7 @@ if __name__ == "__main__":
     # save the CASPER progress printouts in to a log file.
 
     log_filename = f"casper_run_{time.strftime('%Y-%m-%d-%H-%M-%S')}.log"
-    sys.stdout = open(os.path.join(LOG_DIR, log_filename), 'wt')
+    sys.stdout = open(os.path.join(LOG_DIR, log_filename), "wt")
     print("Started CASPER and logging! \n\n")
 
     print("### CAPER starts now: ###")
@@ -71,16 +70,16 @@ if __name__ == "__main__":
     ################################################################################
     ### load spectra + params
     spec_batch.load_params()
-    print("spectra name:  ", spec_batch.param_file['filename'])
+    print("spectra name:  ", spec_batch.param_file["filename"])
     spec_batch.load_spectra()
     spec_batch.set_params()
 
-    #io_functions.span_window()
+    # io_functions.span_window()
 
     spec_batch.radial_correct()
     spec_batch.build_frames()
 
-    #io_functions.span_window()
+    # io_functions.span_window()
 
     ################################################################################
     #### Continuum normalization with GISIC
@@ -94,8 +93,8 @@ if __name__ == "__main__":
     spec_batch.estimate_sn()
     spec_batch.get_sn()
 
-    #sys.exit()
-    
+    # sys.exit()
+
     spec_batch.ebv_correction()
 
     ################################################################################
@@ -112,7 +111,7 @@ if __name__ == "__main__":
 
     # interpolate gravity logg from isochrone
     spec_batch.estimate_logg()
- 
+
     ################################################################################
     ##### generate output files
 
@@ -127,9 +126,8 @@ if __name__ == "__main__":
 
     # generate plots: spectral fit, corner plot, trace plot
     spec_batch.generate_plots()
- 
 
-    print("The total time for this CASPER run is {:.2f}s".format(time.time()-start_time))
+    print("The total time for this CASPER run is {:.2f}s".format(time.time() - start_time))
 
-    #make a sound when the script run is finished.
+    # make a sound when the script run is finished.
     os.system("say beep")
