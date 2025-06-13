@@ -11,8 +11,10 @@ Therefore,  std = MAD/0.6745 is a consistent estimator of the std
 
 import numpy as np
 
+
 def MAD(array):
     return np.median(np.abs(array - np.median(array)))
 
+
 def S_MAD(array):
-    return MAD(array)/0.6745
+    return MAD(array) / 0.6745

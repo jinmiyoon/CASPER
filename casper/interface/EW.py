@@ -4,29 +4,25 @@
 ################################################################################
 ## Functions related to the equivalent-width determinations
 
+import config
 import numpy as np
 import scipy.integrate as integrate
 from scipy.interpolate import interp1d
-import config
-
-
 
 #########
-'''
+"""
 KP_BOUNDS = {"K6"  : [3930.7, 3936.7],
              "K12" : [3927.7, 3939.7],
              "K18" : [3924.7, 3942.7]}
 
-'''
+"""
 
 
-def GBAND_QUAD(wave, flux, bounds = config.CH_BOUNDS):
+def GBAND_QUAD(wave, flux, bounds=config.CH_BOUNDS):
     ## takes normalized flux and computes a quick G-band
 
-
-    #devin's original func below.
-    func = interp1d(wave, 1. - flux)
-
+    # devin's original func below.
+    func = interp1d(wave, 1.0 - flux)
 
     ############################################################################
     ## Revised by Jinmi Yoon, July 17 2020
@@ -53,10 +49,10 @@ def GBAND_QUAD(wave, flux, bounds = config.CH_BOUNDS):
     ## subtraction from CH_EW. I need to use SNR at CH band for noise = 1./SNR
     ## but it appears very small (~0.02) so at the moment I ignore this.
 
-    if flux_bounds_max < 1. :
-        EW_subtract = (1.-flux_bounds_max)*(bounds[1]-bounds[0])
+    if flux_bounds_max < 1.0:
+        EW_subtract = (1.0 - flux_bounds_max) * (bounds[1] - bounds[0])
     else:
-        EW_subtract = 0.
+        EW_subtract = 0.0
     print("EW_subtract=  ", EW_subtract)
 
     ############################################################################
@@ -65,34 +61,33 @@ def GBAND_QUAD(wave, flux, bounds = config.CH_BOUNDS):
     ## I added EW_subtract in return so that I can use this subtraction
     ## for set_CH_procedure().
 
-    return integrate.quad(func, bounds[0], bounds[1], limit=1000,
-                          points=list(wave[(wave > bounds[0]) & (wave <  bounds[1])]))[0], EW_subtract
+    return integrate.quad(
+        func, bounds[0], bounds[1], limit=1000, points=list(wave[(wave > bounds[0]) & (wave < bounds[1])])
+    )[0], EW_subtract
 
 
-def GBAND_vanilla(wave, flux, bounds = config.CH_BOUNDS):
+def GBAND_vanilla(wave, flux, bounds=config.CH_BOUNDS):
     trim = flux[(wave > bounds[0]) & (wave < bounds[1])]
 
-    return (1-trim).sum()
-
-
-
+    return (1 - trim).sum()
 
 
 def CAII_K6(wave, flux):
-    #3930.7 - 3936.7
-    func = interp1d(wave, 1.-flux)
-    return integrate.quad(func, 3930.7, 3936.7, limit=200, points = wave[(wave > 3930.7) & (wave < 3936.7)])[0]
+    # 3930.7 - 3936.7
+    func = interp1d(wave, 1.0 - flux)
+    return integrate.quad(func, 3930.7, 3936.7, limit=200, points=wave[(wave > 3930.7) & (wave < 3936.7)])[0]
+
 
 def CAII_K12(wave, flux):
-    #3927.7 - 3939.7
-    func = interp1d(wave, 1.-flux)
-    return integrate.quad(func, 3927.7, 3939.7, limit=200, points = wave[(wave > 3927.7) & (wave < 3939.7)])[0]
+    # 3927.7 - 3939.7
+    func = interp1d(wave, 1.0 - flux)
+    return integrate.quad(func, 3927.7, 3939.7, limit=200, points=wave[(wave > 3927.7) & (wave < 3939.7)])[0]
 
 
 def CAII_K18(wave, flux):
-    #3924.7 - 3942.7
-    func = interp1d(wave, 1.-flux)
-    return integrate.quad(func, 3924.7, 3942.7, limit=200, points = wave[(wave > 3924.7) & (wave < 3942.7)])[0]
+    # 3924.7 - 3942.7
+    func = interp1d(wave, 1.0 - flux)
+    return integrate.quad(func, 3924.7, 3942.7, limit=200, points=wave[(wave > 3924.7) & (wave < 3942.7)])[0]
 
 
 ####### integrate.quad is being weird with the subdivision limit.
@@ -100,47 +95,49 @@ def CAII_K18(wave, flux):
 
 
 def CAII_K6_v(wave, flux):
-    #3930.7 - 3936.7
+    # 3930.7 - 3936.7
 
     trim = flux[(wave > 3930.7) & (wave < 3936.7)]
-    return (1.-trim).sum()
+    return (1.0 - trim).sum()
+
 
 def CAII_K12_v(wave, flux):
-    #3927.7 - 3939.7
+    # 3927.7 - 3939.7
 
     trim = flux[(wave > 3927.7) & (wave < 3939.7)]
-    return (1. - trim).sum()
+    return (1.0 - trim).sum()
 
 
 def CAII_K18_v(wave, flux):
-    #3924.7 - 3942.7
+    # 3924.7 - 3942.7
 
     trim = flux[(wave > 3927.7) & (wave < 3939.7)]
-    return (1. - trim).sum()
+    return (1.0 - trim).sum()
+
 
 ###############################################################
+
 
 def get_KP_band(spectrum):
     ### simply return the CAII band range for the chi fit, based on Beers 1999
     ### updated to utilize the spectrum.Spectrum() class
     KP_BOUNDS = config.KP_BOUNDS
 
-    K6 =  CAII_K6(spectrum.frame['wave'], spectrum.frame['norm'])
-    K12 = CAII_K12(spectrum.frame['wave'], spectrum.frame['norm'])
-    K18 = CAII_K18(spectrum.frame['wave'], spectrum.frame['norm'])
+    K6 = CAII_K6(spectrum.frame["wave"], spectrum.frame["norm"])
+    K12 = CAII_K12(spectrum.frame["wave"], spectrum.frame["norm"])
+    K18 = CAII_K18(spectrum.frame["wave"], spectrum.frame["norm"])
 
+    if K6 <= 2.0:
+        print("\t recommending K6 bounds")
+        return KP_BOUNDS["K6"]
 
-    if K6 <= 2.:
-        print('\t recommending K6 bounds')
-        return KP_BOUNDS['K6']
+    elif (K6 > 2.0) and (K12 <= 5.0):
+        print("\t recommending K12 bounds")
+        return KP_BOUNDS["K12"]
 
-    elif (K6 > 2.) and (K12 <= 5. ):
-        print('\t recommending K12 bounds')
-        return KP_BOUNDS['K12']
-
-    elif K18 > 5.:
+    elif K18 > 5.0:
         print("\t recommending K18 bounds")
-        return KP_BOUNDS['K18']
+        return KP_BOUNDS["K18"]
 
     else:
         ### this shouldn't ever happen really
@@ -149,13 +146,12 @@ def get_KP_band(spectrum):
         return np.nan
 
 
-
 def set_CH_procedure(spectrum):
     ## Measures Gband and sets carbon mode
     ##### This is intended to check whether C2 Swan band is necessary
-    CH_EW, EW_subtract = GBAND_QUAD(spectrum.frame['wave'], spectrum.frame['norm'])
+    CH_EW, EW_subtract = GBAND_QUAD(spectrum.frame["wave"], spectrum.frame["norm"])
     spectrum.set_GBAND(CH_EW)
-    #print("CH_EW, EW_subtract at EW.py = ", CH_EW, EW_subtract)
+    # print("CH_EW, EW_subtract at EW.py = ", CH_EW, EW_subtract)
 
     ############################################################################
     # Revised by Jinmi Yoon, July 17 2020
@@ -179,7 +175,7 @@ def set_CH_procedure(spectrum):
     # Devin originally used CH_EW >40 for switching however, it depends on
     # the normalization though it is likely to be a minor difference.
 
-    print("CH_EW= %5.2f" %CH_EW)
+    print("CH_EW= %5.2f" % CH_EW)
 
     ##########################################################################
     #  09/09/2020, J. Yoon
@@ -189,48 +185,45 @@ def set_CH_procedure(spectrum):
     # then it will use the CH_EW value for setting carbon_mode.
     ###########################################################################
 
-    if spectrum.INPUT_CARBON_MODE =='CH':
+    if spectrum.INPUT_CARBON_MODE == "CH":
         print("\t using the input {0} carbon_mode".format(spectrum.INPUT_CARBON_MODE))
-        spectrum.set_carbon_mode('CH')
+        spectrum.set_carbon_mode("CH")
 
-    elif spectrum.INPUT_CARBON_MODE =='CH+C2':
+    elif spectrum.INPUT_CARBON_MODE == "CH+C2":
         print("\t using the input {0} carbon_mode: ".format(spectrum.INPUT_CARBON_MODE))
-        spectrum.set_carbon_mode('CH+C2')
+        spectrum.set_carbon_mode("CH+C2")
 
-    else :
-
-        #if CH_EW > 55.:
-        if CH_EW > 40.:
+    else:
+        # if CH_EW > 55.:
+        if CH_EW > 40.0:
             print("\t recommending CH+C2 procedure")
-            spectrum.set_carbon_mode('CH+C2')
+            spectrum.set_carbon_mode("CH+C2")
 
         else:
             print("\t recommending CH procedure")
-            spectrum.set_carbon_mode('CH')
+            spectrum.set_carbon_mode("CH")
 
     return
 
 
 def CAII_KP(wave, flux):
     ## Following the Beers 1999
-    K6 =  CAII_K6(wave, flux)
+    K6 = CAII_K6(wave, flux)
     K12 = CAII_K12(wave, flux)
     K18 = CAII_K18(wave, flux)
 
-
-    if K6 <= 2.:
+    if K6 <= 2.0:
         return K6
 
-    elif (K6 > 2.) and (K12 <=5):
+    elif (K6 > 2.0) and (K12 <= 5):
         return K12
 
-    elif K18 > 5.:
+    elif K18 > 5.0:
         return K18
 
     else:
         print("warning: error in CAII_KP")
         return np.nan
-
 
 
 def CAII_H(wave, flux):

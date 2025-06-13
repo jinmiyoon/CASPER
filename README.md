@@ -81,7 +81,7 @@ If you don't already haven't installed `git-lfs`, run
 brew install git-lfs
 git lfs install
 git lfs pull
-``` 
+```
 
 To run CASPER, run this command on your terminal.
 
