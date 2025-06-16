@@ -27,9 +27,7 @@ class Segment:
         The median value of the wavelength array, used to represent the segment's center.
         """
         self.wl = wl
-
         self.flux = flux
-
         self.midpoint = np.median(self.wl)
 
     def is_edge(self, which):
@@ -54,10 +52,8 @@ class Segment:
 
         if which == "left":
             self.midpoint = np.array(self.wl)[0]
-
         elif which == "right":
             self.midpoint = np.array(self.wl)[-1]
-
         else:
             print("Error in edge definition")
 
@@ -107,7 +103,6 @@ class Segment:
                 np.where((self.flux >= np.percentile(self.flux, lower)) & (self.flux <= np.percentile(self.flux, 98)))
             ]
         )
-
         self.flux_min = np.percentile(self.flux, lower)
         self.flux_max = np.percentile(self.flux, 98)
 
@@ -144,6 +139,5 @@ class Segment:
 
         """
         self.mad_normal = (self.mad - mad_min) / mad_range
-
         self.continuum_point = (self.flux_max - self.flux_med) * self.mad_normal + self.flux_med
         print
