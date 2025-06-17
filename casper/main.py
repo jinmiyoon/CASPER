@@ -58,7 +58,7 @@ if __name__ == "__main__":
     sys.stdout = open(os.path.join(LOG_DIR, log_filename), "wt")
     print("Started CASPER and logging! \n\n")
 
-    print("### CAPER starts now: ###")
+    print("### CASPER starts now: ###")
     print("\n ... initializing spectra batch")
 
     # instantiate a Batch object of spectra
