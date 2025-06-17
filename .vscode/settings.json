@@ -1,6 +1,6 @@
 {
     "python.terminal.activateEnvInCurrentTerminal": true,
-    "python.analysis.typeCheckingMode": "off",
+    "python.analysis.typeCheckingMode": "on",
     "python.analysis.inlayHints.functionReturnTypes": true,
     "python.analysis.diagnosticMode": "workspace",
      "[python]": {
