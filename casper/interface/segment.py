@@ -1,9 +1,3 @@
-################################################################################
-### Author: Devin Whitten
-### Email: devin.d.whitten@gmail.com
-### Institute: University of Notre Dame
-################################################################################
-
 import numpy as np
 
 
@@ -14,10 +8,10 @@ class Segment:
 
         Parameters
         ----------
-        wl : array
+        wl : array_like
         Wavelength values that define the x-axis of the segment.
 
-        flux : array
+        flux : array_like
         Flux values corresponding to each wavelength in `wl`, defining the y-axis
         of the segment.
 
@@ -96,7 +90,6 @@ class Segment:
         numpy.median, numpy.absolute, numpy.percentile, numpy.where
 
         """
-
         self.mad = np.median(np.absolute(self.flux - np.median(self.flux)))
         self.flux_med = np.median(
             self.flux[
@@ -136,7 +129,6 @@ class Segment:
         -----
         When the flux shows high variability, the continuum is more likely to be near
         the top of the flux range, since absorption features pull the median downward.
-
         """
         self.mad_normal = (self.mad - mad_min) / mad_range
         self.continuum_point = (self.flux_max - self.flux_med) * self.mad_normal + self.flux_med
