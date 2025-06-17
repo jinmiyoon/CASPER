@@ -1,10 +1,8 @@
 import matplotlib
-
-matplotlib.use("module://kivy.garden.matplotlib.backend_kivy")
 import matplotlib.pyplot as plt
 
+matplotlib.use("module://kivy.garden.matplotlib.backend_kivy")
 matplotlib.style.use("dark_background")
-
 
 color_frame = {"GI": "blue", "GII": "green", "GIII": "orange"}
 
