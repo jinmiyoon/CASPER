@@ -7,7 +7,6 @@ matplotlib.style.use("dark_background")
 color_frame = {"GI": "blue", "GII": "green", "GIII": "orange"}
 
 
-# not used
 def build_spec_axis():
     """
     Set up a multi-panel figure for plotting spectral data.
@@ -53,7 +52,6 @@ def build_spec_axis():
     return fig, (axTOP, axBOT, axBAR), {"spec_line": spec_line, "cont_line": cont_line, "norm_line": norm_line}
 
 
-# not used
 def build_class_axis():
     """
     Set up a figure with subplots for comparing chi-squared fits across stellar groups.
@@ -99,7 +97,6 @@ def build_class_axis():
     return fig, axes, chi_lines
 
 
-# not used
 def build_custom_axis():
     """
     Create a simple, empty matplotlib figure with one axis.

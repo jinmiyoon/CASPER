@@ -1,16 +1,11 @@
+# not used
 ### Author: Devin Whitten
 ### Email: devin.d.whitten@gmail.com
 ### University of Notre Dame
 ### This is the interface for the archetype assessment routines
 
-import os
-import sys
-
 import matplotlib.pyplot as plt
 import numpy as np
-import pandas as pd
-
-# import h5py
 from scipy.interpolate import interp1d
 
 ### This is unnormalized..
@@ -35,6 +30,7 @@ def CHI_GBAND(spec, synth_f):
     return CHI.sum() / len(CHI)
 
 
+# dont belive this is used
 def assess(spec):
     ## Here is where we will perform the chi2 statistics
 
