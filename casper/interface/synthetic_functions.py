@@ -1,8 +1,11 @@
 import pickle as pkl
+from typing import Dict, Tuple
 
 import config
 import GISIC_C as GISIC
 import numpy as np
+import pandas as pd
+from numpy.typing import ArrayLike
 from scipy.interpolate import interp1d
 
 
@@ -44,8 +47,7 @@ def get_grav_interp():
         return GRAV_INTERP
 
 
-def normalize(synth_wave, synth_flux):
-    cont_array = []
+def normalize(synth_wave: ArrayLike, synth_flux: ArrayLike) -> np.ndarray:
     """
     Normalize a synthetic spectrum using GISIC continuum fitting.
 
@@ -68,6 +70,7 @@ def normalize(synth_wave, synth_flux):
         such that the continuum is near unity. Values below 0 or above 2 are
         clipped to 1.0 for stability.
     """
+    cont_array = []
     for SIGMA in config.SIGMA:
         _, _, cont_synth_flux = GISIC.normalize(
             synth_wave,
@@ -92,7 +95,7 @@ def normalize(synth_wave, synth_flux):
     return synth_norm
 
 
-def ln_chi_square_sigma(flux, synth, xi):
+def ln_chi_square_sigma(flux: ArrayLike, synth: ArrayLike, xi: ArrayLike) -> float:
     """
     Calculate truncated log chi-square probability distribution function for an absorption feature.
 
@@ -124,7 +127,14 @@ def ln_chi_square_sigma(flux, synth, xi):
         return -np.inf
 
 
-def CAII_CH_CHI_LH(obs, synth, CA_BOUNDS, CH_BOUNDS, CA_XI, CH_XI):
+def CAII_CH_CHI_LH(
+    obs: pd.DataFrame,
+    synth: Dict[str, ArrayLike],
+    CA_BOUNDS: Tuple[float, float],
+    CH_BOUNDS: Tuple[float, float],
+    CA_XI: float,
+    CH_XI: float,
+) -> float:
     """
     Calculate how well the synthetic spectrum matches the observed data
     in the Ca II and CH wavelength regions.
