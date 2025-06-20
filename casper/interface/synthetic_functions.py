@@ -117,9 +117,9 @@ def ln_chi_square_sigma(flux, synth, xi):
         If the result is not valid (e.g., negative), it returns -infinity.
     """
     dof = len(flux) - 1
-    chi = np.square(np.divide(flux - synth, xi * synth)).sum()
-    if chi > 0.0:
-        return (0.5 * dof - 1) * np.log(chi) - 0.5 * chi
+    chi2 = np.square(np.divide(flux - synth, xi * synth)).sum()
+    if chi2 > 0.0:
+        return (0.5 * dof - 1) * np.log(chi2) - 0.5 * chi2
     else:
         return -np.inf
 
