@@ -20,8 +20,8 @@ def get_interp():
         The loaded interpolation object from the pickled file.
 
     """
-    with open("interface/libraries/SYNTHETIC_SPEC_R2000_INTERP.pkl", "rb") as my_master_lib:
-        INTERPOLATOR = pkl.load(my_master_lib)
+    with open("interface/libraries/SYNTHETIC_SPEC_R2000_INTERP.pkl", "rb") as master_lib:
+        INTERPOLATOR = pkl.load(master_lib)
     return INTERPOLATOR
 
 
