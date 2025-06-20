@@ -96,7 +96,7 @@ def ln_chi_square_sigma(flux, synth, xi):
     """
     Calculate truncated log chi-square probability distribution function for an absorption feature.
 
-    This function compares observed flux values to synthetic (model) flux
+    The function allows evaluating how well the synthetic spectrum matches the observed one by comparing observed flux values to synthetic (model) flux
     values using a version of the chi-square formula. The uncertainty is
     based on the signal-to-noise ratio and is adjusted using the model flux.
 
