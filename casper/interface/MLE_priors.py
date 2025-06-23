@@ -136,9 +136,8 @@ def default_param_edges(teff: float, feh: float, carbon: float, sigma_array: Arr
     for item in sigma_array:
         if (item < 0.0) or (item > 1.0):
             return -np.inf
-    # is else statment correct of can it be
-    # return 0.0
-    return 0.0
+        else:
+            return 0.0
 
 
 def param_edges(

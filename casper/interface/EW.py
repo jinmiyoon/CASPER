@@ -51,19 +51,74 @@ def GBAND_QUAD(wave: ArrayLike, flux: ArrayLike, bounds: tuple[float, float] = c
     )[0], EW_subtract
 
 
-def CAII_K6(wave, flux):
+def CAII_K6(wave: ArrayLike, flux: ArrayLike) -> float:
+    """
+    Compute the equivalent width of the Ca II K6 absorption feature.
+
+    This function interpolates the inverted normalized flux (1 - flux)
+    and integrates it over the wavelength range 3930.7 to 3936.7 Angstroms
+    to estimate the equivalent width of the Ca II K6 line.
+
+    Parameters
+    ----------
+    wave : array_like
+        Wavelength values of the spectrum (in Angstroms).
+    flux : array_like
+        Normalized flux values corresponding to the wavelength array.
+
+    Returns
+    -------
+    float
+        The equivalent width of the Ca II K6 absorption feature, in Angstroms.
+    """
     func = interp1d(wave, 1.0 - flux)
     return integrate.quad(func, 3930.7, 3936.7, limit=200, points=wave[(wave > 3930.7) & (wave < 3936.7)])[0]
 
 
-def CAII_K12(wave, flux):
-    # 3927.7 - 3939.7
+def CAII_K12(wave: ArrayLike, flux: ArrayLike) -> float:
+    """
+    Compute the equivalent width of the Ca II K12 absorption feature.
+
+    This function interpolates the inverted normalized flux (1 - flux)
+    and integrates it over the wavelength range 3927.7 to 3939.7 Angstroms
+    to estimate the equivalent width of the Ca II K12 line.
+
+    Parameters
+    ----------
+    wave : array_like
+        Wavelength values of the spectrum (in Angstroms).
+    flux : array_like
+        Normalized flux values corresponding to the wavelength array.
+
+    Returns
+    -------
+    float
+        The equivalent width of the Ca II K12 absorption feature, in Angstroms.
+    """
     func = interp1d(wave, 1.0 - flux)
     return integrate.quad(func, 3927.7, 3939.7, limit=200, points=wave[(wave > 3927.7) & (wave < 3939.7)])[0]
 
 
-def CAII_K18(wave, flux):
-    # 3924.7 - 3942.7
+def CAII_K18(wave: ArrayLike, flux: ArrayLike) -> float:
+    """
+    Compute the equivalent width of the Ca II K18 absorption feature.
+
+    This function interpolates the inverted normalized flux (1 - flux)
+    and integrates it over the wavelength range 3924.7 to 3942.7 Angstroms
+    to estimate the equivalent width of the Ca II K18 line.
+
+    Parameters
+    ----------
+    wave : ArrayLike
+        Wavelength values of the spectrum (in Angstroms).
+    flux : ArrayLike
+        Normalized flux values corresponding to the wavelength array.
+
+    Returns
+    -------
+    float
+        The equivalent width of the Ca II K18 absorption feature, in Angstroms.
+    """
     func = interp1d(wave, 1.0 - flux)
     return integrate.quad(func, 3924.7, 3942.7, limit=200, points=wave[(wave > 3924.7) & (wave < 3942.7)])[0]
 
