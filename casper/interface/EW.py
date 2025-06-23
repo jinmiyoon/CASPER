@@ -1,42 +1,38 @@
-################################################################################
-### Author: Devin Whitten, revised by Jinmi Yoon
-### Email: devin.d.whitten@gmail.com, jinmi.yoon@gmail.com
-################################################################################
-## Functions related to the equivalent-width determinations
-
 import config
 import numpy as np
 import scipy.integrate as integrate
+from numpy.typing import ArrayLike
 from scipy.interpolate import interp1d
 
-#########
-"""
-KP_BOUNDS = {"K6"  : [3930.7, 3936.7],
-             "K12" : [3927.7, 3939.7],
-             "K18" : [3924.7, 3942.7]}
 
-"""
+def GBAND_QUAD(wave: ArrayLike, flux: ArrayLike, bounds: tuple[float, float] = config.CH_BOUNDS) -> tuple[float, float]:
+    """
+    Compute the equivalent width (EW) of the G-band (CH absorption) from a normalized spectrum.
 
+    This function integrates the area of absorption in the CH band region (G-band),
+    defined by `bounds`, using a normalized flux array. It also returns a correction
+    factor (`EW_subtract`) in case the CH-band region is not fully normalized to 1.0.
+    This correction is useful for estimating whether to use CH-only or CH+C2 mode in
+    stellar carbon abundance analysis.
 
-def GBAND_QUAD(wave, flux, bounds=config.CH_BOUNDS):
-    ## takes normalized flux and computes a quick G-band
+    Parameters
+    ----------
+    wave : ndarray
+        Array of wavelength values corresponding to the spectrum.
+    flux : ndarray
+        Array of normalized flux values (should be near 1.0 in continuum).
+    bounds : tuple of float
+        The wavelength interval (min, max) defining the CH G-band region.
 
-    # devin's original func below.
+    Returns
+    -------
+    ew : float
+        Equivalent width (EW) of the CH absorption feature.
+    EW_subtract : float
+        Correction factor to account for improper normalization of the CH-band.
+        If the peak flux in the band is below 1.0, this value will be non-zero.
+    """
     func = interp1d(wave, 1.0 - flux)
-
-    ############################################################################
-    ## Revised by Jinmi Yoon, July 17 2020
-    ## This revision needed to accomodate the problem of improper normalization
-    ## of the CH-band area.
-    ## If the CH-band is too low from the continuum level, the EW estimation is
-    ## not reliable and in turn influences the set_CH_procedure whether to use
-    ## the CH mode or CH+C2 mode.
-    ## The below calculation is needed in set_CH_procedure().
-    ##
-    ## I eventually decided not to use reduced_CH_EW because the synthetic
-    ## spectra at the CH band is indeed lower than 1.0 level. However, I just
-    ## leave the below scripts as it is for the future debugging.
-
     func_bounds = interp1d(wave, flux)
     wave_bounds = np.arange(bounds[0], bounds[1], 0.01)
     flux_bounds = func_bounds(wave_bounds)
@@ -44,36 +40,18 @@ def GBAND_QUAD(wave, flux, bounds=config.CH_BOUNDS):
 
     print("flux_bounds_max = ", flux_bounds_max)
 
-    ## If flux_boounds_max is not close to 1. (normalized level),
-    ## I will calculate area subtended from 1.0 to flux_bounds_max for later
-    ## subtraction from CH_EW. I need to use SNR at CH band for noise = 1./SNR
-    ## but it appears very small (~0.02) so at the moment I ignore this.
-
     if flux_bounds_max < 1.0:
         EW_subtract = (1.0 - flux_bounds_max) * (bounds[1] - bounds[0])
     else:
         EW_subtract = 0.0
     print("EW_subtract=  ", EW_subtract)
 
-    ############################################################################
-
-    ## J. Yoon, 07/17/2020
-    ## I added EW_subtract in return so that I can use this subtraction
-    ## for set_CH_procedure().
-
     return integrate.quad(
         func, bounds[0], bounds[1], limit=1000, points=list(wave[(wave > bounds[0]) & (wave < bounds[1])])
     )[0], EW_subtract
 
 
-def GBAND_vanilla(wave, flux, bounds=config.CH_BOUNDS):
-    trim = flux[(wave > bounds[0]) & (wave < bounds[1])]
-
-    return (1 - trim).sum()
-
-
 def CAII_K6(wave, flux):
-    # 3930.7 - 3936.7
     func = interp1d(wave, 1.0 - flux)
     return integrate.quad(func, 3930.7, 3936.7, limit=200, points=wave[(wave > 3930.7) & (wave < 3936.7)])[0]
 
