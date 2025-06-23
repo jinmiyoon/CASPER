@@ -15,7 +15,6 @@ import config
 import MAD
 import numpy as np
 import pandas as pd
-from scipy.interpolate import interp1d
 
 
 ###############################
@@ -103,6 +102,7 @@ class Spectrum:
         return
 
     def ebv_correct(self, row):
+        # use in doctstrings
         ## Basically if the EBV is finite,
         ## assume that photometry needs to be corrected
 
