@@ -11,40 +11,6 @@ native_bounds = {
 }
 
 
-# we have multiple versions of this function instead of importing them
-def ln_chi_square_sigma(flux: ArrayLike, synth: ArrayLike, sigma: float) -> float:
-    """
-    Calculate truncated log chi-square probability distribution function for an absorption feature.
-
-    The function allows evaluating how well the synthetic spectrum matches the observed one by comparing observed flux values to synthetic (model) flux
-    values using a version of the chi-square formula. The uncertainty is
-    based on the signal-to-noise ratio and is adjusted using the model flux.
-
-    Parameters
-    ----------
-    flux : array_like
-        The observed flux values.
-    synth : array_like
-        The synthetic (model) flux values, matched in wavelength to the observed flux.
-    xi : array_like or float
-        The inverse signal-to-noise ratio (1 / SNR). This gets multiplied by the
-        synthetic flux to get the uncertainty for each point.
-
-    Returns
-    -------
-    float
-        A number that tells us how likely the model is to match the data.
-        If the result is not valid (e.g., negative), it returns -infinity.
-    """
-    dof = len(flux) - 1
-    chi = np.square(np.divide(flux - synth, sigma * synth)).sum()
-
-    if (chi > 0) and np.isfinite(chi):
-        return (0.5 * dof - 1) * np.log(chi) - 0.5 * chi
-    else:
-        return -np.inf
-
-
 def teff_lnprior(X: float, mean: float, sigma: float) -> float:
     """
     Compute the logarithm of the Gaussian prior for effective temperature (Teff).
