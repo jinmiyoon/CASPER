@@ -1,8 +1,12 @@
+from typing import Tuple
+
 import config
 import numpy as np
 import scipy.integrate as integrate
 from numpy.typing import ArrayLike
 from scipy.interpolate import interp1d
+
+from casper.interface.spectrum import Spectrum
 
 
 def GBAND_QUAD(wave: ArrayLike, flux: ArrayLike, bounds: tuple[float, float] = config.CH_BOUNDS) -> tuple[float, float]:
@@ -123,37 +127,26 @@ def CAII_K18(wave: ArrayLike, flux: ArrayLike) -> float:
     return integrate.quad(func, 3924.7, 3942.7, limit=200, points=wave[(wave > 3924.7) & (wave < 3942.7)])[0]
 
 
-####### integrate.quad is being weird with the subdivision limit.
-### here's the lame versions of CAII_K##
+def get_KP_band(spectrum: "Spectrum") -> Tuple[float, float]:
+    """
+    Return the Ca II K-band wavelength range for chi-square fitting based on Beers (1999),
+    using measurements K6, K12, and K18.
 
+    Parameters
+    ----------
+    spectrum : Spectrum
+        A Spectrum object with a 'frame' dictionary containing "wave" and "norm" arrays.
 
-def CAII_K6_v(wave, flux):
-    # 3930.7 - 3936.7
+    Returns
+    -------
+    tuple of float
+        Wavelength bounds (min, max) from config.KP_BOUNDS.
 
-    trim = flux[(wave > 3930.7) & (wave < 3936.7)]
-    return (1.0 - trim).sum()
-
-
-def CAII_K12_v(wave, flux):
-    # 3927.7 - 3939.7
-
-    trim = flux[(wave > 3927.7) & (wave < 3939.7)]
-    return (1.0 - trim).sum()
-
-
-def CAII_K18_v(wave, flux):
-    # 3924.7 - 3942.7
-
-    trim = flux[(wave > 3927.7) & (wave < 3939.7)]
-    return (1.0 - trim).sum()
-
-
-###############################################################
-
-
-def get_KP_band(spectrum):
-    ### simply return the CAII band range for the chi fit, based on Beers 1999
-    ### updated to utilize the spectrum.Spectrum() class
+    Notes
+    -----
+    If an unexpected condition occurs, np.nan is returned,
+    which does not match the declared return type.
+    """
     KP_BOUNDS = config.KP_BOUNDS
 
     K6 = CAII_K6(spectrum.frame["wave"], spectrum.frame["norm"])
@@ -173,50 +166,34 @@ def get_KP_band(spectrum):
         return KP_BOUNDS["K18"]
 
     else:
-        ### this shouldn't ever happen really
         print("warning: error in CAII_KP")
 
         return np.nan
 
 
-def set_CH_procedure(spectrum):
-    ## Measures Gband and sets carbon mode
-    ##### This is intended to check whether C2 Swan band is necessary
+def set_CH_procedure(spectrum: "Spectrum") -> None:
+    """
+    Set the carbon analysis mode for the given spectrum based on G-band strength.
+
+    This function measures the CH G-band equivalent width (CH_EW) using GBAND_QUAD.
+    If a carbon mode is specified in `spectrum.INPUT_CARBON_MODE`, that mode is used.
+    Otherwise, the function decides between "CH" and "CH+C2" based on the CH_EW threshold.
+
+    Parameters
+    ----------
+    spectrum : Spectrum
+        A Spectrum object containing a frame with "wave" and "norm",
+        and methods for setting G-band and carbon mode.
+
+    Returns
+    -------
+    None
+        Modifies the spectrum in place.
+    """
     CH_EW, EW_subtract = GBAND_QUAD(spectrum.frame["wave"], spectrum.frame["norm"])
     spectrum.set_GBAND(CH_EW)
-    # print("CH_EW, EW_subtract at EW.py = ", CH_EW, EW_subtract)
-
-    ############################################################################
-    # Revised by Jinmi Yoon, July 17 2020
-    # The default CH_EW =40 was used for the Yoon+2020 paper,
-    # but I realized that EW changes depending on the level of continuum.
-    # So it has to change a bit to prevent an unnecessarily large EW value
-    # to switch the mode. I meant to modify GBAND_QUAD calculation slightly to
-    # tackle the problem with this issue.
-    # However, the problem is that this function appears to be used other places.
-    # So I decided to change critieria here by changing CH_EW value based on
-    # the normalization level. First, I find a highest flux point, flux_max.
-    # If flux_max does not reach 1.0, I subtract area from 1.0 to flux_max level
-    # from CH_EW. To do so I define flux_bounds_max in GBAND_QUAD and calculate
-    # this area and feed this number in this procedure.
-    #
-    # reduced_CH_EW = CH_EW - EW_subtract
-    # if reduced_CH_EW > 45.:
-    # I decided to keep Devin's procedure because the synthetic spectra at
-    # this band indeed lower than 1.0 level.
-    ############################################################################
-    # Devin originally used CH_EW >40 for switching however, it depends on
-    # the normalization though it is likely to be a minor difference.
 
     print("CH_EW= %5.2f" % CH_EW)
-
-    ##########################################################################
-    #  09/09/2020, J. Yoon
-    # I modified this procedure because I want to have freedom to
-    # set carbon_mode in input file for diagnosis of carbon mode.
-    # If carbon_mode is missing in input files,
-    # then it will use the CH_EW value for setting carbon_mode.
-    ###########################################################################
 
     if spectrum.INPUT_CARBON_MODE == "CH":
         print("\t using the input {0} carbon_mode".format(spectrum.INPUT_CARBON_MODE))
@@ -227,7 +204,6 @@ def set_CH_procedure(spectrum):
         spectrum.set_carbon_mode("CH+C2")
 
     else:
-        # if CH_EW > 55.:
         if CH_EW > 40.0:
             print("\t recommending CH+C2 procedure")
             spectrum.set_carbon_mode("CH+C2")
@@ -239,6 +215,7 @@ def set_CH_procedure(spectrum):
     return
 
 
+# double check if this is used or not
 def CAII_KP(wave, flux):
     ## Following the Beers 1999
     K6 = CAII_K6(wave, flux)
@@ -257,7 +234,3 @@ def CAII_KP(wave, flux):
     else:
         print("warning: error in CAII_KP")
         return np.nan
-
-
-def CAII_H(wave, flux):
-    trim = flux[(wave > 3927.7) & (wave < 3939.7)]
