@@ -1,29 +1,26 @@
 import numpy as np
 
-## wavelength setting ##
-
-# constraining the wavelength range of interest for both obs and synthetic wave
+# Wavelength range of interest for analysis (in Angstroms)
 WAVE_BOUNDS = [3800.0, 5000.0]
-# WAVE_BOUNDS = [3850., 4850.]
-SYNTH_WAVE = np.arange(WAVE_BOUNDS[0], WAVE_BOUNDS[1] + 1, 1)
-# FRAME_WAVE = np.arange(WAVE_BOUNDS[0],WAVE_BOUNDS[1]+1,1)
 
-# synthetic model wavelength range
+# Synthetic wavelength array within the analysis bounds
+SYNTH_WAVE = np.arange(WAVE_BOUNDS[0], WAVE_BOUNDS[1] + 1, 1)
+
+# Full wavelength range used by the spectral interpolator
 INTERPOLATOR_WAVE = np.arange(3000.0, 5001.0, 1)
-# need to define the index of wavelength for synthetic flux
+
+# Get index range in INTERPOLATOR_WAVE that matches the analysis bounds (start and end wavelengths)
 id_start_wave = np.where(INTERPOLATOR_WAVE == WAVE_BOUNDS[0])[0][0]
 id_end_wave = np.where(INTERPOLATOR_WAVE == WAVE_BOUNDS[1])[0][0]
 
 
-## wavelength ranges for CH and Ca lines ##
+# Wavelength ranges for CH and Ca lines
 CH_BOUNDS = [4222.0, 4322.0]
 KP_BOUNDS = {"K6": [3930.7, 3936.7], "K12": [3927.7, 3939.7], "K18": [3924.7, 3942.7]}
 
-### SIDEBANDS for SN and XI calculations
+# SIDEBANDS for SN and XI calculations
 SIDEBANDS = {"CA": [[3884, 3923], [3995, 4045]], "CH": [[4000, 4080], [4440, 4500]], "C2": [[4500, 4600], [4760, 4820]]}
 
-
-## Archetype Parameters ##
 ARCHETYPE_PARAMS = {
     "HALO": {
         "GI": {"FEH": -2.5, "CFE": 1.97, "AC": 7.9},
@@ -37,15 +34,9 @@ ARCHETYPE_PARAMS = {
     },
 }
 
-
-## Normalization parameters ##
-
 SIGMA = np.linspace(15, 30, 10)
 k, flux_min = 1, 70
-# cahk = True
+
 band_check, boost, cahk = False, True, True
-# boost = True
 
-
-## Extinction correction
 A_EBV = {"A_J": 0.709, "A_H": 0.449, "A_K": 0.302, "A_g": 3.303, "A_r": 2.285}
