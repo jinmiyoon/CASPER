@@ -64,7 +64,31 @@ def produce_title(spectrum) -> str:
     )
 
 
-def plot_spectra(spectra_batch):
+def plot_spectra(spectra_batch) -> None:
+    """
+    Generate and save a multi-panel PDF of spectral plots for each spectrum in a batch.
+
+    This function creates a multi-page PDF where each page displays several subplots
+    showing the raw, normalized, and zoomed-in regions of each spectrum. For each spectrum,
+    the following are plotted:
+        - Raw flux with continuum overlay
+        - Normalized spectrum
+        - Zoomed-in views of Ca II, CH, and C₂ bands with error shading
+        - Synthetic model overlay
+
+    Parameters
+    ----------
+    spectra_batch : object
+        An object containing:
+            - spectra_array : list of individual spectrum-like objects
+            - output_name : str, base name for the saved PDF file
+            - length : int, total number of spectra in the batch
+
+    Returns
+    -------
+    None
+        The function saves a PDF file to disk and does not return any value.
+    """
     CA_XLIM = [3910, 3980]
     LINEW = 0.3
     LINEW_zoom = 0.5
@@ -199,7 +223,7 @@ def plot_spectra(spectra_batch):
     plt.close()
     pp.close()
 
-    return
+    # return
 
 
 ########## To check burnt-in from the sampler chain
