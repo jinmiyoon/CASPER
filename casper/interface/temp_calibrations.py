@@ -8,13 +8,13 @@ def Hernandez(JK: float, FEH: float = -2.5, CLASS: Optional[str] = None) -> floa
     """
     Compute effective temperature (Teff) using the Hernandez Calibration.
 
-    This function estimates stellar effective temperature from the (J to K) color and
+    This function estimates stellar effective temperature from the (J-Ks) color and
     metallicity [Fe/H], using separate calibrations for GIANT and DWARF stars.
 
     Parameters
     ----------
     JK : float
-        The (J to K) color index.
+        The (J-Ks) color index.
     FEH : float, optional
         Metallicity [Fe/H] of the star. Default is -2.5.
     CLASS : str, optional
@@ -64,14 +64,14 @@ def Casagrande(JK: float, FEH: float = -2.5, CLASS: Optional[str] = None) -> flo
     """
     Estimate effective temperature using the Casagrande Calibration.
 
-    This function calculates stellar effective temperature (Teff) from the J to K
+    This function calculates stellar effective temperature (Teff) from the J-Ks
     color index and metallicity [Fe/H], using an empirical formula.
     It is valid for 0.07 ≤ JK ≤ 0.80.
 
     Parameters
     ----------
     JK : float
-        The J to K color index.
+        The J-Ks color index.
     FEH : float, optional
         Metallicity [Fe/H] of the star. Default is -2.5.
     CLASS : str, optional
@@ -108,15 +108,15 @@ def Casagrande(JK: float, FEH: float = -2.5, CLASS: Optional[str] = None) -> flo
 
 def Bergeat(JK: float) -> float:
     """
-    Estimate effective temperature using the J to K color index.
+    Estimate effective temperature using the J-Ks color index.
 
     This function calculates Teff using a log-linear calibration based on
-    the J to K color index, following the approach from Bergeat et al.
+    the J-Ks color index, following the approach from Bergeat et al.
 
     Parameters
     ----------
     JK : float
-        The J to K color index.
+        The J-Ks color index.
 
     Returns
     -------
@@ -141,7 +141,7 @@ def Alonso(Frame: pd.DataFrame) -> Tuple[float, ...]:
     Estimate effective temperatures using empirical color-Teff calibrations.
 
     This function computes effective temperatures from several color indices:
-    B to V, V to R, V to K, J to K, and J to H. It assumes a default metallicity
+    B to V, V to R, V to K, J-Ks, and J to H. It assumes a default metallicity
     of [Fe/H] = -3.5 and is based on photometric zero-point corrected magnitudes.
 
     Parameters
@@ -228,7 +228,7 @@ def Bergeat_Frame(Frame: pd.DataFrame) -> np.ndarray:
     """
     Estimate effective temperatures using color-Teff calibrations for carbon-rich stars.
 
-    This function calculates effective temperatures based on V to K, J to K, and H to K
+    This function calculates effective temperatures based on V to K, J-Ks, and H to K
     color indices using empirical log-linear relations.
 
     Parameters
@@ -343,12 +343,12 @@ def calibrate_temp_frame(JK: float, gr: float, FEH: float = -2.5, CLASS: Optiona
 
     This function runs various photometric temperature calibrations (Casagrande, Hernandez,
     Bergeat, Fukugita) depending on the availability of valid (finite) input values for
-    J to K and g to r color indices. It then attempts to determine an adopted Teff value.
+    J-Ks and g to r color indices. It then attempts to determine an adopted Teff value.
 
     Parameters
     ----------
     JK : float
-        J to K color index.
+        J-Ks color index.
     gr : float
         g to r color index.
     FEH : float, optional
