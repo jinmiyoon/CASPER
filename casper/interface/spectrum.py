@@ -1,16 +1,3 @@
-################################################################################
-### Author: Devin Whitten, Jinmi Yoon
-### Email: devin.d.whitten@gmail.com, jinmi.yoon@gmail.com
-################################################################################
-# Date: Nov 12, 2016
-# This is will serve as the interface for the normalization function.
-# So just defining some functions in here.
-
-## Modifying to operate on synthetic spectra
-## Jul 15 2020 by Jinmi Yoon
-## This routine is under CASPER/interface/
-
-
 import config
 import MAD
 import numpy as np
@@ -21,16 +8,27 @@ import pandas as pd
 # Spectrum Class Definition
 ################################
 def obtain_flux(data):
-    ### This is a catch all function to hopefully properly address fits data format variety
+    """
+    Extract a 1D flux array from FITS-like input data with varying shapes.
+
+    If the input data is 1D, it is flattened and returned directly.
+    If the data is multi-dimensional, the first row is selected and flattened.
+
+    Parameters
+    ----------
+    data : np.ndarray
+        Input data array, typically from a FITS file.
+
+    Returns
+    -------
+    np.ndarray
+        A flattened 1D array representing the flux.
+    """
     shape = data.shape
 
-    ##### Case 1
     if len(shape) == 1:
-        ### simplest case, just grab array
         return data.flatten()
-
     else:
-        ## grab first row and hope for the best
         return data[0].flatten()
 
 
@@ -38,9 +36,8 @@ class Spectrum:
     def __init__(self, spec, filename, is_fits=True):
         self.filename = filename
         print("\n... initializing:  ", filename)
-        ################################################################################
+
         if is_fits:
-            ## This is a cumbersome attempt to accomodate multiple fits data formats..
             if "CD1_1" in spec[0].header:
                 DELTA = "CD1_1"
 
@@ -51,7 +48,6 @@ class Spectrum:
                 print("I don't know which increment to use!")
 
             if spec[0].header["CRVAL1"] > 10.0:
-                # print("linear wavelength")
                 self.wavelength = (np.arange(0, spec[0].header["NAXIS1"], 1) * spec[0].header[DELTA]) + spec[0].header[
                     "CRVAL1"
                 ]
@@ -66,18 +62,12 @@ class Spectrum:
             self.flux = obtain_flux(spec[0].data)
             self.wavelength = np.array(self.wavelength)
             print("spectrum loaded")
-            # not to keep fits file open
-            spec.close()
 
-            # check endian match
-            # self.endian_match = (self.flux.dtype.byteorder == self.wavelength.dtype.byteorder)
+            spec.close()
 
             if self.flux.dtype.byteorder == ">":
                 print("... correcting endian mismatch")
                 self.flux = self.flux.byteswap().view(self.flux.dtype.newbyteorder())
-
-            # print(self.flux.dtype.byteorder == self.wavelength.dtype.byteorder)
-        ################################################################################
 
         else:
             print("\t csv file, ")
@@ -86,39 +76,23 @@ class Spectrum:
             self.wavelength = np.array(self.spec["wave"], dtype=float)
             self.original_wavelength = self.wavelength
 
-        #### Defined in generate_segments
         self.segments = None
-        ####
+
         self.mad_global = None
 
         return
 
     def radial_correction(self, velocity=0.0):
-        ### corrects the wavelength shift for given radial velocity
         self.rv = velocity
-        # Later, I would use astropy constant for speed of light, Sep 02 2020, J. Yoon
+
         self.wavelength = self.original_wavelength / ((velocity / 2.99792e5) + 1)
 
         return
 
     def ebv_correct(self, row):
-        # use in doctstrings
-        ## Basically if the EBV is finite,
-        ## assume that photometry needs to be corrected
-
-        ##-- Jinmi Yoon 06-12-2020
-        ## MAke sure the colors used in CASPER are from UKIRT colors.
-        ## If you have 2MASS colors, convert them to the UKIRT colors by following
-        ## a transformation equation found at https://www.astro.caltech.edu/~jmc/2mass/v3/transformations/
-        ## (Ks)2MASS     =    KUKIRT + (0.003 ± 0.004) + (0.004 ± 0.006)(J-K)UKIRT
-        ## (J-H)2MASS    =    (1.075 ± 0.013)(J-H)UKIRT + (-0.032 ± 0.006)
-        ## (J-Ks)2MASS   =    (1.070 ± 0.008)(J-K)UKIRT + (-0.015 ± 0.006)
-        ## (H-Ks)2MASS   =    (1.071 ± 0.026)(H-K)UKIRT + (0.014 ± 0.005)
-
         self.PHOTO_0 = {key: float(row[key]) for key in ["J-K", "H-K", "H-K", "g-r"]}
 
         if float(row["EBV_SFD"]) > 0:
-            ### Then perform the correction
             print("\t corrected :", self.get_filename())
 
             self.PHOTO_0["J-K"] = float(row["J-K"]) - (float(config.A_EBV["A_J"]) - float(config.A_EBV["A_K"])) * float(
@@ -134,19 +108,13 @@ class Spectrum:
             )
 
         else:
-            ## THEN ASSUME COLORS ARE ALREADY CORRECTED
             print("\t already corrected:  ", self.get_filename())
 
-    ############################################################
-    # def trim_frame(self, bounds= [3000, 5000]):
     def trim_frame(self, bounds=config.WAVE_BOUNDS):
         self.frame = self.frame[self.frame["wave"].between(bounds[0], bounds[1], inclusive="both")]
         return
 
     def estimate_sn(self):
-        #### determines the first guess SN estimates for each region of interest
-        #### defines SN_DICT member variable
-
         self.SN_DICT = {key: [] for key in config.SIDEBANDS.keys()}
         for key in config.SIDEBANDS.keys():
             if (config.SIDEBANDS[key][0][0] > min(self.frame["wave"])) and (
@@ -159,8 +127,6 @@ class Spectrum:
                     self.frame["flux"][self.frame["wave"].between(*config.SIDEBANDS[key][1], inclusive="both")]
                 )
 
-                ### Average the left and right config.SIDEBANDS
-
                 self.SN_DICT[key] = {
                     "SN_AVG": np.mean([np.median(SN_LEFT), np.median(SN_RIGHT)]),
                     "SN_STD": max([MAD.S_MAD(SN_LEFT), MAD.S_MAD(SN_RIGHT)]),
@@ -168,7 +134,6 @@ class Spectrum:
                     "XI_STD": max([MAD.S_MAD(np.divide(1.0, SN_LEFT)), MAD.S_MAD(np.divide(1.0, SN_RIGHT))]),
                 }
 
-                #### parameters for the beta distribution prior
                 self.SN_DICT[key]["alpha"] = (
                     (self.SN_DICT[key]["XI_AVG"] ** 2) / np.square(self.SN_DICT[key]["XI_STD"])
                 ) * (1 - self.SN_DICT[key]["XI_AVG"]) - self.SN_DICT[key]["XI_AVG"]
@@ -214,10 +179,7 @@ class Spectrum:
             sn_output = pd.concat([sn_output, sn_c2_output], axis=1)
         return sn_output
 
-    #################################################
-    ### Total mutators
     def set_params(self, SEQUENCE, STARNAME, CLASS, JK, MODE, INPUT_CARBON_MODE, iter, T_SIGMA, HARD_TEFF):
-        # def set_params(self,CLASS, JK, MODE, iter, T_SIGMA, HARD_TEFF):
         self.SEQUENCE = str(SEQUENCE)
         self.STARNAME = str(STARNAME)
         self.G_CLASS = str(CLASS)
@@ -229,8 +191,6 @@ class Spectrum:
         self.HARD_TEFF = float(HARD_TEFF)
         assert (self.G_CLASS == "GIANT") or (self.G_CLASS == "DWARF"), "Invalid gravity class: {}".format(self.G_CLASS)
         assert (self.MODE == "UFD") or (self.MODE == "HALO"), "Invalid Galactic Environment"
-        # assert (self.INPUT_CARBON_MODE =='CH') or (self.INPUT_CARBON_MODE =='CH+C2'), "Invalid Enviornment: {}".format(self.carbon_mode)
-
         return
 
     def set_KP_bounds(self, input_bounds):
@@ -238,10 +198,6 @@ class Spectrum:
         self.KP_bounds = input_bounds
         return
 
-    # def set_CH_bounds(self, )
-
-    # created this function to provide an option to manually set
-    # carbon_mode: CH or CH+C2 modes   J. Yoon
     def set_carbon_mode(self, carbon_mode):
         self.carbon_mode = carbon_mode
         return
@@ -260,52 +216,29 @@ class Spectrum:
         return
 
     def set_temperature(self, input_temp, sigma):
-        ### for use with the calibrate_temperatures function
-        ### input_dict:  {"Casagrande":, "Hernandez":, "Bergeat": }
         print(f"\t\t batch.set_temperatue(): temp={input_temp}, sigma={sigma}")
         self.teff_irfm = input_temp
         self.teff_irfm_err = sigma
 
-        """
-        # 12/13/2021, J Yoon.
-        # I dont understand why Devin wrote this way below.
-        # Perhaps, he meant to do something else.
-
-        if hard == True:
-            self.teff_irfm = input_temp
-            self.teff_irfm_err = sigma
-            return
-
-        else:
-            self.teff_irfm = input_temp
-            self.teff_irfm_err = sigma
-
-        """
-
         return
 
     def prepare_regions(self):
-        ### prepares the CaII, CH, and C2 regions according to KP_bounds and carbon_mode
-
         self.regions = {
             "CA": self.frame[self.frame["wave"].between(*self.KP_bounds, inclusive="both")].copy(),
             "CH": self.frame[self.frame["wave"].between(4222, 4322, inclusive="both")].copy(),
         }
 
         if self.carbon_mode == "CH+C2":
-            ### then add the C2 cut
             self.regions["C2"] = self.frame[self.frame["wave"].between(4710, 4750, inclusive="both").copy()]
 
         return
 
     def set_temp_frame(self, TEMP_FRAME):
-        # print(f"\t\t batch.set_temp_frame(): temp={TEMP_FRAME}")
         self.TEMP_FRAME = TEMP_FRAME
         return
 
     def set_mcmc_args(self, input_dict=None):
-        ## I'll finish if necessary
-        if input_dict != None:
+        if input_dict is not None:
             self.mcmc_args = input
         else:
             self.mcmc_args = {}
@@ -313,8 +246,6 @@ class Spectrum:
         return
 
     def set_mcmc_results(self, input_dict, mode):
-        ## I want to anticipate the refined and coarse outputs
-
         if mode == "COARSE":
             self.MCMC_COARSE = input_dict
 
@@ -334,8 +265,6 @@ class Spectrum:
         return
 
     def set_kde_functions(self, input_dict, mode):
-        ## I want to anticipate the refined and coarse outputs
-
         if mode == "COARSE":
             self.KDE_COARSE = input_dict
 
@@ -348,42 +277,21 @@ class Spectrum:
         return
 
     def set_flux(self, input_flux):
-        ## Just a hard set function in case of format problems with the fits data section
-        # observed flux
         self.flux = input_flux
         return
 
     def set_norm(self, input_flux):
-        ## intended for the external batch normalization
-        # observed norm flux
         self.norm = input_flux
 
         return
 
     def set_GBAND(self, input):
-        ## might be interesting someday..
         self.GBAND_EW = input
         return
 
     def set_frame(self, wave, flux):
-        # Trim the frame within the wave bounds we are interested in.
-        # Since the observed wave array size is different from the synthetic wave,
-        # we need to set they are the same size. Future work below. FRAME_WAVE should be the same as SYNTH_WAVE
-        # new_frame_wave = config.FRAME_WAVE
-        # new_frame_flux = interp1d(config.FRAME_WAVE, flux, kind='linear')
-        # self.frame = pd.DataFrame({'wave': config.FRAME_WAVE, 'flux': new_frame_flux})
-
-        # setting pandas DF of the original spectra
         self.frame = pd.DataFrame({"wave": wave, "flux": flux})
         return
-
-    # def set_frame_wave(self, input_wave):
-    #     self.frame.loc[:, 'wave'] = input_wave
-    #     return
-
-    # def set_frame_flux(self, input_flux):
-    #     self.frame.loc[:, 'flux'] = input_flux
-    #     return
 
     def set_frame_norm(self, input_norm):
         self.frame.loc[:, "norm"] = input_norm
@@ -407,11 +315,7 @@ class Spectrum:
         return "{:<25}".format(self.STARNAME)
 
     def get_wave(self):
-        # wavelength of observed spectra
         return self.wavelength
-
-    # def get_norm(self):
-    #     return self.norm
 
     def get_flux(self):
         # observed flux
