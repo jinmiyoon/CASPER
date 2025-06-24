@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import numpy as np
 from astropy import units as u
 from matplotlib.backends.backend_pdf import PdfPages
+from matplotlib.figure import Figure
 from MCMC_interface import kde_param
 from scipy.interpolate import interp1d
 
@@ -129,7 +130,7 @@ def plot_spectra(spectra_batch) -> None:
 
         index = i % rows
 
-        # MAIN PLOT SECTION
+        # Main Plot Section
         ax[index, 0].set_yticks([0.0, max(spec.frame["flux"])])
 
         [label.set_xticks(np.linspace(config.WAVE_BOUNDS[0], config.WAVE_BOUNDS[1], 7)) for label in ax[index, 0:2]]
@@ -179,7 +180,7 @@ def plot_spectra(spectra_batch) -> None:
             alpha=0.7,
         )
 
-        # SIGMA SHADING SECTION
+        # Sigma Shading Section
         synth_function = interp1d(spec.synth_spectrum["wave"], spec.synth_spectrum["norm"])
 
         # CaII
@@ -226,11 +227,27 @@ def plot_spectra(spectra_batch) -> None:
     # return
 
 
-########## To check burnt-in from the sampler chain
-def plot_mcmc_trace_array(spec_batch):
-    # plt.rcParams.update({'font.size': 8, 'font.family':'monospace'})
+def plot_mcmc_trace_array(spec_batch) -> None:
+    """
+    Generate and save MCMC trace plots for all spectra in a batch.
 
-    # this function uses plot_single_corner function
+    This function loops over each spectrum in the batch and uses
+    `plot_single_mcmc_trace()` to create a trace plot showing how each parameter
+    evolves over MCMC steps. All plots are saved into a single PDF file named
+    "<output_name>_mcmc_trace.pdf".
+
+    Parameters
+    ----------
+    spec_batch : object
+        An object with the following attributes:
+        - spectra_array : list of spectrum-like objects
+        - output_name : str, used as the base name for the output PDF
+
+    Returns
+    -------
+    None
+        The function writes a PDF to disk but returns nothing.
+    """
     pp = PdfPages(spec_batch.output_name + "_mcmc_trace.pdf")
 
     fig_handle = []
@@ -243,31 +260,53 @@ def plot_mcmc_trace_array(spec_batch):
 
     pp.close()
 
-    return
+    # return
 
 
-def plot_single_mcmc_trace(spectrum, n_thin=1):
-    ### There are three conditions, based on ndim
-    ### get number of dimensions
+def plot_single_mcmc_trace(spectrum, n_thin: int = 1) -> plt.Figure:
+    """
+    Plot the MCMC trace (walkers over steps) for a single spectrum object.
 
+    This function visualizes the evolution of MCMC chains for each parameter
+    in the COARSE (or fine) sampler. It adapts the labels and number of plots
+    based on the number of parameters used during sampling (`ndim`).
+
+    Parameters
+    ----------
+    spectrum : object
+        An object with the following attributes and methods:
+        - MCMC_COARSE_sampler: the emcee sampler object
+        - get_sequence(): returns an identifier string for the spectrum
+        - get_filename(): returns the source filename
+        - get_MCMC_iterations(): returns total number of iterations
+        - mcmc_coarse_tau: estimated autocorrelation time
+        - mcmc_coarse_acc_frac: mean acceptance fraction
+        - mcmc_coarse_n_discard: suggested burn-in index
+
+    n_thin : int, optional
+        Thinning factor to reduce the number of MCMC samples plotted. Default is 1.
+
+    Returns
+    -------
+    matplotlib.figure.Figure
+        The matplotlib figure object containing the MCMC trace plots.
+    """
     sampler = spectrum.MCMC_COARSE_sampler
     ndim = sampler.chain.shape[2]
 
     samples_all = sampler.get_chain(thin=n_thin)
 
     if ndim == 6:
-        ### COARSE run with CH+C2 mode
+        # COARSE run with CH+C2 mode
         labels = [r"$T_{\rm eff}$", "[Fe/H]", "[C/Fe]", r"$\xi_{\rm Ca II}$", r"$\xi_{\rm CH}$", r"$\xi_{\rm C_{2}}$"]
 
     elif ndim == 5:
-        ### COARSE run with CH mode
+        # COARSE run with CH mode
         labels = [r"$T_{\rm eff}$", "[Fe/H]", "[C/Fe]", r"$\xi_{\rm Ca II}$", r"$\xi_{\rm CH}$"]
 
     elif ndim == 2:
-        ### Fine parameters case
         labels = ["[Fe/H]", "[C/Fe]"]
 
-    # add add_subplots for tracing steps and chain
     fig, axes = plt.subplots(ndim, 1, figsize=(6, 8), sharex=True)
     fig.suptitle("COARSE run trace plot: #" + spectrum.get_sequence() + "  " + spectrum.get_filename(), fontsize=10)
 
@@ -295,15 +334,30 @@ def plot_single_mcmc_trace(spectrum, n_thin=1):
     )
     axes[ndim - 1].set_xlabel("step number")
 
-    # plt.subplots_adjust(top=0.9)
-
     plt.close()
     return fig
 
 
-########## this function is used for plotting corner plot in CASPER.
-def plot_corner_array(spec_batch):
-    # this function uses plot_single_corner function
+def plot_corner_array(spec_batch) -> None:
+    """
+    Generate and save corner plots for all spectra in a batch.
+
+    This function loops through a batch of spectra, calls `plot_single_corner`
+    on each, and saves all the resulting corner plots into a single PDF file.
+
+    Parameters
+    ----------
+    spec_batch : object
+        An object containing:
+        - spectra_array : list of spectrum-like objects
+        - output_name : str, base name for the output PDF
+
+    Returns
+    -------
+    None
+        The function saves a PDF file named "<output_name>_corner.pdf" and does not return a value.
+    """
+
     pp = PdfPages(spec_batch.output_name + "_corner.pdf")
 
     fig_handle = []
@@ -316,20 +370,51 @@ def plot_corner_array(spec_batch):
 
     pp.close()
 
-    return
+    # return
 
 
-def plot_single_corner(spectrum, io_path, n_thin=1):
-    ### There are three conditions, based on ndim
-    ### get number of dimensions
+def plot_single_corner(spectrum, io_path: str, n_thin: int = 1) -> Figure:
+    """
+    Generate a corner plot for MCMC samples from a single spectrum object.
+
+    This function retrieves MCMC samples from the spectrum, applies thinning and burn-in,
+    estimates parameter values using KDE, and visualizes the joint distributions and
+    1D marginals in a corner plot. It also overlays median values and KDEs, along with
+    a LaTeX-formatted legend of key parameters.
+
+    Parameters
+    ----------
+    spectrum : object
+        An object with the following:
+        - MCMC_COARSE_sampler : the emcee sampler object with `.get_chain()`
+        - get_sequence() : returns spectrum sequence ID
+        - get_starname() : returns star name
+        - mcmc_coarse_n_discard : number of burn-in steps to discard
+        - INPUT_CARBON_MODE : string indicating carbon mode (e.g., "CH" or "CH+C2")
+        - get_output_row() : returns a DataFrame row containing derived parameters
+
+    io_path : str
+        Output path used in the plot title or for labeling.
+
+    n_thin : int, optional
+        Thinning factor for the MCMC chains. Default is 1 (no thinning).
+
+    Returns
+    -------
+    matplotlib.figure.Figure
+        The corner plot figure with parameter distributions and legend annotations.
+
+    Notes
+    -----
+    Ensure your matplotlib setup supports LaTeX. If there are issues rendering LaTeX,
+    you may need to install a LaTeX distribution and/or adjust your matplotlib settings.
+    """
 
     sampler = spectrum.MCMC_COARSE_sampler
-    # samples = sampler[:, int(burnin * iter):, :].reshape((-1, ndim))
-    ## 04/19/22 J. Yoon revised samples and removed try/except statements because they are irrelevant.
-    ndim = sampler.chain.shape[2]
-    iter = sampler.chain.shape[1]
 
-    # samples_all = sampler.get_chain(thin=n_thin)
+    ndim = sampler.chain.shape[2]
+    # iter = sampler.chain.shape[1]
+
     samples = sampler.get_chain(discard=spectrum.mcmc_coarse_n_discard, thin=n_thin, flat=True)
 
     if ndim == 6:
@@ -340,35 +425,26 @@ def plot_single_corner(spectrum, io_path, n_thin=1):
             r"$\xi_{\rm CaII}$",
             r"$\xi_{\rm CH}$",
             r"$\xi_{\rm C_{2}}$",
-        ]  # r'S/N$_{\rm CaII}$', r'S/N$_{\rm CH}$', r'S/N$_{\rm C2}$'
-        # for i in range(3, ndim):
-        #    samples[:, i] = np.divide(1., samples[:, i])
+        ]
 
     elif ndim == 5:
         labels = [r"${\rm T}_{\rm eff}$", "[Fe/H]", "[C/Fe]", r"$\xi_{\rm Ca II}$", r"$\xi_{\rm CH}$"]
-        # for i in range(3, ndim):
-        #    samples[:, i] = np.divide(1., samples[:, i])
 
     elif ndim == 2:
-        ### Fine parameters case
         labels = ["[Fe/H]", "[C/Fe]"]
 
-    # corner plot
     fig = corner.corner(samples, labels=labels, color="black", hist_kwargs={"density": True})
 
     fig.suptitle("#" + spectrum.get_sequence() + "  " + spectrum.get_starname(), fontsize=20)
 
     MEDIAN = np.median(samples, axis=0)
 
-    #### MEDIAN is depreciated here, since I use a different estimate in kde_param
     value2 = [kde_param(row, x0=x0)["result"] for row, x0 in zip(samples.T, MEDIAN)]
     kde_array = [kde_param(row, x0=x0)["kde"] for row, x0 in zip(samples.T, MEDIAN)]
 
-    std = np.std(samples, axis=0)
+    # std = np.std(samples, axis=0)
 
     axes = np.array(fig.axes).reshape((ndim, ndim))
-
-    ### This the parameter case.
 
     for yi in range(ndim):
         for xi in range(yi):
@@ -384,7 +460,6 @@ def plot_single_corner(spectrum, io_path, n_thin=1):
 
     [label.tick_params(direction="in", right=True, top=True) for label in axes.flatten()]
 
-    # plt.subplots_adjust(top=0.9)
     output_row = spectrum.get_output_row()
     legend = output_row.loc[output_row["SEQUENCE"] == spectrum.get_sequence()]
     key_params = [
@@ -395,12 +470,9 @@ def plot_single_corner(spectrum, io_path, n_thin=1):
         ("$A$(C)", "AC"),
         ("$\\xi_{\\rm Ca II}$", "XI_CA"),
         ("$\\xi_{\\rm CH}$", "XI_CH"),
-    ]  # Only include base parameter names
+    ]
     if spectrum.INPUT_CARBON_MODE == "CH+C2":
         key_params = key_params + [("$\\xi_{\\rm C_{2}}$", "XI_C2")]
-
-    # Note: Ensure your matplotlib setup supports LaTeX. If there are issues rendering LaTeX, you may need
-    # to install a LaTeX distribution and/or adjust matplotlib settings.
 
     params_str = "\n".join(
         [
@@ -415,417 +487,3 @@ def plot_single_corner(spectrum, io_path, n_thin=1):
 
     plt.close()
     return fig
-
-
-def plot_spectrum(spectrum):
-    #### This is the main that I want to work with
-    fig, ax = plt.subplots(1, 3, figsize=(10, 3))
-
-    ax[0].plot(spectrum.frame["wave"], spectrum.frame["flux"])
-    ax[0].plot(spectrum.frame["wave"], spectrum.frame["cont"])
-
-    ax[1].plot(spectrum.frame["wave"], spectrum.frame["norm"])
-
-    return fig
-
-
-################################################################################
-################################################################################
-
-
-def chi_plot(chi_frame, filename, alt=None, teff=None):
-    ### chi_frame comes from synthetic_functions.interp_run
-    fig, ax = plt.subplots(1, 2, figsize=(10, 3))
-    # title = "KPNO21_2011  -  HE 0319 - 0215"
-    title = filename + "  -  " + alt
-    ax[0].plot(chi_frame["temp"], chi_frame["GI_D"], label="GI", color="blue")
-    ax[0].plot(chi_frame["temp"], chi_frame["GII_D"], label="GII", color="green")
-    ax[0].plot(chi_frame["temp"], chi_frame["GIII_D"], label="GIII", color="orange")
-
-    ax[1].plot(chi_frame["temp"], chi_frame["GI_G"], label="GI", color="blue")
-    ax[1].plot(chi_frame["temp"], chi_frame["GII_G"], label="GII", color="green")
-    ax[1].plot(chi_frame["temp"], chi_frame["GIII_G"], label="GIII", color="orange")
-
-    ax[0].set_title("Dwarf")
-    ax[1].set_title("Giant")
-
-    fig.suptitle(title)
-    if teff != None:
-        [label.axvline(teff, linestyle="--") for label in ax]
-
-    # ax[1].set_ylim([0.0, 0.06])
-
-    [label.set_ylabel(r"$\chi^2$") for label in ax]
-    [label.set_xlabel(r"T$_{\rm eff}$", labelpad=-10) for label in ax]
-    [label.tick_params(direction="in", top=True, right=True) for label in ax]
-
-    ax[0].legend()
-
-    plt.savefig("results/" + filename + ".pdf", format="pdf")
-
-
-def GI_plot(spec_frame, arch_lib, filename):
-    fig, ax = plt.subplots(2, 2, figsize=(10, 8))
-    cmap = plt.cm.jet(np.linspace(0, 1, 20))
-
-    ax[0, 0].set_title("Dwarf")
-    ax[0, 1].set_title("Giant")
-
-    ### Dwarf Left
-    [
-        ax[0, 0].plot(arch_lib["wave"], arch_lib["GI_D"][i], c=cmap[i], alpha=0.5, linewidth=0.75)
-        for i in range(len(arch_lib["GI_D"]))
-    ]
-    [
-        ax[1, 0].plot(arch_lib["wave"], arch_lib["GI_D"][i], c=cmap[i], alpha=0.5, linewidth=0.75)
-        for i in range(len(arch_lib["GI_D"]))
-    ]
-
-    ### Giant Right
-    [
-        ax[0, 1].plot(arch_lib["wave"], arch_lib["GI_G"][i], c=cmap[i], alpha=0.5, linewidth=0.75)
-        for i in range(len(arch_lib["GI_D"]))
-    ]
-    [
-        ax[1, 1].plot(arch_lib["wave"], arch_lib["GI_G"][i], c=cmap[i], alpha=0.5, linewidth=0.75)
-        for i in range(len(arch_lib["GI_D"]))
-    ]
-
-    [
-        label.plot(spec_frame["wave"], spec_frame["norm"], color="black", linewidth=0.75, alpha=0.75)
-        for label in ax[:, 0]
-    ]
-    [
-        label.plot(spec_frame["wave"], spec_frame["norm"], color="black", linewidth=0.75, alpha=0.75)
-        for label in ax[:, 1]
-    ]
-
-    [label.set_xlabel("Wavelength") for label in ax[1, :]]
-
-    [label.set_xlim([3925, 3980]) for label in ax[0, :]]
-    [label.set_xlim([4200, 4350]) for label in ax[1, :]]
-    [label.set_ylim([0, 1.2]) for label in ax[0, :]]
-    [label.set_ylim([0, 1.2]) for label in ax[1, :]]
-
-    fig.suptitle("Group I : [Fe/H] = -2.5 A(C) = 7.9")
-
-    plt.savefig("results/" + filename, format="pdf")
-
-    return
-
-
-def GII_plot(spec_frame, arch_lib, filename):
-    fig, ax = plt.subplots(2, 2, figsize=(10, 8))
-    cmap = plt.cm.jet(np.linspace(0, 1, 20))
-
-    ax[0, 0].set_title("Dwarf")
-    ax[0, 1].set_title("Giant")
-
-    ### Dwarf Left
-    [
-        ax[0, 0].plot(arch_lib["wave"], arch_lib["GII_D"][i], c=cmap[i], alpha=0.5, linewidth=0.75)
-        for i in range(len(arch_lib["GII_D"]))
-    ]
-    [
-        ax[1, 0].plot(arch_lib["wave"], arch_lib["GII_D"][i], c=cmap[i], alpha=0.5, linewidth=0.75)
-        for i in range(len(arch_lib["GII_D"]))
-    ]
-
-    ### Giant Right
-    [
-        ax[0, 1].plot(arch_lib["wave"], arch_lib["GII_G"][i], c=cmap[i], alpha=0.5, linewidth=0.75)
-        for i in range(len(arch_lib["GII_D"]))
-    ]
-    [
-        ax[1, 1].plot(arch_lib["wave"], arch_lib["GII_G"][i], c=cmap[i], alpha=0.5, linewidth=0.75)
-        for i in range(len(arch_lib["GII_D"]))
-    ]
-
-    [
-        label.plot(spec_frame["wave"], spec_frame["norm"], color="black", linewidth=0.75, alpha=0.75)
-        for label in ax[:, 0]
-    ]
-    [
-        label.plot(spec_frame["wave"], spec_frame["norm"], color="black", linewidth=0.75, alpha=0.75)
-        for label in ax[:, 1]
-    ]
-
-    [label.set_xlabel("Wavelength") for label in ax[1, :]]
-
-    [label.set_xlim([3925, 3980]) for label in ax[0, :]]
-    [label.set_xlim([4200, 4350]) for label in ax[1, :]]
-
-    [label.set_ylim([0, 1.2]) for label in ax[0, :]]
-    [label.set_ylim([0, 1.2]) for label in ax[1, :]]
-
-    fig.suptitle("Group II : [Fe/H] = -3.5  A(C) = 5.9")
-
-    plt.savefig("results/" + filename, format="pdf")
-
-    return
-
-
-def GIII_plot(spec_frame, arch_lib, filename):
-    fig, ax = plt.subplots(2, 2, figsize=(10, 8))
-    cmap = plt.cm.jet(np.linspace(0, 1, 20))
-
-    ax[0, 0].set_title("Dwarf")
-    ax[0, 1].set_title("Giant")
-
-    ### Dwarf Left
-    [
-        ax[0, 0].plot(arch_lib["wave"], arch_lib["GIII_D"][i], c=cmap[i], alpha=0.5, linewidth=0.75)
-        for i in range(len(arch_lib["GIII_D"]))
-    ]
-    [
-        ax[1, 0].plot(arch_lib["wave"], arch_lib["GIII_D"][i], c=cmap[i], alpha=0.5, linewidth=0.75)
-        for i in range(len(arch_lib["GIII_D"]))
-    ]
-
-    ### Giant Right
-    [
-        ax[0, 1].plot(arch_lib["wave"], arch_lib["GIII_G"][i], c=cmap[i], alpha=0.5, linewidth=0.75)
-        for i in range(len(arch_lib["GIII_D"]))
-    ]
-    [
-        ax[1, 1].plot(arch_lib["wave"], arch_lib["GIII_G"][i], c=cmap[i], alpha=0.5, linewidth=0.75)
-        for i in range(len(arch_lib["GIII_D"]))
-    ]
-
-    [
-        label.plot(spec_frame["wave"], spec_frame["norm"], color="black", linewidth=0.75, alpha=0.75)
-        for label in ax[:, 0]
-    ]
-    [
-        label.plot(spec_frame["wave"], spec_frame["norm"], color="black", linewidth=0.75, alpha=0.75)
-        for label in ax[:, 1]
-    ]
-
-    [label.set_xlabel("Wavelength") for label in ax[1, :]]
-
-    [label.set_xlim([3925, 3980]) for label in ax[0, :]]
-    [label.set_xlim([4200, 4350]) for label in ax[1, :]]
-
-    [label.set_ylim([0, 1.2]) for label in ax[0, :]]
-    [label.set_ylim([0, 1.2]) for label in ax[1, :]]
-
-    fig.suptitle("Group III : [Fe/H] = -4.3  A(C) = 7.0")
-
-    plt.savefig("results/" + filename, format="pdf")
-
-    return
-
-
-################################################################################
-
-
-def plot_crit(frame_array, group_class):
-    ## for the output from determine_crit_params
-
-    AC_VALUES = np.unique(frame_array["CARBON"])
-    FEH_VALUES = np.unique(frame_array["FEH"])
-    TEFF_VALUES = np.unique(frame_array["T"])
-    xscale = 2.5
-    yscale = 1.5
-    print("Unique Carbon Values:  ", len(AC_VALUES))
-
-    cmap = plt.cm.jet(np.linspace(0, 1, len(TEFF_VALUES)))
-    carbon = {key: value for key, value in zip(GROUP_STR, ["AC", "AC", "CFE", "CFE", "AC", "AC"])}
-
-    ### now it will adjust fig
-    columns = 4
-    rows = int(np.ceil(len(AC_VALUES) / columns))
-
-    print(rows)
-    fig = plt.figure(figsize=(rows * yscale, columns * xscale))
-    handles = []
-    for i in range(len(AC_VALUES)):
-        ax = fig.add_subplot(rows, columns, i + 1)
-
-        slice = frame_array[(frame_array["CARBON"] == AC_VALUES[i])]
-
-        [
-            ax.plot(slice[slice["T"] == VALUE]["FEH"], slice[slice["T"] == VALUE]["CHI"], color=cmap[i])
-            for i, VALUE in enumerate(TEFF_VALUES)
-        ]
-        ax.set_title(carbon[group_class] + ":  %.2F" % AC_VALUES[i])
-        handles.append(ax)
-
-    fig.subplots_adjust(hspace=0.5)
-    [label.tick_params(direction="in", top=True, right=True) for label in handles]
-
-
-#########
-
-
-def plot_crit_3D(frame_array, group_class):
-    ## Should really do this in 3D anyway.
-    ## for the output from determine_crit_params
-
-    AC_VALUES = np.unique(frame_array["CARBON"])
-    FEH_VALUES = np.unique(frame_array["FEH"])
-    TEFF_VALUES = np.unique(frame_array["T"])
-
-    print("Unique Carbon Values:  ", len(AC_VALUES))
-
-    cmap = plt.cm.jet(np.linspace(0, 1, len(TEFF_VALUES)))
-    carbon = {key: value for key, value in zip(GROUP_STR, ["AC", "AC", "CFE", "CFE", "AC", "AC"])}
-
-    ### now it will adjust fig
-    columns = 4
-    rows = int(np.ceil(len(AC_VALUES) / columns))
-
-    print(rows)
-    fig = plt.figure(figsize=(10, 6))
-    ax = fig.add_subplot(1, 1, 1, projection="3d")
-    handles = []
-    for i in range(len(TEFF_VALUES)):
-        slice = frame_array[(frame_array["T"] == TEFF_VALUES[i])]
-
-        # ax.scatter(slice['FEH'], slice['CARBON'], slice['CHI'])
-        ax.plot_trisurf(slice["FEH"], slice["CARBON"], -np.log(slice["CHI"]), alpha=0.50, color=cmap[i])
-
-        # [ax.plot(slice[slice['T'] == VALUE]['FEH'], slice[slice['T'] == VALUE]['CHI'], color=cmap[i]) for i, VALUE in enumerate(TEFF_VALUES)]
-        # ax.set_title(carbon[group_class] + ':  %.2F' % AC_VALUES[i])
-        handles.append(ax)
-        ax.view_init(30, 25)
-    # ax.set_zlim(ax.get_zlim()[::-1])
-    # fig.subplots_adjust(hspace=0.5)
-
-    ax.set_xlabel("[Fe/H]", fontsize=14)
-    ax.set_ylabel(carbon[group_class], fontsize=14)
-    ax.set_zlabel(r"$-\xi_{\omega}^2$", fontsize=14)
-
-    [label.tick_params(direction="in", top=True, right=True) for label in handles]
-
-    plt.show()
-
-
-# not used routine below, plot_mcmc_sampler
-def plot_mcmc_sampler(SAMPLER, ndim, burnin, suptitle, filename, acc_params, group):
-    CARBON = {"GI": r"A$(C)$", "GII": "[C/Fe]", "GIII": r"A$(C)$"}
-
-    samples = SAMPLER.chain[:, 500:, :].reshape((-1, ndim))
-    fig = corner.corner(samples, labels=[r"$T_{\rm eff}$", "[Fe/H]", CARBON[group]], color="black")
-
-    fig.suptitle(suptitle, fontsize=15)
-    value2 = np.median(samples, axis=0)
-    std = np.std(samples, axis=0)
-
-    axes = np.array(fig.axes).reshape((ndim, ndim))
-
-    for yi in range(ndim):
-        for xi in range(yi):
-            ax = axes[yi, xi]
-            ax.axvline(value2[xi], color="r")
-            ax.axhline(value2[yi], color="r")
-            ax.plot(value2[xi], value2[yi], "sr")
-
-    for i in range(ndim):
-        axes[i, i].axvline(value2[i], color="r", alpha=0.75)
-
-    ### For the real values
-    if acc_params != None:
-        for yi in range(ndim):
-            for xi in range(yi):
-                ax = axes[yi, xi]
-                ax.axvline(acc_params[xi], color="g")
-                ax.axhline(acc_params[yi], color="g")
-                ax.plot(acc_params[xi], acc_params[yi], "sg")
-        for i in range(ndim):
-            axes[i, i].axvline(acc_params[i], color="g", alpha=0.75)
-
-    # textstr = '\n'.join((
-    #            r'$T_{\rm eff}=$%.0f K' % (value2[0], ),
-    #            r'[Fe/H]=%.2f' % (value2[1], ),
-    #            CARBON[group] + '=%.2f' % (value2[2], )))
-
-    # props = dict(boxstyle='round', facecolor='white', alpha=0.5)
-
-    # axes[0,1].text(0.05, 0.95, textstr, transform=axes[0,1].transAxes, fontsize=14,
-    #    verticalalignment='top', bbox=props)
-
-    return
-
-
-#########################################
-## Somehow code got deleted, which is crazy. So I'm rewriting..
-##########################################
-
-
-# not used routine below,plot_mcmc_samples
-def plot_mcmc_samples(sampler, burnin=0.25, params=None, suptitle=None, filename=None):
-    ## for now sampler is sampler.chain
-    ### There are three conditions, based on ndim
-    ### get number of dimensions
-    try:
-        ndim = sampler.shape[2]
-        iter = sampler.shape[1]
-
-    except:
-        ndim = sampler.chain.shape[2]
-        iter = sampler.chain.shape[1]
-        sampler = sampler.chain
-
-    if ndim == 6:
-        labels = ["Teff", "[Fe/H]", "[C/Fe]", "sigmaCA", "XI_CH", "XI_C2"]
-
-    elif ndim == 5:
-        labels = ["Teff", "[Fe/H]", "[C/Fe]", "sigmaCA", "XI_CH"]
-
-    elif ndim == 2:
-        ### Fine parameters case
-        labels = ["[Fe/H]", "[C/Fe]"]
-
-    samples = sampler[:, int(burnin * iter) :, :].reshape((-1, ndim))
-
-    fig = corner.corner(samples, labels=labels, color="black", hist_kwargs={"normed": True})
-
-    if suptitle != None:
-        fig.suptitle(suptitle, fontsize=14)
-
-    MEDIAN = np.median(samples, axis=0)
-    value2 = [kde_param(row, x0=x0)["result"] for row, x0 in zip(samples.T, MEDIAN)]
-    kde_array = [kde_param(row, x0=x0)["kde"] for row, x0 in zip(samples.T, MEDIAN)]
-
-    std = np.std(samples, axis=0)
-
-    axes = np.array(fig.axes).reshape((ndim, ndim))
-
-    ### This the parameter case.
-    """
-    for yi in range(ndim):
-        for xi in range(yi):
-            ax = axes[yi, xi]
-            ax.axvline(value2[xi], color="r")
-            ax.axhline(value2[yi], color="r")
-            ax.plot(value2[xi], value2[yi], "sr")
-    """
-
-    for i in range(ndim):
-        span = np.linspace(min(samples.T[i]), max(samples.T[i]), 30)
-        axes[i, i].axvline(value2[i], color="r", alpha=0.75)
-        axes[i, i].plot(span, kde_array[i].evaluate(span))
-
-    if filename != None:
-        plt.savefig("results/corner_update/" + filename + "_corner.pdf", format="pdf")
-
-
-def plot_spec(obs, interp, mcmc_args, params, sigma, name=None, filename=None):
-    ##### This function needs to operate for both the CaII, CH, C2 or just CaII and CH case
-
-    if len(params) == 6:
-        plots = 3
-    elif len(params) == 5:
-        plots = 2
-
-    fig, ax = plt.subplots(1, plots)
-
-    [label.plot(obs["wave"], obs["norm"]) for label in ax]
-
-    if filename != None:
-        plt.savefig("results/fits/" + filename + "_fit.pdf", format="pdf")
-
-    plt.show()
-
-    return
