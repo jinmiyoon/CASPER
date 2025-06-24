@@ -1,8 +1,3 @@
-################################################################################
-### Author: Devin Whitten, Jinmi Yoon
-### Email: jinmi.yoon@gmail.com, devin.d.whitten@gmail.com
-################################################################################
-
 import config
 import corner
 import matplotlib.pyplot as plt
@@ -12,22 +7,35 @@ from matplotlib.backends.backend_pdf import PdfPages
 from MCMC_interface import kde_param
 from scipy.interpolate import interp1d
 
-#####
-### This is just useful for many of the functions. Wanna keep format consistent
-
-#####
-
 plt.ion()
 
 plt.style.use("classic")
 plt.rcParams["font.family"] = "Times New Roman"
-plt.rcParams["xtick.labelsize"] = 5.5  # change from 7, 06-17-2020
-plt.rcParams["ytick.labelsize"] = 5.5  # change from 7, 06-17-2020
-plt.rcParams["axes.linewidth"] = 0.5  # change from 0.7, 06-17-2020
+plt.rcParams["xtick.labelsize"] = 5.5
+plt.rcParams["ytick.labelsize"] = 5.5
+plt.rcParams["axes.linewidth"] = 0.5
 
 
-def produce_title(spectrum):
-    ## just returns a nice looking string for the plot title
+def produce_title(spectrum) -> str:
+    """
+    Generate a formatted plot title string using spectrum metadata and MCMC results.
+
+    This function retrieves relevant stellar parameters from the `spectrum` object,
+    including effective temperature, surface gravity, metallicity, carbon abundance,
+    carbon mode, gravity class, and radial velocity. It then formats these values into
+    a human-readable title suitable for plot labeling.
+
+    Parameters
+    ----------
+    spectrum : Spectrum
+        An instance of the `Spectrum` class that contains stellar metadata,
+        MCMC-derived parameters, and classification information.
+
+    Returns
+    -------
+    str
+        A formatted string representing the title for use in plots.
+    """
     MCMC_DICT = spectrum.get_mcmc_dict(mode="BOTH")
 
     return (
@@ -57,53 +65,49 @@ def produce_title(spectrum):
 
 
 def plot_spectra(spectra_batch):
-    ## to visualize normalizations
-    ## I want multiple pages of 4x2
     CA_XLIM = [3910, 3980]
     LINEW = 0.3
-    LINEW_zoom = 0.5  # added a new linewidth variable, J. Yoon 06-17-2020
+    LINEW_zoom = 0.5
 
     print("... generating continuum plots")
     print("\t saving as:   ", spectra_batch.output_name)
     rows, columns = 8, 5
 
-    pages = int(np.ceil(spectra_batch.length / (rows * columns)))
+    # pages = int(np.ceil(spectra_batch.length / (rows * columns)))
 
     pp = PdfPages(spectra_batch.output_name + "_spec.pdf")
-    count = 0
+    # count = 0
 
-    for i, spec in enumerate(spectra_batch.spectra_array):  ### loop through pages
-        if i % rows == 0:  ## if new page required
+    for i, spec in enumerate(spectra_batch.spectra_array):
+        if i % rows == 0:
             fig, ax = plt.subplots(rows, columns, figsize=(8.5, 11), dpi=200)
             fig.subplots_adjust(hspace=0.7)
 
             [label.set_ylim([0.0, 1.2]) for label in np.concatenate(ax[:, 1:])]
             [label.set_yticks([0.0, 0.5, 1.0, 1.2]) for label in np.concatenate(ax[:, 1:])]
 
-            ## CaII
+            # CaII
             [label.ticklabel_format(axis="both", useOffset=False) for label in ax[:, 2]]
             [label.set_xlim(CA_XLIM) for label in ax[:, 2]]
             [label.set_xticks([3915, 3930, 3945, 3960, 3975]) for label in ax[:, 2]]
 
-            ## CH
+            # CH
             [label.set_xlim([4220, 4325]) for label in ax[:, 3]]
             [label.set_xticks(np.arange(4225, 4350, 25)) for label in ax[:, 3]]
 
-            ## C2
+            # C2
             [label.set_xlim([4650, 4750]) for label in ax[:, 4]]
             [label.set_xticks(np.arange(4650, 4775, 25)) for label in ax[:, 4]]
 
             [plt.setp(label.get_yticklabels(), visible=False) for label in ax[:, 0]]
 
-            ## FILL BETWEENS
-
             [label.tick_params(direction="in", right=True, top=True) for label in np.concatenate(ax[:])]
 
         index = i % rows
 
-        ##### MAIN PLOT SECTION
+        # MAIN PLOT SECTION
         ax[index, 0].set_yticks([0.0, max(spec.frame["flux"])])
-        # [label.set_xticks(np.linspace(spec.frame['wave'][0], spec.frame['wave'][-1],5)) for label in ax[index,0:2]]
+
         [label.set_xticks(np.linspace(config.WAVE_BOUNDS[0], config.WAVE_BOUNDS[1], 7)) for label in ax[index, 0:2]]
         ang = u.Unit("Angstrom")
         [
@@ -111,27 +115,27 @@ def plot_spectra(spectra_batch):
             for label in ax[index, 0:5]
         ]
 
-        ### Set title
+        # Set title
         ax[index, 2].set_title(produce_title(spec), fontsize=7)
 
-        ### Continuum Plot
+        # Continuum Plot
         ax[index, 0].plot(spec.frame["wave"], spec.frame["flux"], linewidth=LINEW, color="black", alpha=0.7)
         ax[index, 0].plot(
             spec.frame["wave"], spec.frame["cont"], linewidth=LINEW + 0.1, linestyle="-", color="teal", alpha=1
         )
         ax[index, 0].set_xticks(np.linspace(config.WAVE_BOUNDS[0], config.WAVE_BOUNDS[1], 7))
 
-        ### Normalization Plot
+        # Normalization Plot
         ax[index, 1].axhline(1.00, linewidth=0.5, linestyle="dotted", color="teal", alpha=1)
         ax[index, 1].plot(spec.frame["wave"], spec.frame["norm"], linewidth=LINEW, color="black", alpha=0.7)
         ax[index, 1].set_xticks(np.linspace(config.WAVE_BOUNDS[0], config.WAVE_BOUNDS[1], 7))
 
-        ### CaII Plot
+        # CaII Plot
 
         ax[index, 2].axhline(1.00, linewidth=0.5, linestyle="dotted", color="teal", alpha=1)
         ax[index, 2].plot(spec.frame["wave"], spec.frame["norm"], linewidth=LINEW_zoom, color="black", alpha=0.7)
 
-        ### CH Plot
+        # CH Plot
         ax[index, 3].axhline(1.00, linewidth=0.5, linestyle="dotted", color="teal", alpha=1)
         ax[index, 3].plot(
             spec.frame["wave"][spec.frame["wave"].between(4150, 4500, inclusive="both")],
@@ -141,7 +145,7 @@ def plot_spectra(spectra_batch):
             alpha=0.7,
         )
 
-        ### C2 Plot
+        # C2 Plot
         ax[index, 4].axhline(1.00, linewidth=0.5, linestyle="dotted", color="teal", alpha=1)
         ax[index, 4].plot(
             spec.frame["wave"][spec.frame["wave"].between(4650, 4850, inclusive="both")],
@@ -151,10 +155,9 @@ def plot_spectra(spectra_batch):
             alpha=0.7,
         )
 
-        ###### SIGMA SHADING SECTION
-        ############################
+        # SIGMA SHADING SECTION
         synth_function = interp1d(spec.synth_spectrum["wave"], spec.synth_spectrum["norm"])
-        ############################
+
         # CaII
         CA_WAVE = np.linspace(*spec.KP_bounds, 30)
         ax[index, 2].fill_between(
@@ -165,7 +168,6 @@ def plot_spectra(spectra_batch):
             alpha=0.5,
         )
 
-        # [ax[index, 2].axvline(edge, linestyle='dotted', linewidth=0.75, alpha=0.8) for edge in CA_WAVE[[0,-1]]]
         [ax[index, 2].axvspan(CA_WAVE[0], CA_WAVE[-1], color="black", alpha=0.25)]
 
         # CH
@@ -178,14 +180,6 @@ def plot_spectra(spectra_batch):
             alpha=0.5,
         )
 
-        # CH lineband from Beers+1990
-        # [ax[index, 3].axvspan(4297.5, 4312.5, linewidth=0.75, alpha=0.2, color ='k', hatch='/')]
-
-        ###
-        # if spec.get_carbon_mode()   == "CH":
-        #    [label.plot(spec.synth_spectrum['wave'], spec.synth_spectrum['norm'], color='palevioletred', linewidth=0.75, alpha=0.75) for label in ax[index, 1:-1]]
-
-        # elif spec.get_carbon_mode() == "CH+C2":
         [
             label.plot(
                 spec.synth_spectrum["wave"],
@@ -387,7 +381,7 @@ def plot_single_corner(spectrum, io_path, n_thin=1):
     params_str = "\n".join(
         [
             f"{latex_key}"
-            + f" = ${legend.iloc[0, legend.columns.get_loc(key)]} \\pm {legend.iloc[0, legend.columns.get_loc(key +'_ERR')]}$"
+            + f" = ${legend.iloc[0, legend.columns.get_loc(key)]} \\pm {legend.iloc[0, legend.columns.get_loc(key + '_ERR')]}$"
             for latex_key, key in key_params
             if key in legend and key + "_ERR" in legend
         ]
