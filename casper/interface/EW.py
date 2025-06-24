@@ -1,4 +1,4 @@
-from typing import Tuple
+from typing import Tuple, Union
 
 import config
 import numpy as np
@@ -213,9 +213,25 @@ def set_CH_procedure(spectrum) -> None:
     return
 
 
-# double check if this is used or not
-def CAII_KP(wave, flux):
-    ## Following the Beers 1999
+def CAII_KP(wave: np.ndarray, flux: np.ndarray) -> Union[float, np.float64]:
+    """
+    Compute the Ca II K-line strength index (KP) based on Beers et al. (1999).
+
+    This function evaluates K6, K12, and K18 bandpasses and returns the appropriate
+    KP value according to Beers' decision tree.
+
+    Parameters
+    ----------
+    wave : np.ndarray
+        Wavelength array of the spectrum.
+    flux : np.ndarray
+        Normalized flux array corresponding to the wavelengths.
+
+    Returns
+    -------
+    float
+        Ca II KP index value. Returns np.nan if selection logic fails.
+    """
     K6 = CAII_K6(wave, flux)
     K12 = CAII_K12(wave, flux)
     K18 = CAII_K18(wave, flux)
