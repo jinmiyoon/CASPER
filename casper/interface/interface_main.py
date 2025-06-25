@@ -1,10 +1,3 @@
-################################################################################
-### Author: Devin Whitten, Jinmi Yoon
-### Email: devin.d.whitten@gmail.com, jinmi.yoon@gmail.com
-################################################################################
-## Main parameter determination procedures
-
-
 """J Yoon 03/11/2022
 To use multiprocessing module:
 Some builds of NumPy (including the version included with Anaconda) will
@@ -15,7 +8,7 @@ the parallelization methods described here so it can be good to turn that off
 """
 
 import os
-import sys
+from typing import Any, Dict, Literal
 
 os.environ["OMP_NUM_THREADS"] = "1"
 
@@ -23,8 +16,6 @@ import time
 from multiprocessing import Pool, cpu_count, current_process
 
 import ac
-
-# import spectrum
 import config
 import emcee
 import MAD
@@ -36,7 +27,6 @@ from scipy.optimize import minimize
 from statsmodels.nonparametric.kde import KDEUnivariate
 from synthetic_functions import CAII_CH_CHI_LH, get_grav_interp, get_interp, normalize
 
-### GLOBAL ITEMS
 ARCHETYPE_PARAMS = config.ARCHETYPE_PARAMS
 
 LL_FUNCTION_DICT = {
@@ -44,14 +34,38 @@ LL_FUNCTION_DICT = {
     "REFINE": {"CH": MCMC_interface.chi_ll_refine, "CH+C2": MCMC_interface.chi_ll_refine_C2},
 }
 
-# import synthetic library interpolator
+
 INTERPOLATOR = get_interp()
 GRAV_INTERP = get_grav_interp()
 
 SYNTH_WAVE = config.SYNTH_WAVE
 
 
-def synth_normalize(spectrum, group, temp):
+def synth_normalize(spectrum, group: str, temp: float) -> np.ndarray:
+    """
+    Normalize the synthetic flux for a given stellar spectrum.
+
+    Parameters
+    ----------
+    spectrum : object
+        A spectrum object that includes gravity class (G_CLASS) and mode (MODE).
+    group : str
+        Archetype group label (e.g., GI, GII, GIII).
+    temp : float
+        Effective temperature in Kelvin.
+
+    Returns
+    -------
+    np.ndarray
+        Continuum-normalized synthetic flux array in the identification wavelength range
+        defined by config.id_start_wave to config.id_end_wave.
+
+    Notes
+    -----
+    If the interpolated flux contains non-finite values, a warning is printed and
+    nothing is returned.
+    """
+
     interp_flux = INTERPOLATOR[spectrum.G_CLASS](
         temp, ARCHETYPE_PARAMS[spectrum.MODE][group]["FEH"], ARCHETYPE_PARAMS[spectrum.MODE][group]["CFE"]
     )
@@ -66,35 +80,32 @@ def synth_normalize(spectrum, group, temp):
         )
 
 
-def archetype_classify_MC(spectrum):
-    ### Precondition: must have spectrum.frame with normalization defined
-    ### spectrum: spectrum.Spectrum() object
-    ### okay, we want this to run for whatever the class is set
+def archetype_classify_MC(spectrum: object) -> None:
+    """
+    Classify the archetype group (GI, GII, GIII) for a given spectrum
+    using Monte Carlo simulation and log-likelihood comparison.
+
+    Parameters
+    ----------
+    spectrum : object
+        Spectrum object with required attributes including:
+        - teff_irfm and teff_irfm_err
+        - normalized frame as a DataFrame with "wave" and "norm"
+        - KP_bounds and SN_DICT
+        - G_CLASS and MODE
+
+    Notes
+    -----
+    This function:
+    - Draws random temperature values from a normal distribution centered on teff_irfm
+    - Uses those temperatures to synthesize spectra for GI, GII, and GIII groups
+    - Computes log-likelihoods using CAII and CH regions
+    - Selects the group with the highest median log-likelihood
+    - Stores results in spectrum.LL_DICT and sets spectrum.ARCH_GROUP
+    """
 
     length = 100
     temp_values = np.random.normal(spectrum.teff_irfm, spectrum.teff_irfm_err, length)
-
-    ### Generate spectra (GI_NORM_SYNTH, GII_NORM_SYNTH,GIII_NORM_SYNTH)
-    # J. Yoon Feb 25 2022
-    #
-    #    Here is buiding arrays of spectral parameters/grids within a Teff range
-    #    ([TEFF_HARD - T_SIGMA, TEFF_HARD + T_SIGMA] or
-    #    [TEFF_ADT - T_SIGMA, TEFF_ADT + T_SIGMA]) to generate synthetic spectra.
-    #    for example, GI_NORM_SYNTH will create len(span) of arrays, each value looks
-    #    like [4715.6, -2.5, 1.97] depending on gravity_class and galactic env mode.
-
-    ### GI
-    """
-    def synth_normalize(group, temp):
-        interp_flux = INTERPOLATOR[spectrum.G_CLASS](temp, ARCHETYPE_PARAMS[spectrum.MODE][group]['FEH'],
-                                                                            ARCHETYPE_PARAMS[spectrum.MODE][group]['CFE'])
-        if np.isfinite(interp_flux).all():
-            return normalize(SYNTH_WAVE, interp_flux[config.id_start_wave:config.id_end_wave+1])
-        else:
-            print("Interpolated synthetic flux is not finite, params = ",temp, ARCHETYPE_PARAMS[spectrum.MODE][group]['FEH'], ARCHETYPE_PARAMS[spectrum.MODE][group]['CFE'])
-    """
-
-    # *****  NEW SYNTH
 
     start = time.time()
 
@@ -102,39 +113,9 @@ def archetype_classify_MC(spectrum):
     GII_NORM_SYNTH = [synth_normalize(spectrum, "GII", temp) for temp in temp_values]
     GIII_NORM_SYNTH = [synth_normalize(spectrum, "GIII", temp) for temp in temp_values]
 
-    """
-    GI_temps = [['GI', temp] for temp in temp_values]
-    GII_temps = [['GII', temp] for temp in temp_values]
-    GIII_temps = [['GIII', temp] for temp in temp_values]
-    with Pool() as pool:
-        GI_NORM_SYNTH =pool.map(synth_normalize,  GI_temps)
-        GII_NORM_SYNTH =pool.map(synth_normalize,  GII_temps)
-        GIII_NORM_SYNTH =pool.map(synth_normalize,  GIII_temps)
-    """
-
     end1 = time.time()
     print("\t\t interface_main: archetype_classify_MC SYNTH: took {0:.1f} seconds".format(end1 - start))
 
-    """ # When using Devin's library
-    #span = np.ones(length)
-
-    GI_NORM_SYNTH = INTERPOLATOR[spectrum.G_CLASS](np.column_stack((temp_values,
-                                                span * ARCHETYPE_PARAMS[spectrum.MODE]['GI']['FEH'],
-                                                span * ARCHETYPE_PARAMS[spectrum.MODE]['GI']['CFE'])))
-
-
-    GII_NORM_SYNTH = INTERPOLATOR[spectrum.G_CLASS](np.column_stack((temp_values,
-                                                span * ARCHETYPE_PARAMS[spectrum.MODE]['GII']['FEH'],
-                                                span * ARCHETYPE_PARAMS[spectrum.MODE]['GII']['CFE'])))
-
-
-    GIII_NORM_SYNTH = INTERPOLATOR[spectrum.G_CLASS](np.column_stack((temp_values,
-                                                span * ARCHETYPE_PARAMS[spectrum.MODE]['GIII']['FEH'],
-                                                span * ARCHETYPE_PARAMS[spectrum.MODE]['GIII']['CFE'])))
-
-    """
-
-    # calculate log likelihood function for CA II and CH for MLE estimation for each group
     GI_LLs = np.array(
         [
             CAII_CH_CHI_LH(
@@ -176,7 +157,7 @@ def archetype_classify_MC(spectrum):
             for SYNTH in GIII_NORM_SYNTH
         ]
     )
-    # print(np.mean([GI_LLs, GII_LLs, GIII_LLs]))
+
     GI_LLs = GI_LLs[np.isfinite(GI_LLs)]
     GII_LLs = GII_LLs[np.isfinite(GII_LLs)]
     GIII_LLs = GIII_LLs[np.isfinite(GIII_LLs)]
@@ -194,14 +175,41 @@ def archetype_classify_MC(spectrum):
     return
 
 
-# def mcmc_determination(spectrum, mode='COARSE', pool=4):
-def mcmc_determination(spectrum, mode="COARSE", burnin_factor=7):
-    ### Precondition: must have run archetype_classification
-    ### spectrum: spectrum.Spectrum() object
+def mcmc_determination(spectrum: object, mode: str = "COARSE", burnin_factor: int = 7) -> None:
+    """
+    Run a Markov Chain Monte Carlo (MCMC) procedure to estimate stellar parameters
+    using the input spectrum and configuration mode.
 
-    # mode here means either "coarse" or "fine" , 09/02/2020, J. Yoon
+    Parameters
+    ----------
+    spectrum : object
+        Spectrum object that must contain:
+        - Spectral regions
+        - Photometric temperature and error
+        - Signal-to-noise dictionary
+        - Gravity class
+        - Carbon mode
+        - MCMC iteration count
+        - Previously determined COARSE parameters (for REFINE mode)
+
+    mode : str, optional
+        MCMC run mode, either "COARSE" or "REFINE". Default is "COARSE".
+
+    burnin_factor : int, optional
+        Factor to multiply by the maximum autocorrelation time to determine the
+        number of burn-in steps to discard. Default is 7.
+
+    Notes
+    -----
+    The function performs the following:
+    - Sets up initial parameters and arguments based on run mode
+    - Uses multiprocessing to speed up MCMC sampling with `emcee`
+    - Computes autocorrelation time to determine burn-in
+    - Stores the MCMC sampler and related diagnostics back into the spectrum object
+    """
+
     print("\t * MCMC run mode =  ", mode)
-    # spectrum and its info
+
     print(
         "\t "
         + spectrum.get_starname()
@@ -213,24 +221,15 @@ def mcmc_determination(spectrum, mode="COARSE", burnin_factor=7):
         + spectrum.print_KP_bounds()
     )
 
-    ## FOR initial FEH and CFE values, for temp use photometric temp.
     PARAMS = ARCHETYPE_PARAMS[spectrum.get_environ_mode()][spectrum.get_arch_group()]
 
-    #### MAIN MODE BRANCH
-
+    # MAIN MODE BRANCH
     if mode == "COARSE":
-        ## if it's coarse, then you need the photometric teff and the Sigma/Xi
         print("\t initializing with archetype parameters: ", PARAMS)
 
-        # spectrum.get_photo_temp() returns self.teff_irfm, self.teff_irfm_err
-        # so photo_teff[0] and photo_teff[1] respectively.
         photo_teff = spectrum.get_photo_temp()
-        # inserted 01/04/2022 for comparison
-        # print('Teff : %.0F  [Fe/H] : %.2F   [C/Fe] : %.2F  A(C): %.2F'% (photo_teff[0], PARAMS['FEH'], PARAMS['CFE'], PARAMS['AC']))
-        initial = [photo_teff[0], PARAMS["FEH"], PARAMS["CFE"]]
 
-        # testing different initial values
-        # initial = [4100, PARAMS['FEH'], PARAMS['CFE']]
+        initial = [photo_teff[0], PARAMS["FEH"], PARAMS["CFE"]]
 
         ARGS = (
             spectrum.regions,
@@ -247,14 +246,11 @@ def mcmc_determination(spectrum, mode="COARSE", burnin_factor=7):
         if spectrum.get_carbon_mode() == "CH+C2":
             print("\t running with carbon mode: CH+C2")
 
-            ### add the beta params
             initial = np.concatenate([initial, [spectrum.SN_DICT["C2"]["XI_AVG"]]])
         else:
             print("\t running with carbon mode: CH only")
-        # PARAMS_0 = spectrum.get_mcmc_dict(mode = 'COARSE')
-        # print('\t COARSE run result parameters: ', PARAMS_0)
+
     elif mode == "REFINE":
-        ### In this case we want to use the params determined from the COARSE run
         PARAMS_0 = spectrum.get_mcmc_dict(mode="COARSE")
         print("\t initializing with COARSE run result parameters:")
         print(
@@ -270,21 +266,16 @@ def mcmc_determination(spectrum, mode="COARSE", burnin_factor=7):
     else:
         print("Invalid mode")
 
-    ############################################################################
-    ### PREPARE SPECTRA SLICES
-    ############################################################################
-
-    ### Select the correct likelihood function
     LL_FUNCTION = LL_FUNCTION_DICT[mode][spectrum.get_carbon_mode()]
 
     n_cpu = cpu_count()
     print("\t number of cpu = ", n_cpu)
 
-    pos = initial + initial * (2e-2 * np.random.rand(64, len(initial)))  # Gaussian distribution
+    # Gaussian distribution
+    pos = initial + initial * (2e-2 * np.random.rand(64, len(initial)))
     print("\t\t interface_main : pos = ", pos)
-    # pos = initial + initial * (np.random.rand(25, len(initial))) # uniform spacing
+
     nwalkers, ndim = pos.shape
-    # bounds = 'default'
 
     print("\t running for ", n_step, " iterations...")
 
@@ -294,7 +285,6 @@ def mcmc_determination(spectrum, mode="COARSE", burnin_factor=7):
             nwalkers,
             ndim,
             LL_FUNCTION,
-            # moves=[(emcee.moves.DEMove(), 1.0),],
             moves=[
                 (emcee.moves.DEMove(), 0.8),
                 (emcee.moves.DESnookerMove(), 0.2),
@@ -310,14 +300,10 @@ def mcmc_determination(spectrum, mode="COARSE", burnin_factor=7):
         print(f"Process {current_process().name} ended working", flush=True)
         print("\t \t MCMC Multiprocessing took {0:.1f} seconds".format(multi_time))
 
-    # want to print out the latest result from mcmc, 12/13/2021
-    # print('\t the latest result from sampler() after MCMC runs:    ', _ )
-
     spectrum.set_sampler(sampler, mode=mode)
 
     tau = sampler.get_autocorr_time(quiet=True)
 
-    # num_valid_autocorr_time_value = len(tau)-tau.tolist().count(np.nan)
     num_valid_autocorr_time_value = len(tau) - np.isnan(tau).sum()
     print(
         "\t\t interface_main: tau's shape= {}, length ={}, how many nan values = {}".format(
@@ -329,12 +315,11 @@ def mcmc_determination(spectrum, mode="COARSE", burnin_factor=7):
     )
     if num_valid_autocorr_time_value == 0:
         print("\t\t interface_main: all autocorr_times are Nan!")
-        max_auto_corr_time = 70  # a random number similar to average value of other maximum autocorr time
+        max_auto_corr_time = 70
 
     elif num_valid_autocorr_time_value == 1:
         print("\t\t interface_main: all except one dim autocorr_time are Nan")
         for taulist in tau:
-            # if taulist != np.nan:
             if not np.isnan(taulist):
                 max_auto_corr_time = taulist
 
@@ -343,11 +328,8 @@ def mcmc_determination(spectrum, mode="COARSE", burnin_factor=7):
         max_auto_corr_time = np.nanmax(tau)
         print("\t\t interface_main: maximum autocorrelation time = ", max_auto_corr_time)
 
-    # Setting burnin by discarding the first n_discard runs.
     n_discard = int(burnin_factor * max_auto_corr_time)
 
-    # if n_discard is larger than the mcmc iterations, it should be fixed to a random value,
-    # perhaps, discard the first half runs. This can be revisited
     if n_discard >= 0.5 * n_step:
         print(
             "\t\t interface_main: n_discard is larger than the mcmc iterations! Setting n_discard to half the iterations. "
@@ -357,7 +339,7 @@ def mcmc_determination(spectrum, mode="COARSE", burnin_factor=7):
     mean_acc_fraction = np.mean(sampler.acceptance_fraction)
     print("\t\t interface_main: mean acceptance fraction: {0:.3f}".format(mean_acc_fraction))
     print("\t\t interface_main: max autocorrelation_time = ", max_auto_corr_time)
-    # discard the first steps in the chain as burn-in
+
     print("\t\t interface_main: recommended n_discard = ", n_discard)
 
     if mode == "COARSE":
@@ -372,23 +354,31 @@ def mcmc_determination(spectrum, mode="COARSE", burnin_factor=7):
     return
 
 
-def generate_synthetic(spectrum):
-    ### Generates the best synth spectrum, given the KDE MCMC params
-
-    """# when using Devin's interpolator
-    NORM_SYNTH_FLUX = INTERPOLATOR[spectrum.get_gravity_class()](spectrum.MCMC_COARSE['TEFF'][0],
-                                                            spectrum.MCMC_REFINE['FEH'][0],
-                                                            spectrum.MCMC_REFINE['CFE'][0])
+def generate_synthetic(spectrum: object) -> None:
     """
+    Generate and set the best synthetic spectrum for a star based on MCMC parameters.
 
-    # *****  NEW SYNTH
-    # Here I need GISIC.normalize()
+    Parameters
+    ----------
+    spectrum : object
+        Spectrum object that must contain:
+        - Gravity class
+        - MCMC_COARSE["TEFF"] value
+        - MCMC_REFINE["FEH"] and ["CFE"] values
+
+    Notes
+    -----
+    This function:
+    - Uses an interpolator to compute synthetic flux values
+    - Normalizes the flux using a GISIC-based routine
+    - Assigns the normalized synthetic spectrum to the spectrum object
+    - Handles invalid or NaN flux cases gracefully by filling with NaNs
+    """
 
     interp_flux = INTERPOLATOR[spectrum.get_gravity_class()](
         spectrum.MCMC_COARSE["TEFF"][0], spectrum.MCMC_REFINE["FEH"][0], spectrum.MCMC_REFINE["CFE"][0]
     )
 
-    # NORM_SYNTH_FLUX = normalize(SYNTH_WAVE, synth_interp_flux[config.id_start_wave:])
     if np.isfinite(interp_flux).all():
         NORM_SYNTH_FLUX = normalize(SYNTH_WAVE, interp_flux[config.id_start_wave : config.id_end_wave + 1])
         spectrum.set_synth_spectrum(pd.DataFrame({"wave": SYNTH_WAVE, "norm": NORM_SYNTH_FLUX.T}))
@@ -400,22 +390,38 @@ def generate_synthetic(spectrum):
             spectrum.MCMC_REFINE["CFE"][0],
         )
         print(f"the sequence is {spectrum.get_sequence()} and the star name is {spectrum.get_starname()}")
-        # somehow the final params could be np.nan due to a slight deviation from the grids.
-        # In that case, the synthetic flux is nan. So we need to get around this problem for
+
         spectrum.set_synth_spectrum(pd.DataFrame({"wave": SYNTH_WAVE, "norm": np.nan * np.ones_like(SYNTH_WAVE)}))
 
     return
 
 
-def estimate_logg(spectrum):
-    # interpolate logg value based on the mcmc parameters
+def estimate_logg(spectrum: object) -> None:
+    """
+    Estimate and assign the surface gravity (logg) and its uncertainty for the input spectrum.
+
+    Parameters
+    ----------
+    spectrum : object
+        Spectrum object containing MCMC parameters and samplers.
+        Must include:
+        - Gravity class
+        - MCMC_COARSE and MCMC_REFINE parameter dictionaries
+        - MCMC_COARSE_sampler
+        - Burn-in discard value (mcmc_coarse_n_discard)
+
+    Notes
+    -----
+    - The logg value is interpolated using effective temperature and metallicity.
+    - Uncertainty is computed using the scaled MAD from the MCMC COARSE samples.
+    - Standard deviation and raw MAD are also printed for reference.
+    """
 
     spectrum.logg = GRAV_INTERP[spectrum.get_gravity_class()](
         spectrum.MCMC_COARSE["TEFF"][0], spectrum.MCMC_REFINE["FEH"][0]
     )
     print(f"\t\t interface_main: logg = {spectrum.logg} ")
 
-    #  Only COARSE would work because the size of REFINE dist is different from COARSE. I cannot use teff_coarse and feh_refine for calculating logg.
     samples_COARSE = spectrum.MCMC_COARSE_sampler.get_chain(discard=spectrum.mcmc_coarse_n_discard, thin=1, flat=True)
     teff_dist = samples_COARSE[:, 0]
     feh_COARSE_dist = samples_COARSE[:, 1]
@@ -430,42 +436,54 @@ def estimate_logg(spectrum):
     return
 
 
-def kde_param_reflection(distro):
-    ### this version is very susceptible to local maxima...
-    ### kde_param tries to ensure correct handling of multimodal distributions
+def kde_param_reflection(distro: np.ndarray) -> Dict[str, Any]:
+    """
+    Estimate the peak of a potentially multimodal distribution using kernel density estimation (KDE)
+    with reflective padding to reduce edge effects.
 
-    #### 04/18/22 J. Yoon: I may need to change this part using a new function
+    Parameters
+    ----------
+    distro : np.ndarray
+        One-dimensional array representing the parameter distribution. Must contain numeric values.
+
+    Returns
+    -------
+    Dict[str, Any]
+        A dictionary with the following keys:
+        - "result": The peak value (mode) estimated from the KDE with reflection.
+        - "kde": The KDE fit to the original distribution.
+        - "kde_reflect": A scaled interpolation function of the KDE fit to the reflected distribution.
+
+    Notes
+    -----
+    - This method reduces boundary bias by reflecting the distribution at its minimum and maximum.
+    - The same bandwidth is used for both the original and reflected KDE.
+    - The Powell optimization method is used to find the maximum of the reflected KDE.
+    """
 
     distro = distro[np.isfinite(distro)]
 
     MIN, MAX = min(distro), max(distro)
     span = np.linspace(MIN, MAX, 200)
 
-    ### create distribution reflection
     lower = MIN - abs(distro - MIN)
     upper = MAX + abs(distro - MAX)
 
-    ### staple them together
     merge = np.concatenate([lower, distro, upper])
 
-    ### compute kernal density estimation for both
     KDE_MAIN = KDEUnivariate(distro)
     KDE_FULL = KDEUnivariate(merge)
-
-    ### fit distro, using the std from the main!
 
     KDE_MAIN.fit(bw=np.std(distro) / 4.0)
     KDE_FULL.fit(bw=np.std(distro) / 4.0)
 
-    ### need to use the main KDE to scale the full
     scale = np.median(np.divide(KDE_MAIN.evaluate(span), KDE_FULL.evaluate(span)))
 
-    ### now maximize the full KDE, using the maxed main as the starting guess
     result = minimize(
         lambda x: -1 * KDE_FULL.evaluate(x),
         x0=span[KDE_MAIN.evaluate(span) == max(KDE_MAIN.evaluate(span))],
         method="Powell",
-    )  ## Powell has been working pretty well.
+    )
 
     return {
         "result": float(result["x"]),
@@ -474,30 +492,43 @@ def kde_param_reflection(distro):
     }
 
 
-def generate_kde_params(spectrum, mode, n_thin=1):
-    ### main parameter extraction routine following mcmc determination
+def generate_kde_params(spectrum, mode: Literal["COARSE", "REFINE"], n_thin: int = 1) -> None:
+    """
+    Perform kernel density estimation (KDE) on the MCMC sampler chain to estimate
+    parameter values and uncertainties for a given spectrum.
 
-    ### get chain
+    Parameters
+    ----------
+    spectrum : Spectrum
+        An instance of the Spectrum class containing MCMC sampler results and configuration data.
+
+    mode : Literal["COARSE", "REFINE"]
+        Determines whether to use the coarse or refined MCMC sampler chain.
+
+    n_thin : int, optional
+        Thinning factor for the MCMC chain. Default is 1 (no thinning).
+
+    Sets
+    ----
+    - MCMC parameter estimates (e.g., effective temperature, iron to hydrogen ratio,
+      carbon to iron ratio, signal-to-noise based uncertainty terms)
+    - KDE objects for each parameter to support probability density evaluation
+
+    Notes
+    -----
+    - For `ndim == 2`, this function estimates iron to hydrogen ratio and carbon to iron ratio.
+    - For `ndim == 5` or `6`, it additionally estimates effective temperature and signal-to-noise terms.
+    - The abundance of carbon (A(C)) is calculated from the iron and carbon ratios.
+    - The KDE is reflected at the edges to reduce boundary artifacts.
+    """
+
     if mode == "COARSE":
-        # chain = spectrum.MCMC_COARSE_sampler.chain
-
-        # J. Yoon 04/18/2022
-        # updated to .get_chain from .chain
         chain = spectrum.MCMC_COARSE_sampler.get_chain(discard=spectrum.mcmc_coarse_n_discard, thin=n_thin, flat=True)
 
     elif mode == "REFINE":
-        # Yoon 04/18/2022
-        # updated to .get_chain from .chain but the resulting arrays are differently storedJ.
-        # chain = spectrum.MCMC_REFINE_sampler.chain
         chain = spectrum.MCMC_REFINE_sampler.get_chain(discard=spectrum.mcmc_refine_n_discard, thin=n_thin, flat=True)
 
-    # walkers, iter, ndim = chain.shape
     ndim = chain.shape[1]
-    # print("ndim = ", ndim)
-
-    ### Let's use the kde_params
-    ### Note: kde is highly susceptible to errors at the boundaries of the grid
-    ### I'm going to try a solution involving edge reflection
 
     results = [kde_param_reflection(array) for array in chain.T]
 
@@ -510,8 +541,6 @@ def generate_kde_params(spectrum, mode, n_thin=1):
     elif ndim == 6:
         dict_keys = ["TEFF", "FEH", "CFE", "XI_CA", "XI_CH", "XI_C2"]
 
-    # print("dict_keys =  ", dict_keys)
-    ### build outputs
     OUTPUT = {key: [results[i]["result"], MAD.S_MAD(chain[:, i])] for i, key in enumerate(dict_keys)}
 
     OUTPUT["AC"] = [ac.ac(OUTPUT["CFE"][0], OUTPUT["FEH"][0]), np.sqrt(OUTPUT["CFE"][1] ** 2 + OUTPUT["FEH"][1] ** 2)]
