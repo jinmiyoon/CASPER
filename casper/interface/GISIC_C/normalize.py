@@ -9,29 +9,70 @@
 #     The default value for s is s=12.
 # k : the degree of the spline fit. It is recommended to use cubic splines. Even values of k
 #     should be avoided especially with small s values. 1 <= k <= 5
-#
 # sigma: a smoothing factor for the flux, with using a Gaussian filter.
 # Refer to scipy.ndimage.gaussian_filter(sigma)
 
-# I would like to set k and s outside of this code, perhaps in main.py or other parameter file or casper pa
 
-import os
-import sys
+from typing import Any, Dict, Tuple, Union
 
 import numpy as np
-import pandas as pd
-
-# sys.path.append("interface")
-# from spectrum import Spectrum
-from astropy.io import fits
 from GISIC_C.spectrum import Spectrum
 
 
 def normalize(
-    wavelength, flux, sigma=30, k=3, s=12, cahk=False, band_check=True, flux_min=70, boost=True, return_points=False
-):
-    # flux_min =70 percentile default where wavelength region
-    # cahk=False, band_check=True were the original defaults but it doesn't do well.
+    wavelength: np.ndarray,
+    flux: np.ndarray,
+    sigma: int = 30,
+    k: int = 3,
+    s: int = 12,
+    cahk: bool = False,
+    band_check: bool = True,
+    flux_min: float = 70,
+    boost: bool = True,
+    return_points: bool = False,
+) -> Union[Tuple[np.ndarray, np.ndarray, np.ndarray], Tuple[np.ndarray, np.ndarray, np.ndarray, Dict[str, Any]]]:
+    """
+    Normalize a spectrum using spline fitting based on inflection segment detection.
+
+    Parameters
+    ----------
+    wavelength : np.ndarray
+        Array of wavelength values.
+    flux : np.ndarray
+        Array of flux values corresponding to the input wavelengths.
+    sigma : int, optional
+        Gaussian smoothing kernel width for segment generation.
+    k : int, optional
+        Degree of the spline for continuum fitting.
+    s : int, optional
+        Spline smoothing factor.
+    cahk : bool, optional
+        Whether to apply special treatment to the Ca H&K region.
+    band_check : bool, optional
+        Whether to exclude strong band regions during continuum estimation.
+    flux_min : float, optional
+        Minimum threshold for flux filtering.
+    boost : bool, optional
+        Whether to boost the flux points during continuum point definition.
+    return_points : bool, optional
+        If True, also return the continuum anchor points used for spline fitting.
+
+    Returns
+    -------
+    tuple
+        If `return_points` is False:
+            - wavelength : np.ndarray
+            - normalized_flux : np.ndarray
+            - continuum : np.ndarray
+
+        If `return_points` is True:
+            - wavelength : np.ndarray
+            - normalized_flux : np.ndarray
+            - continuum : np.ndarray
+            - points : dict
+                Dictionary with keys "wavelength" and "flux" for the continuum anchor points.
+    """
+
     spec = Spectrum(wavelength, flux)
     spec.generate_inflection_segments(sigma=sigma, cahk=cahk, band_check=band_check, flux_min=flux_min)
     spec.assess_segment_variation()

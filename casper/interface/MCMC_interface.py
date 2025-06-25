@@ -366,3 +366,89 @@ def chi_ll_refine(
 
     else:
         return -np.inf
+
+
+def chi_ll_refine_C2(
+    theta: np.ndarray,
+    observed_spec_regions: Dict[str, pd.DataFrame],
+    synth_wave: np.ndarray,
+    PARAMS: Dict[str, np.ndarray],
+    G_CLASS: str,
+    bounds: str = "default",
+) -> float:
+    """
+    Compute the log-likelihood (LL) score for observed vs. synthetic spectra
+    using chi-squared loss across three molecular regions: Ca II, CH, and C₂.
+
+    Parameters
+    ----------
+    theta : np.ndarray
+        MCMC parameter array where:
+        - theta[0] = [Fe/H] metallicity
+        - theta[1] = [C/Fe] carbon abundance
+    observed_spec_regions : dict
+        Dictionary with keys "CA", "CH", and "C2", each mapping to a DataFrame
+        containing observed spectral data with columns "wave" and "norm".
+    synth_wave : np.ndarray
+        Wavelength grid for the synthetic spectra.
+    PARAMS : dict
+        Dictionary of stellar parameters and inverse noise terms.
+        Must contain:
+            - "TEFF": np.ndarray of effective temperature
+            - "XI_CA", "XI_CH", "XI_C2": np.ndarrays of inverse noise (1/SNR)
+    G_CLASS : str
+        The stellar class used to identify the appropriate synthetic model.
+    bounds : str, optional
+        Bound checking mode. Defaults to "default".
+
+    Returns
+    -------
+    float
+        The log-likelihood value. Returns -np.inf if synthetic flux generation fails
+        or LL is non-finite.
+    """
+
+    teff = PARAMS["TEFF"][0]
+    XI_CA = PARAMS["XI_CA"][0]
+    XI_CH = PARAMS["XI_CH"][0]
+    XI_C2 = PARAMS["XI_C2"][0]
+
+    feh = theta[0]
+    carbon = theta[1]
+
+    synth_flux_region = interp1d_synth_flux(synth_wave, G_CLASS, teff, feh, carbon)
+
+    if not synth_flux_region:
+        print(
+            "\t\t MCMC_interface: chi_11_refine_C2: synth_flux_region (teff={}, feh={}, carbon={}) return -np.inf".format(
+                teff, feh, carbon
+            )
+        )
+        return -np.inf
+
+    LL = (
+        MLE_priors.ln_chi_square_sigma(
+            observed_spec_regions["CA"]["norm"].values,
+            synth_flux_region(observed_spec_regions["CA"]["wave"].values),
+            XI_CA,
+        )
+        + 0.5
+        * MLE_priors.ln_chi_square_sigma(
+            observed_spec_regions["CH"]["norm"].values,
+            synth_flux_region(observed_spec_regions["CH"]["wave"].values),
+            XI_CH,
+        )
+        + 0.5
+        * MLE_priors.ln_chi_square_sigma(
+            observed_spec_regions["C2"]["norm"].values,
+            synth_flux_region(observed_spec_regions["C2"]["wave"].values),
+            XI_C2,
+        )
+        + MLE_priors.default_feh_cfe_param_edges(feh, carbon)
+    )
+
+    if np.isfinite(LL):
+        return LL
+
+    else:
+        return -np.inf
