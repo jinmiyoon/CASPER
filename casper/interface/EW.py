@@ -1,8 +1,8 @@
 from typing import Tuple, Union
 
-import config
 import numpy as np
 import scipy.integrate as integrate
+from interface import config
 from numpy.typing import ArrayLike
 from scipy.interpolate import interp1d
 

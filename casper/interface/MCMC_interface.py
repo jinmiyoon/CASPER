@@ -1,13 +1,12 @@
 from typing import Any, Callable, Dict, Literal, Tuple
 
-import config
-import MLE_priors
 import numpy as np
 import pandas as pd
 import scipy
+from interface import MLE_priors, config
+from interface.synthetic_functions import get_interp, normalize_syth_spectrum
 from scipy.interpolate import interp1d
 from statsmodels.nonparametric.kde import KDEUnivariate
-from synthetic_functions import get_interp, normalize
 
 INTERPOLATOR = get_interp()
 
@@ -74,7 +73,7 @@ def interp1d_synth_flux(
     """
     if np.isfinite(INTERPOLATOR[G_CLASS]([teff, feh, carbon])).all():
         synth_flux = INTERPOLATOR[G_CLASS]([teff, feh, carbon])[0]
-        norm_synth_flux = normalize(synth_wave, synth_flux[config.id_start_wave : config.id_end_wave + 1])
+        norm_synth_flux = normalize_syth_spectrum(synth_wave, synth_flux[config.id_start_wave : config.id_end_wave + 1])
 
         return interp1d(synth_wave, norm_synth_flux, kind="linear")
 

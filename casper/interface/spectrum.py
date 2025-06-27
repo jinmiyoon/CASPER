@@ -1,9 +1,8 @@
 from typing import Any, Dict, Tuple
 
-import config
-import MAD
 import numpy as np
 import pandas as pd
+from interface import MAD, config
 
 
 def obtain_flux(data):

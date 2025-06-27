@@ -1,12 +1,13 @@
-import config
 import corner
 import matplotlib.pyplot as plt
 import numpy as np
 from astropy import units as u
+from interface import config
 from matplotlib.backends.backend_pdf import PdfPages
 from matplotlib.figure import Figure
-from MCMC_interface import kde_param
 from scipy.interpolate import interp1d
+
+from .MCMC_interface import kde_param
 
 plt.ion()
 

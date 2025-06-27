@@ -1,17 +1,15 @@
 import os
 import time
 
-import config
-import EW
-import GISIC_C as GISIC
-import interface_main
 import numpy as np
 import pandas as pd
-import plot_functions
-import temp_calibrations as TC
 from astropy.io import fits
-from spectrum import Spectrum
+from interface import EW, config, interface_main, plot_functions
+from interface import temp_calibrations as TC
+from interface.GISIC_C.normalize import normalize
 from texttable import Texttable
+
+from .spectrum import Spectrum
 
 PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 
@@ -237,7 +235,7 @@ class Batch:
             for spec in self.spectra_array:
                 cont_array = []
                 for SIGMA in config.SIGMA:
-                    _, norm, cont = GISIC.normalize(
+                    _, norm, cont = normalize(
                         spec.get_frame_wave(),
                         spec.get_frame_flux(),
                         sigma=SIGMA,

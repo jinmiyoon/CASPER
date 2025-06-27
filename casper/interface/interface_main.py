@@ -15,17 +15,15 @@ os.environ["OMP_NUM_THREADS"] = "1"
 import time
 from multiprocessing import Pool, cpu_count, current_process
 
-import ac
-import config
 import emcee
-import MAD
-import MCMC_interface
 import numpy as np
 import pandas as pd
+from interface import MAD, MCMC_interface, ac, config
 from scipy.interpolate import interp1d
 from scipy.optimize import minimize
 from statsmodels.nonparametric.kde import KDEUnivariate
-from synthetic_functions import CAII_CH_CHI_LH, get_grav_interp, get_interp, normalize
+
+from .synthetic_functions import CAII_CH_CHI_LH, get_grav_interp, get_interp, normalize_syth_spectrum
 
 ARCHETYPE_PARAMS = config.ARCHETYPE_PARAMS
 
@@ -70,7 +68,7 @@ def synth_normalize(spectrum, group: str, temp: float) -> np.ndarray:
         temp, ARCHETYPE_PARAMS[spectrum.MODE][group]["FEH"], ARCHETYPE_PARAMS[spectrum.MODE][group]["CFE"]
     )
     if np.isfinite(interp_flux).all():
-        return normalize(SYNTH_WAVE, interp_flux[config.id_start_wave : config.id_end_wave + 1])
+        return normalize_syth_spectrum(SYNTH_WAVE, interp_flux[config.id_start_wave : config.id_end_wave + 1])
     else:
         print(
             "Interpolated synthetic flux is not finite, params = ",
@@ -380,7 +378,9 @@ def generate_synthetic(spectrum: object) -> None:
     )
 
     if np.isfinite(interp_flux).all():
-        NORM_SYNTH_FLUX = normalize(SYNTH_WAVE, interp_flux[config.id_start_wave : config.id_end_wave + 1])
+        NORM_SYNTH_FLUX = normalize_syth_spectrum(
+            SYNTH_WAVE, interp_flux[config.id_start_wave : config.id_end_wave + 1]
+        )
         spectrum.set_synth_spectrum(pd.DataFrame({"wave": SYNTH_WAVE, "norm": NORM_SYNTH_FLUX.T}))
     else:
         print(
