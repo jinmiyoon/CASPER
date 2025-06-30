@@ -1,5 +1,4 @@
 import os
-import sys
 import time
 from multiprocessing import freeze_support
 
@@ -7,10 +6,11 @@ from interface.batch import Batch
 from utils.logger_config import setup_logger
 
 # sys.path.append("./interface")
+"""
 INTERFACE_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), "interface"))
 if INTERFACE_PATH not in sys.path:
     sys.path.insert(0, INTERFACE_PATH)
-
+"""
 logger = setup_logger(__name__)
 
 io_paths = "interface/io_paths.py"
