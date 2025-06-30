@@ -22,8 +22,11 @@ from interface import MAD, MCMC_interface, ac, config
 from scipy.interpolate import interp1d
 from scipy.optimize import minimize
 from statsmodels.nonparametric.kde import KDEUnivariate
+from utils.logger_config import setup_logger
 
 from .synthetic_functions import CAII_CH_CHI_LH, get_grav_interp, get_interp, normalize_syth_spectrum
+
+logger = setup_logger(__name__)
 
 ARCHETYPE_PARAMS = config.ARCHETYPE_PARAMS
 
@@ -70,11 +73,10 @@ def synth_normalize(spectrum, group: str, temp: float) -> np.ndarray:
     if np.isfinite(interp_flux).all():
         return normalize_syth_spectrum(SYNTH_WAVE, interp_flux[config.id_start_wave : config.id_end_wave + 1])
     else:
-        print(
-            "Interpolated synthetic flux is not finite, params = ",
-            temp,
-            ARCHETYPE_PARAMS[spectrum.MODE][group]["FEH"],
-            ARCHETYPE_PARAMS[spectrum.MODE][group]["CFE"],
+        logger.warning(
+            f"Interpolated synthetic flux is not finite, params = {temp}, "
+            f"FEH = {ARCHETYPE_PARAMS[spectrum.MODE][group]['FEH']}, "
+            f"CFE = {ARCHETYPE_PARAMS[spectrum.MODE][group]['CFE']}"
         )
 
 
@@ -112,7 +114,7 @@ def archetype_classify_MC(spectrum: object) -> None:
     GIII_NORM_SYNTH = [synth_normalize(spectrum, "GIII", temp) for temp in temp_values]
 
     end1 = time.time()
-    print("\t\t interface_main: archetype_classify_MC SYNTH: took {0:.1f} seconds".format(end1 - start))
+    logger.info(f"interface_main: archetype_classify_MC SYNTH: took {end1 - start:.1f} seconds")
 
     GI_LLs = np.array(
         [
@@ -168,7 +170,7 @@ def archetype_classify_MC(spectrum: object) -> None:
         }
     )
     end2 = time.time()
-    print("\t\t interface_main: archetype_classify_MC LLs: took {0:.1f} seconds".format(end2 - end1))
+    logger.info(f"interface_main: archetype_classify_MC LLs: took {end2 - end1:.1f} seconds")
 
     return
 
@@ -206,24 +208,17 @@ def mcmc_determination(spectrum: object, mode: str = "COARSE", burnin_factor: in
     - Stores the MCMC sampler and related diagnostics back into the spectrum object
     """
 
-    print("\t * MCMC run mode =  ", mode)
+    logger.info(f"* MCMC run mode = {mode}")
 
-    print(
-        "\t "
-        + spectrum.get_starname()
-        + ":  "
-        + spectrum.get_gravity_class()
-        + " : "
-        + spectrum.get_carbon_mode()
-        + " : "
-        + spectrum.print_KP_bounds()
+    logger.info(
+        f"{spectrum.get_starname()}:  {spectrum.get_gravity_class()} : {spectrum.get_carbon_mode()} : {spectrum.print_KP_bounds()}"
     )
 
     PARAMS = ARCHETYPE_PARAMS[spectrum.get_environ_mode()][spectrum.get_arch_group()]
 
     # MAIN MODE BRANCH
     if mode == "COARSE":
-        print("\t initializing with archetype parameters: ", PARAMS)
+        logger.info(f"Initializing with archetype parameters: {PARAMS}")
 
         photo_teff = spectrum.get_photo_temp()
 
@@ -242,17 +237,18 @@ def mcmc_determination(spectrum: object, mode: str = "COARSE", burnin_factor: in
         n_step = spectrum.get_MCMC_iterations()
 
         if spectrum.get_carbon_mode() == "CH+C2":
-            print("\t running with carbon mode: CH+C2")
+            logger.info("Running with carbon mode: CH+C2")
 
             initial = np.concatenate([initial, [spectrum.SN_DICT["C2"]["XI_AVG"]]])
         else:
-            print("\t running with carbon mode: CH only")
+            logger.info("Running with carbon mode: CH only")
 
     elif mode == "REFINE":
         PARAMS_0 = spectrum.get_mcmc_dict(mode="COARSE")
-        print("\t initializing with COARSE run result parameters:")
-        print(
-            " Teff : %.0F  [Fe/H] : %.2F   [C/Fe] : %.2F   A(C) : %.2F"
+        logger.info("Initializing with COARSE run result parameters:")
+
+        logger.info(
+            " Teff : %.0f  [Fe/H] : %.2f   [C/Fe] : %.2f   A(C) : %.2f"
             % (PARAMS_0["TEFF"][0], PARAMS_0["FEH"][0], PARAMS_0["CFE"][0], PARAMS_0["AC"][0])
         )
 
@@ -262,23 +258,24 @@ def mcmc_determination(spectrum: object, mode: str = "COARSE", burnin_factor: in
         n_step = int(spectrum.get_MCMC_iterations() / 4)
 
     else:
-        print("Invalid mode")
+        logger.error("Invalid mode")
 
     LL_FUNCTION = LL_FUNCTION_DICT[mode][spectrum.get_carbon_mode()]
 
     n_cpu = cpu_count()
-    print("\t number of cpu = ", n_cpu)
+    logger.info(f"Number of CPU cores available: {n_cpu}")
 
     # Gaussian distribution
     pos = initial + initial * (2e-2 * np.random.rand(64, len(initial)))
-    print("\t\t interface_main : pos = ", pos)
+    logger.info(f"interface_main: pos = {pos}")
 
     nwalkers, ndim = pos.shape
 
-    print("\t running for ", n_step, " iterations...")
+    logger.info(f"Running for {n_step} iterations...")
 
     with Pool() as pool:
-        print(f"Process {current_process().name} started working", flush=True)
+        logger.info(f"Process {current_process().name} started working")
+
         sampler = emcee.EnsembleSampler(
             nwalkers,
             ndim,
@@ -295,50 +292,59 @@ def mcmc_determination(spectrum: object, mode: str = "COARSE", burnin_factor: in
         _ = sampler.run_mcmc(pos, n_step, skip_initial_state_check=False, progress=True)
         end = time.time()
         multi_time = end - start
-        print(f"Process {current_process().name} ended working", flush=True)
-        print("\t \t MCMC Multiprocessing took {0:.1f} seconds".format(multi_time))
+        logger.info(f"Process {current_process().name} ended working")
+
+        logger.info(f"\t \t MCMC Multiprocessing took {multi_time:.1f} seconds")
 
     spectrum.set_sampler(sampler, mode=mode)
 
     tau = sampler.get_autocorr_time(quiet=True)
 
     num_valid_autocorr_time_value = len(tau) - np.isnan(tau).sum()
-    print(
+    logger.info(
         "\t\t interface_main: tau's shape= {}, length ={}, how many nan values = {}".format(
             tau.shape, len(tau), np.isnan(tau).sum()
         )
     )
-    print(
+
+    logger.info(
         "\t\t interface_main: tau = {}, num_valid_autocorr_time_value ={} ".format(tau, num_valid_autocorr_time_value)
     )
+
     if num_valid_autocorr_time_value == 0:
-        print("\t\t interface_main: all autocorr_times are Nan!")
+        logger.warning("\t\t interface_main: all autocorr_times are Nan!")
+
         max_auto_corr_time = 70
 
     elif num_valid_autocorr_time_value == 1:
-        print("\t\t interface_main: all except one dim autocorr_time are Nan")
+        logger.warning("\t\t interface_main: all except one dim autocorr_time are Nan")
+
         for taulist in tau:
             if not np.isnan(taulist):
                 max_auto_corr_time = taulist
 
     else:
-        print("\t\t interface_main: n >= 2 in tau array values are vaild numbers ")
+        logger.info("\t\t interface_main: n >= 2 in tau array values are vaild numbers ")
+
         max_auto_corr_time = np.nanmax(tau)
-        print("\t\t interface_main: maximum autocorrelation time = ", max_auto_corr_time)
+        logger.info(f"\t\t interface_main: maximum autocorrelation time = {max_auto_corr_time}")
 
     n_discard = int(burnin_factor * max_auto_corr_time)
 
     if n_discard >= 0.5 * n_step:
-        print(
+        logger.warning(
             "\t\t interface_main: n_discard is larger than the mcmc iterations! Setting n_discard to half the iterations. "
         )
-        n_discard = int(0.5 * n_step)
-    print("\t\t mcmc mode = ", mode)
-    mean_acc_fraction = np.mean(sampler.acceptance_fraction)
-    print("\t\t interface_main: mean acceptance fraction: {0:.3f}".format(mean_acc_fraction))
-    print("\t\t interface_main: max autocorrelation_time = ", max_auto_corr_time)
 
-    print("\t\t interface_main: recommended n_discard = ", n_discard)
+        n_discard = int(0.5 * n_step)
+    logger.info(f"\t\t mcmc mode = {mode}")
+
+    mean_acc_fraction = np.mean(sampler.acceptance_fraction)
+    logger.info(f"\t\t interface_main: mean acceptance fraction: {mean_acc_fraction:.3f}")
+
+    logger.info(f"\t\t interface_main: max autocorrelation_time = {max_auto_corr_time}")
+
+    logger.info(f"\t\t interface_main: recommended n_discard = {n_discard}")
 
     if mode == "COARSE":
         spectrum.mcmc_coarse_acc_frac = mean_acc_fraction
@@ -383,13 +389,12 @@ def generate_synthetic(spectrum: object) -> None:
         )
         spectrum.set_synth_spectrum(pd.DataFrame({"wave": SYNTH_WAVE, "norm": NORM_SYNTH_FLUX.T}))
     else:
-        print(
-            "generate_synthetic: Interpolated synthetic flux is not finite, params = ",
-            spectrum.MCMC_COARSE["TEFF"][0],
-            spectrum.MCMC_REFINE["FEH"][0],
-            spectrum.MCMC_REFINE["CFE"][0],
+        logger.warning(
+            f"generate_synthetic: Interpolated synthetic flux is not finite, params = "
+            f"{spectrum.MCMC_COARSE['TEFF'][0]}, {spectrum.MCMC_REFINE['FEH'][0]}, {spectrum.MCMC_REFINE['CFE'][0]}"
         )
-        print(f"the sequence is {spectrum.get_sequence()} and the star name is {spectrum.get_starname()}")
+
+        logger.warning(f"the sequence is {spectrum.get_sequence()} and the star name is {spectrum.get_starname()}")
 
         spectrum.set_synth_spectrum(pd.DataFrame({"wave": SYNTH_WAVE, "norm": np.nan * np.ones_like(SYNTH_WAVE)}))
 
@@ -420,7 +425,7 @@ def estimate_logg(spectrum: object) -> None:
     spectrum.logg = GRAV_INTERP[spectrum.get_gravity_class()](
         spectrum.MCMC_COARSE["TEFF"][0], spectrum.MCMC_REFINE["FEH"][0]
     )
-    print(f"\t\t interface_main: logg = {spectrum.logg} ")
+    logger.info(f"\t\t interface_main: logg = {spectrum.logg}")
 
     samples_COARSE = spectrum.MCMC_COARSE_sampler.get_chain(discard=spectrum.mcmc_coarse_n_discard, thin=1, flat=True)
     teff_dist = samples_COARSE[:, 0]
@@ -430,8 +435,9 @@ def estimate_logg(spectrum: object) -> None:
     logg_err_std = np.std(logg_COARSE_dist)
     logg_err_mad = MAD.MAD(logg_COARSE_dist)
 
-    print(f"\t\t interface_main: logg = {spectrum.logg} +/- {spectrum.logg_err} ")
-    print(f"\t\t interface_main: logg_std = {logg_err_std}, logg_mad = {logg_err_mad} ")
+    logger.info(f"\t\t interface_main: logg = {spectrum.logg} +/- {spectrum.logg_err}")
+
+    logger.info(f"\t\t interface_main: logg_std = {logg_err_std}, logg_mad = {logg_err_mad}")
 
     return
 

@@ -5,6 +5,9 @@ import scipy.integrate as integrate
 from interface import config
 from numpy.typing import ArrayLike
 from scipy.interpolate import interp1d
+from utils.logger_config import setup_logger
+
+logger = setup_logger(__name__)
 
 
 def GBAND_QUAD(wave: ArrayLike, flux: ArrayLike, bounds: tuple[float, float] = config.CH_BOUNDS) -> tuple[float, float]:
@@ -40,13 +43,13 @@ def GBAND_QUAD(wave: ArrayLike, flux: ArrayLike, bounds: tuple[float, float] = c
     flux_bounds = func_bounds(wave_bounds)
     flux_bounds_max = np.max(flux_bounds)
 
-    print("flux_bounds_max = ", flux_bounds_max)
+    logger.info(f"flux_bounds_max = {flux_bounds_max}")
 
     if flux_bounds_max < 1.0:
         EW_subtract = (1.0 - flux_bounds_max) * (bounds[1] - bounds[0])
     else:
         EW_subtract = 0.0
-    print("EW_subtract=  ", EW_subtract)
+    logger.info(f"EW_subtract = {EW_subtract}")
 
     return integrate.quad(
         func, bounds[0], bounds[1], limit=1000, points=list(wave[(wave > bounds[0]) & (wave < bounds[1])])
@@ -152,20 +155,19 @@ def get_KP_band(spectrum) -> Tuple[float, float]:
     K18 = CAII_K18(spectrum.frame["wave"], spectrum.frame["norm"])
 
     if K6 <= 2.0:
-        print("\t recommending K6 bounds")
+        logger.info("Recommending K6 bounds")
         return KP_BOUNDS["K6"]
 
     elif (K6 > 2.0) and (K12 <= 5.0):
-        print("\t recommending K12 bounds")
+        logger.info("Recommending K12 bounds")
         return KP_BOUNDS["K12"]
 
     elif K18 > 5.0:
-        print("\t recommending K18 bounds")
+        logger.info("Recommending K18 bounds")
         return KP_BOUNDS["K18"]
 
     else:
-        print("warning: error in CAII_KP")
-
+        logger.warning("Warning: error in CAII_KP")
         return np.nan
 
 
@@ -191,23 +193,23 @@ def set_CH_procedure(spectrum) -> None:
     CH_EW, EW_subtract = GBAND_QUAD(spectrum.frame["wave"], spectrum.frame["norm"])
     spectrum.set_GBAND(CH_EW)
 
-    print("CH_EW= %5.2f" % CH_EW)
+    logger.info(f"CH_EW = {CH_EW:5.2f}")
 
     if spectrum.INPUT_CARBON_MODE == "CH":
-        print("\t using the input {0} carbon_mode".format(spectrum.INPUT_CARBON_MODE))
+        logger.info(f"Using the input {spectrum.INPUT_CARBON_MODE} carbon_mode")
         spectrum.set_carbon_mode("CH")
 
     elif spectrum.INPUT_CARBON_MODE == "CH+C2":
-        print("\t using the input {0} carbon_mode: ".format(spectrum.INPUT_CARBON_MODE))
+        logger.info(f"Using the input {spectrum.INPUT_CARBON_MODE} carbon_mode")
         spectrum.set_carbon_mode("CH+C2")
 
     else:
         if CH_EW > 40.0:
-            print("\t recommending CH+C2 procedure")
+            logger.info("Recommending CH+C2 procedure")
             spectrum.set_carbon_mode("CH+C2")
 
         else:
-            print("\t recommending CH procedure")
+            logger.info("Recommending CH procedure")
             spectrum.set_carbon_mode("CH")
 
     return
@@ -246,5 +248,5 @@ def CAII_KP(wave: np.ndarray, flux: np.ndarray) -> Union[float, np.float64]:
         return K18
 
     else:
-        print("warning: error in CAII_KP")
+        logger.warning("Warning: error in CAII_KP")
         return np.nan

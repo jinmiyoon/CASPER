@@ -6,8 +6,11 @@ from interface import config
 from matplotlib.backends.backend_pdf import PdfPages
 from matplotlib.figure import Figure
 from scipy.interpolate import interp1d
+from utils.logger_config import setup_logger
 
 from .MCMC_interface import kde_param
+
+logger = setup_logger(__name__)
 
 plt.ion()
 
@@ -95,8 +98,8 @@ def plot_spectra(spectra_batch) -> None:
     LINEW = 0.3
     LINEW_zoom = 0.5
 
-    print("... generating continuum plots")
-    print("\t saving as:   ", spectra_batch.output_name)
+    logger.info("... generating continuum plots")
+    logger.info(f"Saving as: {spectra_batch.output_name}")
     rows, columns = 8, 5
 
     # pages = int(np.ceil(spectra_batch.length / (rows * columns)))
