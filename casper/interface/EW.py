@@ -2,10 +2,11 @@ from typing import Tuple, Union
 
 import numpy as np
 import scipy.integrate as integrate
-from interface import config
 from numpy.typing import ArrayLike
 from scipy.interpolate import interp1d
-from utils.logger_config import setup_logger
+
+from casper.interface import config
+from casper.utils.logger_config import setup_logger
 
 logger = setup_logger(__name__)
 

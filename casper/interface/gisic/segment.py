@@ -1,8 +1,9 @@
 import numpy as np
+from numpy.typing import ArrayLike
 
 
 class Segment:
-    def __init__(self, wl: list = [], flux: list = []):
+    def __init__(self, wl: list = [], flux: ArrayLike = []):
         """
         Initialize a Segment object with wavelength and flux arrays.
 
@@ -10,7 +11,7 @@ class Segment:
         ----------
         wl : list, optional
             List of wavelength values. Defines the x-axis of the segment.
-        flux : list, optional
+        flux : array_like, optional
             List of corresponding flux values for each wavelength. Defines the y-axis of the segment.
 
         Sets
@@ -20,11 +21,11 @@ class Segment:
         self.flux : list
             The flux values.
         self.midpoint : float
-            The median wavelength value, used as the segment’s midpoint.
+            The median wavelength value, used as the segment's midpoint.
         """
 
         self.wl = wl
-        self.flux = flux
+        self.flux = np.array(flux)
         self.midpoint = np.median(self.wl)
 
     def is_edge(self, which: str) -> None:

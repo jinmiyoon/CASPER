@@ -2,7 +2,8 @@ from typing import Optional, Tuple
 
 import numpy as np
 import pandas as pd
-from utils.logger_config import setup_logger
+
+from casper.utils.logger_config import setup_logger
 
 logger = setup_logger(__name__)
 
@@ -34,18 +35,14 @@ def Hernandez(JK: float, FEH: float = -2.5, CLASS: Optional[str] = None) -> floa
     Reference: J-Ks in Table 5 and Eq. (10) from https://ui.adsabs.harvard.edu/abs/2009A%26A...497..497G/abstract
     """
     if CLASS == "GIANT":
-        # print("\t\t using GIANT calibration in Hernandez")
         logger.info("Using GIANT calibration in Hernandez")
         A0 = [0.6517, 0.6312, 0.0168, -0.0381, 0.0256, 0.0013]
 
     elif CLASS == "DWARF":
-        # print("\t\t using DWARF calibration in Hernandez")
         logger.info("Using DWARF calibration in Hernandez")
         A0 = [0.6524, 0.5813, 0.1225, -0.0646, 0.0370, 0.0016]
 
     else:
-        # print("\t\t Can't handle input class:  ", CLASS)
-        # print("\t\t Defaulting to GIANT")
         logger.warning(f"Can't handle input class: {CLASS}. Defaulting to GIANT.")
         A0 = [0.6517, 0.6312, 0.0168, -0.0381, 0.0256, 0.0013]
 
@@ -106,7 +103,6 @@ def Casagrande(JK: float, FEH: float = -2.5, CLASS: Optional[str] = None) -> flo
         T_JK = 5040.0 / Teff
 
     else:
-        # print("\t\t Casagrande Calibration out of bounds")
         T_JK = np.nan
         logger.warning("Casagrande Calibration out of bounds")
 

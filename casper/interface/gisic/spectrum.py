@@ -4,12 +4,10 @@ import numpy as np
 import pandas as pd
 import scipy.interpolate as interp
 from astropy.table import Table
-from interface.GISIC_C.segment import Segment
-
-# from interface.GISIC_C.spectrum import Spectrum
 from scipy.ndimage.filters import gaussian_filter
 
-from . import norm_functions
+from casper.interface.gisic import norm_functions
+from casper.interface.gisic.segment import Segment
 
 
 class Spectrum:

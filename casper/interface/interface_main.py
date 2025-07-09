@@ -18,13 +18,13 @@ from multiprocessing import Pool, cpu_count, current_process
 import emcee
 import numpy as np
 import pandas as pd
-from interface import MAD, MCMC_interface, ac, config
 from scipy.interpolate import interp1d
 from scipy.optimize import minimize
 from statsmodels.nonparametric.kde import KDEUnivariate
-from utils.logger_config import setup_logger
 
-from .synthetic_functions import CAII_CH_CHI_LH, get_grav_interp, get_interp, normalize_syth_spectrum
+from casper.interface import MAD, MCMC_interface, ac, config
+from casper.interface.synthetic_functions import CAII_CH_CHI_LH, get_grav_interp, get_interp, normalize_syth_spectrum
+from casper.utils.logger_config import setup_logger
 
 logger = setup_logger(__name__)
 

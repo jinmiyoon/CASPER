@@ -3,13 +3,12 @@ from typing import Any, Callable, Dict, Literal, Tuple
 import numpy as np
 import pandas as pd
 import scipy
-from interface import MLE_priors, config
-from interface.synthetic_functions import get_interp, normalize_syth_spectrum
 from scipy.interpolate import interp1d
 from statsmodels.nonparametric.kde import KDEUnivariate
-from utils.logger_config import setup_logger
 
-# from .MCMC_interface import kde_param
+from casper.interface import MLE_priors, config
+from casper.interface.synthetic_functions import get_interp, normalize_syth_spectrum
+from casper.utils.logger_config import setup_logger
 
 logger = setup_logger(__name__)
 

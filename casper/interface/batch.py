@@ -4,13 +4,13 @@ import time
 import numpy as np
 import pandas as pd
 from astropy.io import fits
-from interface import EW, config, interface_main, plot_functions
-from interface import temp_calibrations as TC
-from interface.GISIC_C.normalize import normalize
 from texttable import Texttable
-from utils.logger_config import setup_logger
 
-from .spectrum import Spectrum
+from casper.interface import EW, config, interface_main, plot_functions
+from casper.interface import temp_calibrations as TC
+from casper.interface.gisic.normalize import normalize
+from casper.interface.spectrum import Spectrum
+from casper.utils.logger_config import setup_logger
 
 logger = setup_logger(__name__)
 
