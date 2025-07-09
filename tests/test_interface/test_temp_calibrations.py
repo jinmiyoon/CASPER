@@ -46,6 +46,6 @@ def test_casagrande(jk, expected_teff):
 )
 def test_bergeat(jk, expected_teff):
     teff = Bergeat(JK=jk)
-    print(f"JK={jk} → Teff={teff}, Expected={expected_teff}")
+    print(f"JK={jk}: Teff={teff}, Expected={expected_teff}")
     assert isinstance(teff, float)
     assert round(teff) == expected_teff
