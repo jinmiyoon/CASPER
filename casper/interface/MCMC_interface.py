@@ -1,125 +1,77 @@
-################################################################################
-### Author: Devin Whitten
-### Email: devin.d.whitten@gmail.com
-### Institute: University of Notre Dame
-################################################################################
-
-#### Main interface for the MCMC procedure
+from typing import Any, Callable, Dict, Literal, Tuple
 
 import config
 import MLE_priors
 import numpy as np
+import pandas as pd
 import scipy
 from scipy.interpolate import interp1d
 from statsmodels.nonparametric.kde import KDEUnivariate
 from synthetic_functions import get_interp, normalize
 
-# import synthetic library interpolator
 INTERPOLATOR = get_interp()
 
 
-def kde_param(distribution, x0):
-    ### kde_param tries to ensure correct handling of multimodal distributions
+def kde_param(distribution: np.ndarray, x0: float) -> Dict[str, Any]:
+    """
+    Estimate the peak of a (possibly multimodal) distribution using KDE.
 
-    ### compute kernal density estimation
+    This function fits a kernel density estimation (KDE) model to the input
+    distribution and then uses Powell's optimization method to find the
+    maximum of the estimated density.
+
+    Parameters
+    ----------
+    distribution : np.ndarray
+        A 1D array representing the distribution to model.
+    x0 : float
+        Initial guess for the peak location in the distribution.
+
+    Returns
+    -------
+    Dict[str, Any]
+        A dictionary with:
+        - "result": The x-value where the KDE reaches its maximum (float).
+        - "kde": The fitted KDEUnivariate object.
+    """
+
     KDE = KDEUnivariate(distribution)
 
     KDE.fit(bw=np.std(distribution) / 3.0)
 
-    result = scipy.optimize.minimize(
-        lambda x: -1 * KDE.evaluate(x), x0=x0, method="Powell"
-    )  ## Powell has been working pretty well.
-
+    result = scipy.optimize.minimize(lambda x: -1 * KDE.evaluate(x), x0=x0, method="Powell")
     return {"result": float(result["x"]), "kde": KDE}
 
 
-# not used currently
-def get_beta_params(spectrum, bounds):
-    ## just return the proper values for alpha and beta for the given spectra.
-    ## Poisson uncertainty is assumed for flux bins.
-    ## alpha/beta determine the center and width of the beta function prior used for the S/N estimate.
+def interp1d_synth_flux(
+    synth_wave: np.ndarray, G_CLASS: str, teff: float, feh: float, carbon: float
+) -> Callable[[np.ndarray], np.ndarray] | None:
+    """
+    Interpolate normalized synthetic flux at a given wavelength range.
 
-    SN = np.divide(1.0, np.sqrt(spectrum["flux"][spectrum["wave"].between(bounds[0], bounds[1], inclusive=True)]))
+    This function retrieves synthetic flux values for given stellar parameters
+    using a precomputed interpolator, normalizes them over a specified wavelength
+    range, and returns a linear interpolating function for use in later modeling.
 
-    u = np.median(SN)
-    v = np.var(SN)
+    Parameters
+    ----------
+    synth_wave : np.ndarray
+        The wavelength grid for the synthetic spectrum.
+    G_CLASS : str
+        Spectral class key used to select the appropriate interpolator.
+    teff : float
+        Effective temperature of the star.
+    feh : float
+        Metallicity [Fe/H] of the star.
+    carbon : float
+        Carbon abundance [C/Fe] of the star.
 
-    print("SN =", np.median(SN))
-    print("var(SN)=", np.var(SN))
-
-    alpha_param = ((u**2) / v) * (1 - u) - u
-    beta_param = (1 / u - 1) * alpha_param
-
-    return {"alpha": alpha_param, "beta": beta_param, "u": u, "v": v}
-
-
-# not used currently
-def get_beta_param_bounds(spectrum, left_bounds, right_bounds, hard_var=None):
-    ## trying to address the underestimation in the SN for at least CaII,
-    ## should really average left and right of the feature
-
-    SN_LEFT = np.divide(
-        1.0, np.sqrt(spectrum["flux"][spectrum["wave"].between(left_bounds[0], left_bounds[1], inclusive=True)])
-    )
-    SN_RIGHT = np.divide(
-        1.0, np.sqrt(spectrum["flux"][spectrum["wave"].between(right_bounds[0], right_bounds[1], inclusive=True)])
-    )
-
-    u = np.mean([np.median(SN_LEFT), np.median(SN_RIGHT)])
-
-    if hard_var == None:
-        v = max([np.var(SN_LEFT), np.var(SN_RIGHT)])
-
-    else:
-        v = hard_var * u
-        print("Manual SN variance:  ")
-
-    print("SN      = %.3F" % u)
-    print("var(SN) = ", v)
-
-    alpha_param = ((u**2) / v) * (1 - u) - u
-    beta_param = (1 / u - 1) * alpha_param
-
-    return {"alpha": alpha_param, "beta": beta_param, "u": u, "v": v}
-
-
-# not used currently
-def transform_beta(u, v):
-    ### quick hack to transform the median and variance to beta distro params
-    alpha_param = ((u**2) / v) * (1 - u) - u
-    beta_param = (1 / u - 1) * alpha_param
-
-    return alpha_param, beta_param
-
-
-# not used currently
-def beta_param_spec(spectrum, hard_var=None):
-    ### To be run in the chi_mcmc.run_chi_mcmc() routine
-    ####################################################################
-
-    param_dict = {}
-
-    ### We're underestimating the SN and that's a problem
-    CAII_BETA = get_beta_param_bounds(spectrum, left_bounds=[3884, 3923], right_bounds=[3995, 4045], hard_var=hard_var)
-
-    CH_BETA = get_beta_param_bounds(
-        spectrum, left_bounds=[4000, 4080], right_bounds=[4440, 4500], hard_var=hard_var
-    )  # [4222, 4322])
-
-    C2_BETA = get_beta_param_bounds(spectrum, left_bounds=[4500, 4600], right_bounds=[4760, 4820], hard_var=hard_var)
-
-    param_dict["CAII"] = CAII_BETA
-
-    param_dict["CH"] = CH_BETA
-
-    param_dict["C2"] = C2_BETA
-
-    return param_dict
-
-
-# When using NEW_SYNTH
-# interpolating synthetic flux at a given wave range
-def interp1d_synth_flux(synth_wave, G_CLASS, teff, feh, carbon):
+    Returns
+    -------
+    Callable[[np.ndarray], np.ndarray] | None
+        A 1D linear interpolating function over the synthetic spectrum,
+        or None if the interpolated flux is not finite.
+    """
     if np.isfinite(INTERPOLATOR[G_CLASS]([teff, feh, carbon])).all():
         synth_flux = INTERPOLATOR[G_CLASS]([teff, feh, carbon])[0]
         norm_synth_flux = normalize(synth_wave, synth_flux[config.id_start_wave : config.id_end_wave + 1])
@@ -130,25 +82,89 @@ def interp1d_synth_flux(synth_wave, G_CLASS, teff, feh, carbon):
         print("\t\t MCMC_interface: interp1d_synth_flux: Interpolated synthetic flux is not finite")
 
 
-def likelihood_params(theta, include_C2=False):
+def likelihood_params(theta: Tuple[float, ...], include_C2: bool = False) -> Tuple[float, ...]:
+    """
+    Extract model parameters from the input vector `theta`.
+
+    This function returns either 5 or 6 parameters depending on whether the
+    CH+C2 mode is enabled. Parameters include stellar properties and inverse
+    noise terms used in likelihood calculations.
+
+    Parameters
+    ----------
+    theta : Tuple[float, ...]
+        A tuple containing model parameters in the following order:
+        - Teff (effective temperature)
+        - [Fe/H] (metallicity)
+        - [C/Fe] (carbon abundance)
+        - XI_CA (inverse noise variance for Ca II region)
+        - XI_CH (inverse noise variance for CH region)
+        - XI_C2 (optional; only included if `include_C2=True`)
+
+    include_C2 : bool, optional
+        If True, the function extracts all 6 parameters, including XI_C2.
+        If False, only the first 5 parameters are returned. Default is False.
+
+    Returns
+    -------
+    Tuple[float, ...]
+        A tuple of 5 or 6 float values depending on the `include_C2` flag.
+    """
     if include_C2:
-        # params = teff, feh, carbon, XI_CA, XI_CH, XI_C2
         params = theta[0], theta[1], theta[2], theta[3], theta[4], theta[5]
     else:
-        # params =teff, feh, carbon, XI_CA, XI_CH
         params = theta[0], theta[1], theta[2], theta[3], theta[4]
 
     return params
 
 
 def chi_likelihood(
-    theta, observed_spec_regions, synth_wave, photo_teff, photo_teff_unc, SN_DICT, G_CLASS, bounds="default"
-):
-    ### This is an important point, that the likelihood needs to accomodate fitting and not fitting the C2 band,
-    ### according to the AC value
+    theta: Tuple[float, ...],
+    observed_spec_regions: Dict[str, pd.DataFrame],
+    synth_wave: np.ndarray,
+    photo_teff: float,
+    photo_teff_unc: float,
+    SN_DICT: Dict[str, float],
+    G_CLASS: str,
+    bounds: Literal["default", "final"] = "default",
+) -> float:
+    """
+    Compute the log-likelihood of stellar model parameters given observed spectra.
+
+    This function compares interpolated synthetic spectra to observed spectral
+    regions (e.g., Ca II and CH bands) using a chi-squared likelihood, combined
+    with Gaussian priors on Teff and log-normal priors on inverse variance terms.
+
+    Parameters
+    ----------
+    theta : Tuple[float, ...]
+        Tuple of model parameters:
+        (Teff, [Fe/H], [C/Fe], XI_CA, XI_CH [, XI_C2]).
+    observed_spec_regions : Dict[str, pd.DataFrame]
+        Dictionary of observed spectra with region names ("CA", "CH") as keys.
+        Each DataFrame must contain "wave" and "norm" columns.
+    synth_wave : np.ndarray
+        The wavelength grid for the synthetic model spectra.
+    photo_teff : float
+        External photometric estimate of effective temperature.
+    photo_teff_unc : float
+        Uncertainty in the photometric Teff estimate.
+    SN_DICT : Dict[str, Dict[str, float]]
+        Dictionary mapping region names ("CA", "CH") to noise model parameters
+        (each must contain "alpha" and "beta").
+    G_CLASS : str
+        Spectral class key used to select the interpolator model.
+    bounds : Literal["default", "final"], optional
+        Specifies which set of parameter bounds to use. Default is "default".
+
+    Returns
+    -------
+    float
+        Log-likelihood value. Returns -np.inf if the interpolation fails
+        or the likelihood evaluates to a non-finite value.
+    """
 
     teff, feh, carbon, XI_CA, XI_CH = likelihood_params(theta)
-    # print("\t\t MCMC_interface: INSIDE chi_likelihood:  ", teff, feh, carbon, XI_CA, XI_CH)
 
     synth_flux_region = interp1d_synth_flux(synth_wave, G_CLASS, teff, feh, carbon)
 
@@ -159,8 +175,6 @@ def chi_likelihood(
             )
         )
         return -np.inf
-
-    # print("\t\t MCMC_interface: INSIDE chi_likelihood: synthetic wave and norm_flux ", observed_spec_regions['CA']['wave'].values,synth_flux_region(observed_spec_regions['CA']['wave'].values))
 
     LL = (
         MLE_priors.ln_chi_square_sigma(
@@ -188,12 +202,52 @@ def chi_likelihood(
 
 
 def chi_likelihood_C2(
-    theta, observed_spec_regions, synth_wave, photo_teff, photo_teff_unc, SN_DICT, G_CLASS, bounds="default"
-):
-    ## This will get run when/if the AC is above 8
+    theta: Tuple[float, ...],
+    observed_spec_regions: Dict[str, pd.DataFrame],
+    synth_wave: np.ndarray,
+    photo_teff: float,
+    photo_teff_unc: float,
+    SN_DICT: Dict[str, Dict[str, float]],
+    G_CLASS: str,
+    bounds: Literal["default", "final"] = "default",
+) -> float:
+    """
+    Compute the log-likelihood including the C2 band when AC > 8.
+
+    This function extends `chi_likelihood` by incorporating the C2 band
+    in addition to the Ca II and CH regions. It assumes the model includes
+    an extra parameter (XI_C2) for the C2 noise level and balances the
+    influence of CH and C2 via a 0.5 weighting factor.
+
+    Parameters
+    ----------
+    theta : Tuple[float, ...]
+        Model parameters tuple:
+        (Teff, [Fe/H], [C/Fe], XI_CA, XI_CH, XI_C2).
+    observed_spec_regions : Dict[str, pd.DataFrame]
+        Dictionary of observed spectral regions ("CA", "CH", "C2").
+        Each DataFrame must contain "wave" and "norm" columns.
+    synth_wave : np.ndarray
+        Wavelength grid for synthetic spectra.
+    photo_teff : float
+        Photometric estimate of effective temperature.
+    photo_teff_unc : float
+        Uncertainty in the photometric Teff estimate.
+    SN_DICT : Dict[str, Dict[str, float]]
+        Mapping from region name to noise model parameters ("alpha" and "beta").
+    G_CLASS : str
+        Spectral class key for selecting the synthetic model interpolator.
+    bounds : Literal["default", "final"], optional
+        Set of parameter bounds to use. Default is "default".
+
+    Returns
+    -------
+    float
+        Log-likelihood score incorporating Ca II, CH, and C2 bands.
+        Returns -np.inf if interpolation fails or the result is not finite.
+    """
 
     teff, feh, carbon, XI_CA, XI_CH, XI_C2 = likelihood_params(theta, include_C2=True)
-    # print("\t\t MCMC_interface: INSIDE chi_likelihood_C2:  ", teff, feh, carbon, XI_CA, XI_CH, XI_C2)
 
     synth_flux_region = interp1d_synth_flux(synth_wave, G_CLASS, teff, feh, carbon)
 
@@ -204,8 +258,6 @@ def chi_likelihood_C2(
             )
         )
         return -np.inf
-
-    # print("\t\t MCMC_interface: INSIDE chi_likelihood: synthetic wave and norm_flux ", observed_spec_regions['CA']['wave'].values,synth_flux_region(observed_spec_regions['CA']['wave'].values))
 
     LL = (
         MLE_priors.ln_chi_square_sigma(
@@ -239,20 +291,53 @@ def chi_likelihood_C2(
         return -np.inf
 
 
-def chi_ll_refine(theta, observed_spec_regions, synth_wave, PARAMS, G_CLASS, bounds="default"):
-    ## simply [Fe/H] and [C/Fe]
-    ## assume the teff, and sigma values are well determined from previous
-    ## This will get run when/if the AC is above 8
+def chi_ll_refine(
+    theta: Tuple[float, float],
+    observed_spec_regions: Dict[str, pd.DataFrame],
+    synth_wave: np.ndarray,
+    PARAMS: Dict[str, Tuple[float]],
+    G_CLASS: str,
+    bounds: Literal["default", "final"] = "default",
+) -> float:
+    """
+    Refined log-likelihood using fixed Teff and sigma values from earlier sampling.
 
-    teff = PARAMS["TEFF"][0]  # theta[0]
-    XI_CA = PARAMS["XI_CA"][0]  # theta[3]
+    This function refines the likelihood by evaluating only two parameters:
+    [Fe/H] and [C/Fe], assuming Teff, XI_CA, and XI_CH have been fixed previously.
+    Typically used after initial fitting, especially when the CH+C2 mode is active
+    (e.g., AC > 8) and Teff/sigma values are considered well-constrained.
+
+    Parameters
+    ----------
+    theta : Tuple[float, float]
+        Model parameters to refine: (Fe/H, [C/Fe]).
+    observed_spec_regions : Dict[str, pd.DataFrame]
+        Dictionary of observed spectra by region ("CA", "CH").
+        Each DataFrame must contain "wave" and "norm" columns.
+    synth_wave : np.ndarray
+        The wavelength grid for the synthetic spectrum.
+    PARAMS : Dict[str, Tuple[float]]
+        Dictionary of fixed values for Teff and sigma parameters.
+        Required keys: "TEFF", "XI_CA", "XI_CH".
+    G_CLASS : str
+        Spectral class key used to select the interpolator.
+    bounds : Literal["default", "final"], optional
+        Parameter bounds to apply. Default is "default".
+
+    Returns
+    -------
+    float
+        Log-likelihood score for the refined parameters.
+        Returns -np.inf if interpolation fails or likelihood is not finite.
+    """
+
+    teff = PARAMS["TEFF"][0]
+    XI_CA = PARAMS["XI_CA"][0]
     XI_CH = PARAMS["XI_CH"][0]
 
-    ################
     feh = theta[0]
     carbon = theta[1]
 
-    # print("\t\t MCMC_interface: chi_ll_refine: teff = {}, feh = {}, carbon = {}, XI_CA ={}, XI_CH = {}".format(teff, feh, carbon, XI_CA, XI_CH))
     synth_flux_region = interp1d_synth_flux(synth_wave, G_CLASS, teff, feh, carbon)
     if not synth_flux_region:
         print(
@@ -261,8 +346,6 @@ def chi_ll_refine(theta, observed_spec_regions, synth_wave, PARAMS, G_CLASS, bou
             )
         )
         return -np.inf
-
-    ### prior needs to change
 
     LL = (
         MLE_priors.ln_chi_square_sigma(
@@ -285,21 +368,53 @@ def chi_ll_refine(theta, observed_spec_regions, synth_wave, PARAMS, G_CLASS, bou
         return -np.inf
 
 
-def chi_ll_refine_C2(theta, observed_spec_regions, synth_wave, PARAMS, G_CLASS, bounds="default"):
-    ## simply [Fe/H] and [C/Fe]
-    ## assume the teff, and sigma values are well determined from previous
-    ## This will get run when/if the AC is above 8
+def chi_ll_refine_C2(
+    theta: np.ndarray,
+    observed_spec_regions: Dict[str, pd.DataFrame],
+    synth_wave: np.ndarray,
+    PARAMS: Dict[str, np.ndarray],
+    G_CLASS: str,
+    bounds: str = "default",
+) -> float:
+    """
+    Compute the log-likelihood (LL) score for observed vs. synthetic spectra
+    using chi-squared loss across three molecular regions: Ca II, CH, and C₂.
 
-    teff = PARAMS["TEFF"][0]  # theta[0]
-    XI_CA = PARAMS["XI_CA"][0]  # theta[3]
+    Parameters
+    ----------
+    theta : np.ndarray
+        MCMC parameter array where:
+        - theta[0] = [Fe/H] metallicity
+        - theta[1] = [C/Fe] carbon abundance
+    observed_spec_regions : dict
+        Dictionary with keys "CA", "CH", and "C2", each mapping to a DataFrame
+        containing observed spectral data with columns "wave" and "norm".
+    synth_wave : np.ndarray
+        Wavelength grid for the synthetic spectra.
+    PARAMS : dict
+        Dictionary of stellar parameters and inverse noise terms.
+        Must contain:
+            - "TEFF": np.ndarray of effective temperature
+            - "XI_CA", "XI_CH", "XI_C2": np.ndarrays of inverse noise (1/SNR)
+    G_CLASS : str
+        The stellar class used to identify the appropriate synthetic model.
+    bounds : str, optional
+        Bound checking mode. Defaults to "default".
+
+    Returns
+    -------
+    float
+        The log-likelihood value. Returns -np.inf if synthetic flux generation fails
+        or LL is non-finite.
+    """
+
+    teff = PARAMS["TEFF"][0]
+    XI_CA = PARAMS["XI_CA"][0]
     XI_CH = PARAMS["XI_CH"][0]
     XI_C2 = PARAMS["XI_C2"][0]
 
-    ################
     feh = theta[0]
     carbon = theta[1]
-
-    # print("\t\t MCMC_interface: chi_ll_refine_C2: teff = {}, feh = {}, carbon = {}, XI_CA ={}, XI_CH = {}, XI_C2 = {}".format(teff, feh, carbon, XI_CA, XI_CH, XI_C2))
 
     synth_flux_region = interp1d_synth_flux(synth_wave, G_CLASS, teff, feh, carbon)
 
@@ -310,8 +425,6 @@ def chi_ll_refine_C2(theta, observed_spec_regions, synth_wave, PARAMS, G_CLASS, 
             )
         )
         return -np.inf
-
-    ### prior needs to change
 
     LL = (
         MLE_priors.ln_chi_square_sigma(
@@ -339,86 +452,3 @@ def chi_ll_refine_C2(theta, observed_spec_regions, synth_wave, PARAMS, G_CLASS, 
 
     else:
         return -np.inf
-
-
-"""
-
-### get_mcmc_params appears to not be used so deprecated  J. Yoon ###
-def get_mcmc_params(SAMPLER, burnin=0.25, return_kde=False):
-    print("DEPRECATED FUNCTION")
-    #ndim = SAMPLER.get_chain.shape[2]
-    #SAMPLES = SAMPLER.get_chain[:, burnin:, :].reshape((-1, ndim))
-
-    try:  ### SAMPLER is chain
-
-        ndim = SAMPLER.shape[2]
-        iter = SAMPLER.shape[1]
-
-    except:
-        SAMPLER = SAMPLER.get_chain
-        ndim = SAMPLER.shape[2]
-        iter = SAMPLER.shape[1]
-
-
-
-    SAMPLES = SAMPLER[:, int(burnin * iter):, :].reshape((-1, ndim))
-
-    MEDIAN = [np.median(array) for array in SAMPLES.T]
-
-    STD =    [MAD.S_MAD(array) for array in SAMPLES.T]
-
-    #modes1 = [mode(np.around(row, decimals = rounding))[0][0] for row, rounding in zip(SAMPLES.T, [0,1,1,3,3, 3])]
-    #modes2 = [mode(np.around(row, decimals = rounding))[0][0] for row, rounding in zip(SAMPLES.T, [0,2,2,3,3, 3])]
-
-    ### Let's use the kde_params
-    kde_array = [kde_param(row, x0 = x0)['kde'] for row, x0 in zip(SAMPLES.T, MEDIAN)]
-    value2 = [kde_param(row, x0 = x0)['result'] for row, x0 in zip(SAMPLES.T, MEDIAN)]
-
-    if ndim == 2:
-        dict_keys = ['feh', 'cfe']
-
-    if ndim == 5:
-        dict_keys = ['teff', 'feh', 'cfe', 'XI_CA', 'XI_CH']
-
-    elif ndim == 6:
-        dict_keys = ['teff', 'feh', 'cfe', 'XI_CA', 'XI_CH', 'XI_C2']
-
-
-    OUTPUT = {key : [value2[i], MAD.S_MAD(SAMPLES[:, i])] for i, key in enumerate(dict_keys)}
-
-    OUTPUT['AC'] = [ac.ac(OUTPUT['cfe'][0], OUTPUT['feh'][0]), np.sqrt(OUTPUT['cfe'][1]**2 + OUTPUT['feh'][1]**2)]
-
-    KDE_DICT = {key : kde for key, kde in zip(dict_keys, kde_array)}
-
-    if return_kde:
-        return OUTPUT, KDE_DICT
-
-    else:
-        return OUTPUT
-
-
-# not used currently
-def get_post_distro(SAMPLER, index=0, burnin=500):
-    ### grabs the stuff.
-    ndim = SAMPLER.get_chain.shape[2]
-    SAMPLES = SAMPLER.get_chain[:, burnin:, :].reshape((-1, ndim))
-
-    return SAMPLES[:, index]
-
-
-
-# not used currently
-def set_param_bounds(param_dict):
-    ############################################################################
-
-    ############################################################################
-
-    bounds = {}
-
-    for key in param_dict.keys():
-        bounds[key] = [param_dict[key][0] - 3.0*param_dict[key][1],
-                         param_dict[key][0] + 3.0*param_dict[key][1]]
-
-    return bounds
-
-"""

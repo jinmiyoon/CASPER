@@ -1,42 +1,40 @@
-################################################################################
-### Author: Devin Whitten, revised by Jinmi Yoon
-### Email: devin.d.whitten@gmail.com, jinmi.yoon@gmail.com
-################################################################################
-## Functions related to the equivalent-width determinations
+from typing import Tuple, Union
 
 import config
 import numpy as np
 import scipy.integrate as integrate
+from numpy.typing import ArrayLike
 from scipy.interpolate import interp1d
 
-#########
-"""
-KP_BOUNDS = {"K6"  : [3930.7, 3936.7],
-             "K12" : [3927.7, 3939.7],
-             "K18" : [3924.7, 3942.7]}
 
-"""
+def GBAND_QUAD(wave: ArrayLike, flux: ArrayLike, bounds: tuple[float, float] = config.CH_BOUNDS) -> tuple[float, float]:
+    """
+    Compute the equivalent width (EW) of the G-band (CH absorption lines) from a normalized spectrum.
 
+    This function integrates the area of absorption in the CH band region (G-band),
+    defined by `bounds`, using a normalized flux. It also returns a correction
+    factor (`EW_subtract`) in case the CH-band region is not fully normalized to 1.0.
+    This correction is useful for estimating whether to use CH only mode or CH+C2 mode in
+    stellar carbon abundance analysis.
 
-def GBAND_QUAD(wave, flux, bounds=config.CH_BOUNDS):
-    ## takes normalized flux and computes a quick G-band
+    Parameters
+    ----------
+    wave : ndarray
+        Array of wavelength values corresponding to the spectrum.
+    flux : ndarray
+        Array of normalized flux values (should be near 1.0 in continuum).
+    bounds : tuple of float
+        The wavelength interval (min, max) defining the CH G-band region.
 
-    # devin's original func below.
+    Returns
+    -------
+    ew : float
+        Equivalent width (EW) of the CH absorption feature.
+    EW_subtract : float
+        Correction factor to account for improper normalization of the CH-band.
+        If the peak flux in the band is below 1.0, this value will be non-zero.
+    """
     func = interp1d(wave, 1.0 - flux)
-
-    ############################################################################
-    ## Revised by Jinmi Yoon, July 17 2020
-    ## This revision needed to accomodate the problem of improper normalization
-    ## of the CH-band area.
-    ## If the CH-band is too low from the continuum level, the EW estimation is
-    ## not reliable and in turn influences the set_CH_procedure whether to use
-    ## the CH mode or CH+C2 mode.
-    ## The below calculation is needed in set_CH_procedure().
-    ##
-    ## I eventually decided not to use reduced_CH_EW because the synthetic
-    ## spectra at the CH band is indeed lower than 1.0 level. However, I just
-    ## leave the below scripts as it is for the future debugging.
-
     func_bounds = interp1d(wave, flux)
     wave_bounds = np.arange(bounds[0], bounds[1], 0.01)
     flux_bounds = func_bounds(wave_bounds)
@@ -44,83 +42,108 @@ def GBAND_QUAD(wave, flux, bounds=config.CH_BOUNDS):
 
     print("flux_bounds_max = ", flux_bounds_max)
 
-    ## If flux_boounds_max is not close to 1. (normalized level),
-    ## I will calculate area subtended from 1.0 to flux_bounds_max for later
-    ## subtraction from CH_EW. I need to use SNR at CH band for noise = 1./SNR
-    ## but it appears very small (~0.02) so at the moment I ignore this.
-
     if flux_bounds_max < 1.0:
         EW_subtract = (1.0 - flux_bounds_max) * (bounds[1] - bounds[0])
     else:
         EW_subtract = 0.0
     print("EW_subtract=  ", EW_subtract)
 
-    ############################################################################
-
-    ## J. Yoon, 07/17/2020
-    ## I added EW_subtract in return so that I can use this subtraction
-    ## for set_CH_procedure().
-
     return integrate.quad(
         func, bounds[0], bounds[1], limit=1000, points=list(wave[(wave > bounds[0]) & (wave < bounds[1])])
     )[0], EW_subtract
 
 
-def GBAND_vanilla(wave, flux, bounds=config.CH_BOUNDS):
-    trim = flux[(wave > bounds[0]) & (wave < bounds[1])]
+def CAII_K6(wave: ArrayLike, flux: ArrayLike) -> float:
+    """
+    Compute the equivalent width of the Ca II K6 absorption feature.
 
-    return (1 - trim).sum()
+    This function interpolates the inverted normalized flux (1 - flux)
+    and integrates it over the wavelength range 3930.7 to 3936.7 Angstroms (KP K6 bounds)
+    to estimate the equivalent width of the Ca II K line.
 
+    Parameters
+    ----------
+    wave : array_like
+        Wavelength values of the spectrum (in Angstroms).
+    flux : array_like
+        Normalized flux values corresponding to the wavelength array.
 
-def CAII_K6(wave, flux):
-    # 3930.7 - 3936.7
+    Returns
+    -------
+    float
+        The equivalent width of the Ca II K absorption feature (within K6 bounds), in Angstroms.
+    """
     func = interp1d(wave, 1.0 - flux)
     return integrate.quad(func, 3930.7, 3936.7, limit=200, points=wave[(wave > 3930.7) & (wave < 3936.7)])[0]
 
 
-def CAII_K12(wave, flux):
-    # 3927.7 - 3939.7
+def CAII_K12(wave: ArrayLike, flux: ArrayLike) -> float:
+    """
+    Compute the equivalent width of the Ca II K12 absorption feature.
+
+    This function interpolates the inverted normalized flux (1 - flux)
+    and integrates it over the wavelength range 3927.7 to 3939.7 Angstroms (KP K12 region)
+    to estimate the equivalent width of the Ca II K line.
+
+    Parameters
+    ----------
+    wave : array_like
+        Wavelength values of the spectrum (in Angstroms).
+    flux : array_like
+        Normalized flux values corresponding to the wavelength array.
+
+    Returns
+    -------
+    float
+        The equivalent width of the Ca II K absorption feature (within the K12 bounds), in Angstroms.
+    """
     func = interp1d(wave, 1.0 - flux)
     return integrate.quad(func, 3927.7, 3939.7, limit=200, points=wave[(wave > 3927.7) & (wave < 3939.7)])[0]
 
 
-def CAII_K18(wave, flux):
-    # 3924.7 - 3942.7
+def CAII_K18(wave: ArrayLike, flux: ArrayLike) -> float:
+    """
+    Compute the equivalent width of the Ca II K absorption feature over the K18 region.
+
+    This function interpolates the inverted normalized flux (1 - flux)
+    and integrates it over the wavelength range 3924.7 to 3942.7 Angstroms (KP K18 region)
+    to estimate the equivalent width of the Ca II K line.
+
+    Parameters
+    ----------
+    wave : ArrayLike
+        Wavelength values of the spectrum (in Angstroms).
+    flux : ArrayLike
+        Normalized flux values corresponding to the wavelength array.
+
+    Returns
+    -------
+    float
+        The equivalent width of the Ca II K absorption feature in the K18 region, in Angstroms.
+    """
     func = interp1d(wave, 1.0 - flux)
     return integrate.quad(func, 3924.7, 3942.7, limit=200, points=wave[(wave > 3924.7) & (wave < 3942.7)])[0]
 
 
-####### integrate.quad is being weird with the subdivision limit.
-### here's the lame versions of CAII_K##
+def get_KP_band(spectrum) -> Tuple[float, float]:
+    """
+    Return the Ca II K line wavelength range for chi-square fitting based on Beers (1999),
+    using measurements K6, K12, and K18.
 
+    Parameters
+    ----------
+    spectrum : Spectrum
+        A Spectrum object with a 'frame' dictionary containing "wave" and "norm" arrays.
 
-def CAII_K6_v(wave, flux):
-    # 3930.7 - 3936.7
+    Returns
+    -------
+    tuple of float | np.nan
+        Wavelength bounds (min, max) from config.KP_BOUNDS.
 
-    trim = flux[(wave > 3930.7) & (wave < 3936.7)]
-    return (1.0 - trim).sum()
-
-
-def CAII_K12_v(wave, flux):
-    # 3927.7 - 3939.7
-
-    trim = flux[(wave > 3927.7) & (wave < 3939.7)]
-    return (1.0 - trim).sum()
-
-
-def CAII_K18_v(wave, flux):
-    # 3924.7 - 3942.7
-
-    trim = flux[(wave > 3927.7) & (wave < 3939.7)]
-    return (1.0 - trim).sum()
-
-
-###############################################################
-
-
-def get_KP_band(spectrum):
-    ### simply return the CAII band range for the chi fit, based on Beers 1999
-    ### updated to utilize the spectrum.Spectrum() class
+    Notes
+    -----
+    If an unexpected condition occurs, np.nan is returned.
+    """
     KP_BOUNDS = config.KP_BOUNDS
 
     K6 = CAII_K6(spectrum.frame["wave"], spectrum.frame["norm"])
@@ -140,50 +163,34 @@ def get_KP_band(spectrum):
         return KP_BOUNDS["K18"]
 
     else:
-        ### this shouldn't ever happen really
         print("warning: error in CAII_KP")
 
         return np.nan
 
 
-def set_CH_procedure(spectrum):
-    ## Measures Gband and sets carbon mode
-    ##### This is intended to check whether C2 Swan band is necessary
+def set_CH_procedure(spectrum) -> None:
+    """
+    Set the carbon analysis mode for the given spectrum based on G-band strength.
+
+    This function measures the CH G-band equivalent width (CH_EW) using GBAND_QUAD.
+    If a carbon mode is specified in `spectrum.INPUT_CARBON_MODE`, that mode is used.
+    Otherwise, the function decides between "CH" and "CH+C2" based on the CH_EW threshold.
+
+    Parameters
+    ----------
+    spectrum : Spectrum
+        A Spectrum object containing a frame with "wave" and "norm",
+        and methods for setting G-band and carbon mode.
+
+    Returns
+    -------
+    None
+        Modifies the spectrum in place.
+    """
     CH_EW, EW_subtract = GBAND_QUAD(spectrum.frame["wave"], spectrum.frame["norm"])
     spectrum.set_GBAND(CH_EW)
-    # print("CH_EW, EW_subtract at EW.py = ", CH_EW, EW_subtract)
-
-    ############################################################################
-    # Revised by Jinmi Yoon, July 17 2020
-    # The default CH_EW =40 was used for the Yoon+2020 paper,
-    # but I realized that EW changes depending on the level of continuum.
-    # So it has to change a bit to prevent an unnecessarily large EW value
-    # to switch the mode. I meant to modify GBAND_QUAD calculation slightly to
-    # tackle the problem with this issue.
-    # However, the problem is that this function appears to be used other places.
-    # So I decided to change critieria here by changing CH_EW value based on
-    # the normalization level. First, I find a highest flux point, flux_max.
-    # If flux_max does not reach 1.0, I subtract area from 1.0 to flux_max level
-    # from CH_EW. To do so I define flux_bounds_max in GBAND_QUAD and calculate
-    # this area and feed this number in this procedure.
-    #
-    # reduced_CH_EW = CH_EW - EW_subtract
-    # if reduced_CH_EW > 45.:
-    # I decided to keep Devin's procedure because the synthetic spectra at
-    # this band indeed lower than 1.0 level.
-    ############################################################################
-    # Devin originally used CH_EW >40 for switching however, it depends on
-    # the normalization though it is likely to be a minor difference.
 
     print("CH_EW= %5.2f" % CH_EW)
-
-    ##########################################################################
-    #  09/09/2020, J. Yoon
-    # I modified this procedure because I want to have freedom to
-    # set carbon_mode in input file for diagnosis of carbon mode.
-    # If carbon_mode is missing in input files,
-    # then it will use the CH_EW value for setting carbon_mode.
-    ###########################################################################
 
     if spectrum.INPUT_CARBON_MODE == "CH":
         print("\t using the input {0} carbon_mode".format(spectrum.INPUT_CARBON_MODE))
@@ -194,7 +201,6 @@ def set_CH_procedure(spectrum):
         spectrum.set_carbon_mode("CH+C2")
 
     else:
-        # if CH_EW > 55.:
         if CH_EW > 40.0:
             print("\t recommending CH+C2 procedure")
             spectrum.set_carbon_mode("CH+C2")
@@ -206,8 +212,25 @@ def set_CH_procedure(spectrum):
     return
 
 
-def CAII_KP(wave, flux):
-    ## Following the Beers 1999
+def CAII_KP(wave: np.ndarray, flux: np.ndarray) -> Union[float, np.float64]:
+    """
+    Compute the Ca II K-line strength index (KP) based on Beers et al. (1999).
+
+    This function evaluates K6, K12, and K18 bandpasses and returns the appropriate
+    KP value according to Beers et al.' decision tree.
+
+    Parameters
+    ----------
+    wave : np.ndarray
+        Wavelength array of the spectrum.
+    flux : np.ndarray
+        Normalized flux array corresponding to the wavelengths.
+
+    Returns
+    -------
+    float
+        Ca II KP index value. Returns np.nan if selection logic fails.
+    """
     K6 = CAII_K6(wave, flux)
     K12 = CAII_K12(wave, flux)
     K18 = CAII_K18(wave, flux)
@@ -224,7 +247,3 @@ def CAII_KP(wave, flux):
     else:
         print("warning: error in CAII_KP")
         return np.nan
-
-
-def CAII_H(wave, flux):
-    trim = flux[(wave > 3927.7) & (wave < 3939.7)]

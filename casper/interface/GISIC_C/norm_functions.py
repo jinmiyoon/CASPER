@@ -1,26 +1,28 @@
-# Author: Devin Whitten
-# Date: Nov 12, 2016
-
-import numpy as np
-import pandas as pd
-import scipy.interpolate as interp
-
-
-def in_molecular_band(wl, tol=10):
-    # print("Checking wavelength for band", wl)
-    ### Checks to see if wavelength is within unacceptable limits of known bands
+def in_molecular_band(wl: float, tol: float = 10) -> bool:
     """
-    bands = {"gband": [4200., 4400.],
-             "C2_O":  [4100, 4200],
-             "C2_N":    [5060., 5180.]}
+    Check if a given wavelength falls within a known molecular absorption band.
+
+    This function evaluates whether the input wavelength `wl` is within the
+    range of any of the predefined molecular bands (e.g., G-band, C2 regions).
+
+    Parameters
+    ----------
+    wl : float
+        The wavelength value to check (in Angstroms).
+    tol : float, optional
+        Tolerance in Angstroms (currently unused), default is 10.
+
+    Returns
+    -------
+    bool
+        True if the wavelength falls within one of the defined bands,
+        otherwise False.
     """
+
     bands = {"gband": [4250.0, 4318.0], "C2_N": [4100.0, 4220.0], "C2": [4550.0, 4750.0]}
-    #             "C2_N":    [5060., 5180.]}
 
     for band in bands:
-        # print(band, bands[band])
         if (wl > bands[band][0]) & (wl < bands[band][1]):
-            # print("\t in ", band)
             return True
 
     return False

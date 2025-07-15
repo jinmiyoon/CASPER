@@ -1,9 +1,7 @@
-### Main interface for generating output files.
-
 import os
 
 
-def span_window(char="-"):
+def span_window(char: str = "-") -> None:
     print(char * os.get_terminal_size().columns)
     return
 
