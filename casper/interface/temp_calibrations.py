@@ -27,8 +27,8 @@ def Hernandez(JK: float, FEH: float = -2.5, CLASS: Optional[str] = None) -> floa
 
     Notes
     -----
-    Based on the infrared flux method from Hernandez et al. (2009).
-    Reference: J-Ks in Table 5 and Eq. (10) from https://ui.adsabs.harvard.edu/abs/2009A%26A...497..497G/abstract
+    Based on the infrared flux method from [Hernandez et al. (2009)](https://ui.adsabs.harvard.edu/abs/2009A%26A...497..497G/abstract).
+    Reference: J-Ks in Table 5 and Eq. (10)
     """
     if CLASS == "GIANT":
         print("\t\t using GIANT calibration in Hernandez")
@@ -84,8 +84,8 @@ def Casagrande(JK: float, FEH: float = -2.5, CLASS: Optional[str] = None) -> flo
 
     Notes
     -----
-    Based on the calibration from Casagrande et al. (2010).
-    Reference: J-Ks in Table 4 and Eq. (3) from https://ui.adsabs.harvard.edu/abs/2010A%26A...512A..54C/abstract
+    Based on the calibration from [Casagrande et al. (2010)](https://ui.adsabs.harvard.edu/abs/2010A%26A...512A..54C/abstract).
+    Reference: J-Ks in Table 4 and Eq. (3)
     """
 
     if JK >= 0.07 and JK <= 0.80:
@@ -108,10 +108,9 @@ def Casagrande(JK: float, FEH: float = -2.5, CLASS: Optional[str] = None) -> flo
 
 def Bergeat(JK: float) -> float:
     """
-    Estimate effective temperature using the J-Ks color index.
+    Estimate effective temperature using the Bergeat calibration.
 
-    This function calculates Teff using a log-linear calibration based on
-    the J-Ks color index, following the approach from Bergeat et al.
+    This function calculates Teff using the J-Ks color and [Fe/H], following the approach from Bergeat et al.
 
     Parameters
     ----------
@@ -138,10 +137,10 @@ def Bergeat(JK: float) -> float:
 
 def Alonso(Frame: pd.DataFrame) -> Tuple[float, ...]:
     """
-    Estimate effective temperatures using empirical color-Teff calibrations.
+    Estimate effective temperatures using the Alonso et al. 1996 calibration.
 
     This function computes effective temperatures from several color indices:
-    B to V, V to R, V to K, J-Ks, and J to H. It assumes a default metallicity
+    B-V, V-R, V-K, J-Ks, and J-H. It assumes a default metallicity
     of [Fe/H] = -3.5 and is based on photometric zero-point corrected magnitudes.
 
     Parameters
@@ -158,8 +157,8 @@ def Alonso(Frame: pd.DataFrame) -> Tuple[float, ...]:
 
     Notes
     -----
-    Based on Alonso et al. (1995), "The empirical scale of temperatures of the
-    low main sequence" for stars ranging from spectral types F0 to K5V.
+    Based on Alonso et al. (1995), ["The empirical scale of temperatures of the
+    low main sequence"](https://ui.adsabs.harvard.edu/abs/1996A%26A...313..873A/abstract) for stars ranging from spectral types F0V to K5V.
     """
     FEH = -3.50
 
@@ -228,7 +227,7 @@ def Bergeat_Frame(Frame: pd.DataFrame) -> np.ndarray:
     """
     Estimate effective temperatures using color-Teff calibrations for carbon-rich stars.
 
-    This function calculates effective temperatures based on V to K, J-Ks, and H to K
+    This function calculates effective temperatures based on V-K, J-Ks, and H-K
     color indices using empirical log-linear relations.
 
     Parameters
@@ -245,7 +244,7 @@ def Bergeat_Frame(Frame: pd.DataFrame) -> np.ndarray:
 
     Notes
     -----
-    Based on Bergeat et al. (2001): "Effective Temperatures of Carbon-rich Stars".
+    Based on Bergeat et al. (2001): ["Effective Temperatures of Carbon-rich Stars"](https://ui.adsabs.harvard.edu/abs/2001A%26A...369..178B/abstract)
     """
 
     # V - K
@@ -275,13 +274,13 @@ def Bergeat_Frame(Frame: pd.DataFrame) -> np.ndarray:
 
 def Fukugita(gr: float) -> float:
     """
-    Estimate effective temperature from g to r color index
+    Estimate effective temperature from g-r color index
     using the Fukugita et al. (2011) relation.
 
     Parameters
     ----------
     gr : float
-        The g to r color index.
+        The g-r color index.
 
     Returns
     -------
@@ -343,14 +342,14 @@ def calibrate_temp_frame(JK: float, gr: float, FEH: float = -2.5, CLASS: Optiona
 
     This function runs various photometric temperature calibrations (Casagrande, Hernandez,
     Bergeat, Fukugita) depending on the availability of valid (finite) input values for
-    J-Ks and g to r color indices. It then attempts to determine an adopted Teff value.
+    J-Ks and g-r color indices. It then attempts to determine an adopted Teff value.
 
     Parameters
     ----------
     JK : float
         J-Ks color index.
     gr : float
-        g to r color index.
+        g-r color index.
     FEH : float, optional
         Metallicity [Fe/H]. Default is -2.5.
     CLASS : str, optional

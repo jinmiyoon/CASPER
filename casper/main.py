@@ -49,20 +49,25 @@ if __name__ == "__main__":
 
     spec_batch.normalize()
 
+    # Set preliminary setting
     spec_batch.set_KP_bounds()
     spec_batch.set_carbon_mode()
 
     spec_batch.estimate_sn()
     spec_batch.get_sn()
 
+    # Extinction correction for color B-V before temperature calibration
     spec_batch.ebv_correction()
 
     spec_batch.calibrate_temperatures()
 
+    # Classify tentative CEMP Group archetypes (I, II, III) with calibrated temperature
     spec_batch.archetype_classification()
 
+    # Determine the best fit parameters with MCMC
     spec_batch.mcmc_determination()
 
+    # Estimate surface gravity, `logg` using $Y^2$ isochrone
     spec_batch.estimate_logg()
 
     spec_batch.generate_synthetic()
