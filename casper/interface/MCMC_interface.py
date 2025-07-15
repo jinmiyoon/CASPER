@@ -12,7 +12,9 @@ from casper.utils.logger_config import setup_logger
 
 logger = setup_logger(__name__)
 
-INTERPOLATOR = get_interp()
+
+def get_interpolator():
+    return get_interp()
 
 
 def kde_param(distribution: np.ndarray, x0: float) -> Dict[str, Any]:
@@ -75,6 +77,8 @@ def interp1d_synth_flux(
         A 1D linear interpolating function over the synthetic spectrum,
         or None if the interpolated flux is not finite.
     """
+    INTERPOLATOR = get_interpolator()
+
     if np.isfinite(INTERPOLATOR[G_CLASS]([teff, feh, carbon])).all():
         synth_flux = INTERPOLATOR[G_CLASS]([teff, feh, carbon])[0]
         norm_synth_flux = normalize_syth_spectrum(synth_wave, synth_flux[config.id_start_wave : config.id_end_wave + 1])
