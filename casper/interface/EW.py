@@ -9,12 +9,12 @@ from scipy.interpolate import interp1d
 
 def GBAND_QUAD(wave: ArrayLike, flux: ArrayLike, bounds: tuple[float, float] = config.CH_BOUNDS) -> tuple[float, float]:
     """
-    Compute the equivalent width (EW) of the G-band (CH absorption) from a normalized spectrum.
+    Compute the equivalent width (EW) of the G-band (CH absorption lines) from a normalized spectrum.
 
     This function integrates the area of absorption in the CH band region (G-band),
-    defined by `bounds`, using a normalized flux array. It also returns a correction
+    defined by `bounds`, using a normalized flux. It also returns a correction
     factor (`EW_subtract`) in case the CH-band region is not fully normalized to 1.0.
-    This correction is useful for estimating whether to use CH-only or CH+C2 mode in
+    This correction is useful for estimating whether to use CH only mode or CH+C2 mode in
     stellar carbon abundance analysis.
 
     Parameters
@@ -58,8 +58,8 @@ def CAII_K6(wave: ArrayLike, flux: ArrayLike) -> float:
     Compute the equivalent width of the Ca II K6 absorption feature.
 
     This function interpolates the inverted normalized flux (1 - flux)
-    and integrates it over the wavelength range 3930.7 to 3936.7 Angstroms
-    to estimate the equivalent width of the Ca II K6 line.
+    and integrates it over the wavelength range 3930.7 to 3936.7 Angstroms (KP K6 bounds)
+    to estimate the equivalent width of the Ca II K line.
 
     Parameters
     ----------
@@ -71,7 +71,7 @@ def CAII_K6(wave: ArrayLike, flux: ArrayLike) -> float:
     Returns
     -------
     float
-        The equivalent width of the Ca II K6 absorption feature, in Angstroms.
+        The equivalent width of the Ca II K absorption feature (within K6 bounds), in Angstroms.
     """
     func = interp1d(wave, 1.0 - flux)
     return integrate.quad(func, 3930.7, 3936.7, limit=200, points=wave[(wave > 3930.7) & (wave < 3936.7)])[0]
@@ -82,8 +82,8 @@ def CAII_K12(wave: ArrayLike, flux: ArrayLike) -> float:
     Compute the equivalent width of the Ca II K12 absorption feature.
 
     This function interpolates the inverted normalized flux (1 - flux)
-    and integrates it over the wavelength range 3927.7 to 3939.7 Angstroms
-    to estimate the equivalent width of the Ca II K12 line.
+    and integrates it over the wavelength range 3927.7 to 3939.7 Angstroms (KP K12 region)
+    to estimate the equivalent width of the Ca II K line.
 
     Parameters
     ----------
@@ -95,7 +95,7 @@ def CAII_K12(wave: ArrayLike, flux: ArrayLike) -> float:
     Returns
     -------
     float
-        The equivalent width of the Ca II K12 absorption feature, in Angstroms.
+        The equivalent width of the Ca II K absorption feature (within the K12 bounds), in Angstroms.
     """
     func = interp1d(wave, 1.0 - flux)
     return integrate.quad(func, 3927.7, 3939.7, limit=200, points=wave[(wave > 3927.7) & (wave < 3939.7)])[0]
@@ -103,11 +103,11 @@ def CAII_K12(wave: ArrayLike, flux: ArrayLike) -> float:
 
 def CAII_K18(wave: ArrayLike, flux: ArrayLike) -> float:
     """
-    Compute the equivalent width of the Ca II K18 absorption feature.
+    Compute the equivalent width of the Ca II K absorption feature over the K18 region.
 
     This function interpolates the inverted normalized flux (1 - flux)
-    and integrates it over the wavelength range 3924.7 to 3942.7 Angstroms
-    to estimate the equivalent width of the Ca II K18 line.
+    and integrates it over the wavelength range 3924.7 to 3942.7 Angstroms (KP K18 region)
+    to estimate the equivalent width of the Ca II K line.
 
     Parameters
     ----------
@@ -119,7 +119,7 @@ def CAII_K18(wave: ArrayLike, flux: ArrayLike) -> float:
     Returns
     -------
     float
-        The equivalent width of the Ca II K18 absorption feature, in Angstroms.
+        The equivalent width of the Ca II K absorption feature in the K18 region, in Angstroms.
     """
     func = interp1d(wave, 1.0 - flux)
     return integrate.quad(func, 3924.7, 3942.7, limit=200, points=wave[(wave > 3924.7) & (wave < 3942.7)])[0]
