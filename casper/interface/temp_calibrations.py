@@ -27,8 +27,8 @@ def Hernandez(JK: float, FEH: float = -2.5, CLASS: Optional[str] = None) -> floa
 
     Notes
     -----
-    Based on the infrared flux method from Hernandez et al. (2009).
-    Reference: J-Ks in Table 5 and Eq. (10) from https://ui.adsabs.harvard.edu/abs/2009A%26A...497..497G/abstract
+    Based on the infrared flux method from [Hernandez et al. (2009)](https://ui.adsabs.harvard.edu/abs/2009A%26A...497..497G/abstract).
+    Reference: J-Ks in Table 5 and Eq. (10)
     """
     if CLASS == "GIANT":
         print("\t\t using GIANT calibration in Hernandez")
@@ -84,8 +84,8 @@ def Casagrande(JK: float, FEH: float = -2.5, CLASS: Optional[str] = None) -> flo
 
     Notes
     -----
-    Based on the calibration from Casagrande et al. (2010).
-    Reference: J-Ks in Table 4 and Eq. (3) from https://ui.adsabs.harvard.edu/abs/2010A%26A...512A..54C/abstract
+    Based on the calibration from [Casagrande et al. (2010)](https://ui.adsabs.harvard.edu/abs/2010A%26A...512A..54C/abstract).
+    Reference: J-Ks in Table 4 and Eq. (3)
     """
 
     if JK >= 0.07 and JK <= 0.80:
@@ -108,10 +108,9 @@ def Casagrande(JK: float, FEH: float = -2.5, CLASS: Optional[str] = None) -> flo
 
 def Bergeat(JK: float) -> float:
     """
-    Estimate effective temperature using the J-Ks color index.
+    Estimate effective temperature using the Bergeat calibration.
 
-    This function calculates Teff using a log-linear calibration based on
-    the J-Ks color index, following the approach from Bergeat et al.
+    This function calculates Teff using the J-Ks color and [Fe/H], following the approach from Bergeat et al.
 
     Parameters
     ----------

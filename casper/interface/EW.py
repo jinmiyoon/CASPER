@@ -127,7 +127,7 @@ def CAII_K18(wave: ArrayLike, flux: ArrayLike) -> float:
 
 def get_KP_band(spectrum) -> Tuple[float, float]:
     """
-    Return the Ca II K-band wavelength range for chi-square fitting based on Beers (1999),
+    Return the Ca II K line wavelength range for chi-square fitting based on Beers (1999),
     using measurements K6, K12, and K18.
 
     Parameters
@@ -137,13 +137,12 @@ def get_KP_band(spectrum) -> Tuple[float, float]:
 
     Returns
     -------
-    tuple of float
+    tuple of float | np.nan
         Wavelength bounds (min, max) from config.KP_BOUNDS.
 
     Notes
     -----
-    If an unexpected condition occurs, np.nan is returned,
-    which does not match the declared return type.
+    If an unexpected condition occurs, np.nan is returned.
     """
     KP_BOUNDS = config.KP_BOUNDS
 
@@ -218,7 +217,7 @@ def CAII_KP(wave: np.ndarray, flux: np.ndarray) -> Union[float, np.float64]:
     Compute the Ca II K-line strength index (KP) based on Beers et al. (1999).
 
     This function evaluates K6, K12, and K18 bandpasses and returns the appropriate
-    KP value according to Beers' decision tree.
+    KP value according to Beers et al.' decision tree.
 
     Parameters
     ----------
