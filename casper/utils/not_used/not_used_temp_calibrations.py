@@ -1,4 +1,10 @@
 # not used
+from typing import Tuple
+
+import numpy as np
+import pandas as pd
+
+
 def Alonso(Frame: pd.DataFrame) -> Tuple[float, ...]:
     """
     Estimate effective temperatures using empirical color-Teff calibrations.
@@ -85,3 +91,52 @@ def Alonso(Frame: pd.DataFrame) -> Tuple[float, ...]:
         Teff_JH = np.nan
 
     return Teff_BV, Teff_VR, Teff_VK, Teff_JK, Teff_JH
+
+
+def Bergeat_Frame(Frame: pd.DataFrame) -> np.ndarray:
+    """
+    Estimate effective temperatures using color-Teff calibrations for carbon-rich stars.
+
+    This function calculates effective temperatures based on V-K, J-Ks, and H-K
+    color indices using empirical log-linear relations.
+
+    Parameters
+    ----------
+    Frame : pd.DataFrame
+        A DataFrame containing the following zero-point corrected magnitudes:
+        - "V0", "Jmag0", "Hmag0", "Kmag0"
+
+    Returns
+    -------
+    np.ndarray
+        Array of effective temperatures in Kelvin:
+        [Teff_VK, Teff_JK, Teff_HK]
+
+    Notes
+    -----
+    Based on Bergeat et al. (2001): ["Effective Temperatures of Carbon-rich Stars"](https://ui.adsabs.harvard.edu/abs/2001A%26A...369..178B/abstract)
+    """
+
+    # V - K
+    CIj0 = Frame["V0"] - Frame["Kmag0"]
+    if CIj0 <= 7.0:
+        logT_VK = -0.079 * CIj0 + 3.91
+
+    elif CIj0 >= 0.7:
+        logT_VK = -0.061 * CIj0 + 3.79
+
+    # J - K
+    CIj0 = Frame["Jmag0"] - Frame["Kmag0"]
+    if CIj0 <= 2.1:
+        logT_JK = -0.184 * CIj0 + 3.74
+    elif CIj0 >= 2.1:
+        logT_JK = -0.109 * CIj0 + 3.59
+
+    # H - K
+    CIj0 = Frame["Hmag0"] - Frame["Kmag0"]
+    if CIj0 <= 0.86:
+        logT_HK = -0.287 * CIj0 + 3.60
+    elif CIj0 >= 0.86:
+        logT_HK = -0.169 * CIj0 + 3.50
+
+    return np.power(10, [logT_VK, logT_JK, logT_HK])
