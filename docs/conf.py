@@ -8,9 +8,10 @@ import datetime
 
 # -- Project information -----------------------------------------------------
 # The full version, including alpha/beta/rc tags
-from casper import __version__
+# from casper import __version__
 
-release = __version__
+# release = __version__
+release = ".version"
 
 project = "Casper"
 author = "Taylor Webb"

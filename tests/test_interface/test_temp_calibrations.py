@@ -1,7 +1,9 @@
+import math
+
 import numpy as np
 import pytest
 
-from casper.interface.temp_calibrations import Bergeat, Casagrande, Hernandez
+from casper.interface.temp_calibrations import Bergeat, Casagrande, Fukugita, Hernandez
 
 
 # hernandez
@@ -49,3 +51,21 @@ def test_bergeat(jk, expected_teff):
     print(f"JK={jk}: Teff={teff}, Expected={expected_teff}")
     assert isinstance(teff, float)
     assert round(teff) == expected_teff
+
+
+# fukugita
+@pytest.mark.parametrize(
+    "gr, expected_range",
+    [
+        (0.3, (5000, 7000)),  # Valid case
+        (-1.47, (np.nan, np.nan)),  # Divide by zero: np.nan expected
+        ("bad", (np.nan, np.nan)),  # Invalid input: np.nan expected
+    ],
+)
+def test_Fukugita(gr, expected_range):
+    result = Fukugita(gr)
+
+    if math.isnan(expected_range[0]):
+        assert math.isnan(result)
+    else:
+        assert expected_range[0] < result < expected_range[1]
