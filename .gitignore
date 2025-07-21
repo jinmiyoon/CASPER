@@ -167,3 +167,7 @@ outputs/
 npsave/
 logs/
 inspect/
+
+casper/.DS_Store
+.DS_Store
+casper/interface/.DS_Store
