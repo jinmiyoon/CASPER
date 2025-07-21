@@ -68,17 +68,13 @@ class Segment:
         ----
         self.mad : float
             Median Absolute Deviation (MAD) of the flux values.
-
         self.mad_normal : float
             Normalized MAD, calculated as MAD divided by the median flux.
-
         self.flux_med : float
             Median flux value computed from the central clipped range
             [flux_min percentile, 98th percentile].
-
         self.flux_min : float
             Flux value at the `flux_min` percentile.
-
         self.flux_max : float
             Flux value at the 98th percentile.
         """
@@ -108,10 +104,8 @@ class Segment:
         ----------
         mad_min : float
             Minimum normalized MAD value used as a baseline.
-
         mad_range : float
             Range used to scale the influence of flux variation on the continuum point.
-
         boost : bool, optional
             If True, adjust the continuum point toward the segment's maximum flux based
             on relative variation. If False, use the median flux as the continuum point.
@@ -120,7 +114,6 @@ class Segment:
         ----
         self.mad_relative : float
             Relative MAD used to determine how strongly to bias the continuum point.
-
         self.continuum_point : float
             Estimated continuum level for this segment.
         """
