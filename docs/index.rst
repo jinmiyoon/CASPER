@@ -1,14 +1,20 @@
 Casper Documentation
---------------------
+====================
 
 This is the documentation for Casper.
 
 .. toctree::
    :maxdepth: 2
-   :caption: Contents:
+   :caption: Getting Started
 
-Indices and tables
-==================
+   ../README.md
+   ../CHANGELOG.md
+
+.. toctree::
+   :maxdepth: 2
+   :caption: API Reference
+
+   modules
 
 * :ref:`genindex`
 * :ref:`modindex`
