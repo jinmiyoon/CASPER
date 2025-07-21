@@ -1,9 +1,11 @@
 from typing import Any, Dict, Tuple
 
-import config
-import MAD
 import numpy as np
 import pandas as pd
+from interface import MAD, config
+from utils.logger_config import setup_logger
+
+logger = setup_logger(__name__)
 
 
 def obtain_flux(data):
@@ -62,7 +64,7 @@ class Spectrum:
             Placeholder for global median absolute deviation (optional post-processing).
         """
         self.filename = filename
-        print("\n... initializing:  ", filename)
+        logger.info(f"... initializing: {filename}")
 
         if is_fits:
             if "CD1_1" in spec[0].header:
@@ -72,7 +74,7 @@ class Spectrum:
                 DELTA = "CDELT1"
 
             else:
-                print("I don't know which increment to use!")
+                logger.info("I don't know which increment to use!")
 
             if spec[0].header["CRVAL1"] > 10.0:
                 self.wavelength = (np.arange(0, spec[0].header["NAXIS1"], 1) * spec[0].header[DELTA]) + spec[0].header[
@@ -88,16 +90,16 @@ class Spectrum:
 
             self.flux = obtain_flux(spec[0].data)
             self.wavelength = np.array(self.wavelength)
-            print("spectrum loaded")
+            logger.info("Spectrum loaded")
 
             spec.close()
 
             if self.flux.dtype.byteorder == ">":
-                print("... correcting endian mismatch")
+                logger.info("... correcting endian mismatch")
                 self.flux = self.flux.byteswap().view(self.flux.dtype.newbyteorder())
 
         else:
-            print("\t csv file, ")
+            logger.info("CSV file")
             self.spec = spec
             self.flux = self.spec["flux"]
             self.wavelength = np.array(self.spec["wave"], dtype=float)
@@ -162,7 +164,7 @@ class Spectrum:
         self.PHOTO_0 = {key: float(row[key]) for key in ["J-K", "H-K", "H-K", "g-r"]}
 
         if float(row["EBV_SFD"]) > 0:
-            print("\t corrected :", self.get_filename())
+            logger.info(f"corrected: {self.get_filename()}")
 
             self.PHOTO_0["J-K"] = float(row["J-K"]) - (float(config.A_EBV["A_J"]) - float(config.A_EBV["A_K"])) * float(
                 row["EBV_SFD"]
@@ -177,7 +179,7 @@ class Spectrum:
             )
 
         else:
-            print("\t already corrected:  ", self.get_filename())
+            logger.info(f"Already corrected: {self.get_filename()}")
 
     def trim_frame(self, bounds: Tuple[float, float] = config.WAVE_BOUNDS) -> None:
         """
@@ -248,7 +250,7 @@ class Spectrum:
                 self.SN_DICT[key]["beta"] = (1 / self.SN_DICT[key]["XI_AVG"] - 1) * self.SN_DICT[key]["alpha"]
 
             else:
-                print("band not in wavelength coverage")
+                logger.warning("Band not in wavelength coverage")
 
                 self.SN_DICT[key] = {
                     "SN_AVG": np.nan,
@@ -397,7 +399,7 @@ class Spectrum:
 
         GROUP = ["GI", "GII", "GIII"][LLs.index(max(LLs))]
 
-        print("\t " + self.get_filename().ljust(20) + ": ", GROUP, ["%.2F" % val for val in LLs])
+        logger.info(f"{self.get_filename().ljust(20)}: {GROUP}, {[f'{val:.2f}' for val in LLs]}")
 
         self.ARCH_GROUP = GROUP
 
@@ -418,7 +420,7 @@ class Spectrum:
         sigma : float
             The uncertainty (standard deviation) associated with the effective temperature.
         """
-        print(f"\t\t batch.set_temperatue(): temp={input_temp}, sigma={sigma}")
+        logger.info(f"batch.set_temperature(): temp={input_temp}, sigma={sigma}")
         self.teff_irfm = input_temp
         self.teff_irfm_err = sigma
 
@@ -508,7 +510,7 @@ class Spectrum:
             self.MCMC_REFINE = input_dict
 
         else:
-            print("Invalid mode in set_mcmc_results()")
+            logger.warning("Invalid mode in set_mcmc_results()")
 
         return
 
@@ -559,7 +561,7 @@ class Spectrum:
             self.KDE_REFINE = input_dict
 
         else:
-            print("Invalid mode in set_mcmc_results()")
+            logger.warning("Invalid mode in set_mcmc_results()")
 
         return
 
@@ -947,7 +949,7 @@ class Spectrum:
             return self.MCMC_COARSE, self.MCMC_REFINE
 
         else:
-            print("Bad mode:  ", mode)
+            logger.warning(f"Bad mode: {mode}")
             return np.nan
 
     def get_MCMC_iterations(self) -> int:

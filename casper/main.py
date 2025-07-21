@@ -1,11 +1,17 @@
 import os
-import sys
-
-sys.path.append("./interface")
 import time
 from multiprocessing import freeze_support
 
 from interface.batch import Batch
+from utils.logger_config import setup_logger
+
+# sys.path.append("./interface")
+"""
+INTERFACE_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), "interface"))
+if INTERFACE_PATH not in sys.path:
+    sys.path.insert(0, INTERFACE_PATH)
+"""
+logger = setup_logger(__name__)
 
 io_paths = "interface/io_paths.py"
 
@@ -23,22 +29,26 @@ os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 if __name__ == "__main__":
     freeze_support()
-
     start_time = time.time()
 
-    log_filename = f"casper_run_{time.strftime('%Y-%m-%d-%H-%M-%S')}.log"
-    sys.stdout = open(os.path.join(LOG_DIR, log_filename), "wt")
-    print("Started CASPER and logging! \n\n")
+    # log_filename = f"casper_run_{time.strftime('%Y-%m-%d-%H-%M-%S')}.log"
+    # sys.stdout = open(os.path.join(LOG_DIR, log_filename), "wt")
+    # print("Started CASPER and logging! \n\n")
+    logger.info("Started CASPER and logging!")
 
-    print("### CASPER starts now: ###")
-    print("\n ... initializing spectra batch")
+    # print("### CASPER starts now: ###")
+    # print("\n ... initializing spectra batch")
+    logger.info("CASPER starts now:")
+    logger.info("... initializing spectra batch")
 
     spec_batch = Batch(io_paths)
 
     spec_batch.set_io_paths()
 
     spec_batch.load_params()
-    print("spectra name:  ", spec_batch.param_file["filename"])
+    # print("spectra name:  ", spec_batch.param_file["filename"])
+    logger.info(f"spectra name: {spec_batch.param_file['filename']}")
+
     spec_batch.load_spectra()
     spec_batch.set_params()
 
@@ -78,6 +88,9 @@ if __name__ == "__main__":
 
     spec_batch.generate_plots()
 
-    print("The total time for this CASPER run is {:.2f}s".format(time.time() - start_time))
+    # print("The total time for this CASPER run is {:.2f}s".format(time.time() - start_time))
+
+    total_time = time.time() - start_time
+    logger.info(f"The total time for this CASPER run is {total_time:.2f} seconds.")
 
     os.system("say beep")

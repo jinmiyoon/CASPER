@@ -16,7 +16,8 @@
 from typing import Any, Dict, Tuple, Union
 
 import numpy as np
-from GISIC_C.spectrum import Spectrum
+
+from .spectrum import Spectrum
 
 
 def normalize(
