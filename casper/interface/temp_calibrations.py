@@ -2,6 +2,9 @@ from typing import Optional, Tuple
 
 import numpy as np
 import pandas as pd
+from utils.logger_config import setup_logger
+
+logger = setup_logger(__name__)
 
 
 def Hernandez(JK: float, FEH: float = -2.5, CLASS: Optional[str] = None) -> float:
@@ -31,16 +34,19 @@ def Hernandez(JK: float, FEH: float = -2.5, CLASS: Optional[str] = None) -> floa
     Reference: J-Ks in Table 5 and Eq. (10)
     """
     if CLASS == "GIANT":
-        print("\t\t using GIANT calibration in Hernandez")
+        # print("\t\t using GIANT calibration in Hernandez")
+        logger.info("Using GIANT calibration in Hernandez")
         A0 = [0.6517, 0.6312, 0.0168, -0.0381, 0.0256, 0.0013]
 
     elif CLASS == "DWARF":
-        print("\t\t using DWARF calibration in Hernandez")
+        # print("\t\t using DWARF calibration in Hernandez")
+        logger.info("Using DWARF calibration in Hernandez")
         A0 = [0.6524, 0.5813, 0.1225, -0.0646, 0.0370, 0.0016]
 
     else:
-        print("\t\t Can't handle input class:  ", CLASS)
-        print("\t\t Defaulting to GIANT")
+        # print("\t\t Can't handle input class:  ", CLASS)
+        # print("\t\t Defaulting to GIANT")
+        logger.warning(f"Can't handle input class: {CLASS}. Defaulting to GIANT.")
         A0 = [0.6517, 0.6312, 0.0168, -0.0381, 0.0256, 0.0013]
 
     if JK >= 0.1 and JK <= 0.90:
@@ -100,8 +106,9 @@ def Casagrande(JK: float, FEH: float = -2.5, CLASS: Optional[str] = None) -> flo
         T_JK = 5040.0 / Teff
 
     else:
-        print("\t\t Casagrande Calibration out of bounds")
+        # print("\t\t Casagrande Calibration out of bounds")
         T_JK = np.nan
+        logger.warning("Casagrande Calibration out of bounds")
 
     return T_JK
 
@@ -291,7 +298,7 @@ def Fukugita(gr: float) -> float:
     try:
         return 1.09 * 10000 / (gr + 1.47)
     except:
-        print("\t\t skipping (g-r)")
+        logger.warning("Skipping (g-r)")
         return np.nan
 
 
@@ -321,7 +328,7 @@ def determine_effective(TEMP_FRAME: pd.DataFrame) -> pd.DataFrame:
     AssertionError
         If the selected temperature value is not finite.
     """
-    print("\t\t setting effective photo temperature:")
+    logger.info("Setting effective photometric temperature:")
 
     TEMP_FRAME = TEMP_FRAME.sort_values(by=["VALUE"])
 
@@ -363,7 +370,7 @@ def calibrate_temp_frame(JK: float, gr: float, FEH: float = -2.5, CLASS: Optiona
         If adoption fails, "ADOPTED" will be set to NaN.
     """
 
-    print("\t\t calibrating temperature frame")
+    logger.info("Calibrating temperature frame")
     if np.isfinite(JK):
         TEMP_DICT = {
             "Casagrande": Casagrande(JK, FEH, CLASS),

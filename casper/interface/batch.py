@@ -1,17 +1,18 @@
 import os
 import time
 
-import config
-import EW
-import GISIC_C as GISIC
-import interface_main
 import numpy as np
 import pandas as pd
-import plot_functions
-import temp_calibrations as TC
 from astropy.io import fits
-from spectrum import Spectrum
+from interface import EW, config, interface_main, plot_functions
+from interface import temp_calibrations as TC
+from interface.GISIC_C.normalize import normalize
 from texttable import Texttable
+from utils.logger_config import setup_logger
+
+from .spectrum import Spectrum
+
+logger = setup_logger(__name__)
 
 PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 
@@ -52,16 +53,20 @@ class Batch:
             self.output_name (str): Full output file path including filename, saved under OUTPUT_DIR.
         """
 
-        print("\nloading io_paths:  ", self.io_paths)
+        logger.info(f"\nloading io_paths: {self.io_paths}")
+
         self.io_params = eval(open(self.io_paths, "r").read())
 
-        print("\nsetting io_paths:  ")
+        logger.info("\nsetting io_paths:")
+
         self.param_path = os.path.abspath(os.path.join(PROJECT_ROOT, self.io_params["param_path"]))
         self.spectra_path = os.path.abspath(os.path.join(PROJECT_ROOT, self.io_params["spectra_dir_path"]))
         self.output_name = os.path.join(OUTPUT_DIR, self.io_params["output_file_name"])
-        print(" \t\t\t > input setting parameter    :  ", self.param_path)
-        print(" \t\t\t > input spectra directory    :  ", self.spectra_path)
-        print(" \t\t\t > output directory + filename:  ", self.output_name)
+        logger.info(f"\t\t\t > input setting parameter    : {self.param_path}")
+
+        logger.info(f"\t\t\t > input spectra directory    : {self.spectra_path}")
+
+        logger.info(f"\t\t\t > output directory + filename: {self.output_name}")
 
         return
 
@@ -78,9 +83,11 @@ class Batch:
             self.sequence (List[str]): List of sequence identifiers from the parameter file.
         """
 
-        print("\nloading input params:  ", self.param_path)
+        logger.info(f"\nloading input params: {self.param_path}")
+
         self.param_file = pd.read_csv(self.param_path)
-        print(list(self.param_file.columns))
+        logger.info(f"Input parameter file columns: {list(self.param_file.columns)}")
+
         self.param_file["sequence"] = self.param_file["sequence"].astype(str)
         self.sequence = self.param_file["sequence"].tolist()
         self.param_file["mode"] = self.param_file["mode"].astype(str)
@@ -101,7 +108,8 @@ class Batch:
             self.length (int): Number of loaded spectra.
         """
 
-        print("\n ... loading spectra:  ", self.spectra_path)
+        logger.info(f"\n ... loading spectra: {self.spectra_path}")
+
         self.spectra_names = self.param_file["filename"].tolist()
 
         def spectra_input(pathname: str, current: str) -> Spectrum:
@@ -132,7 +140,8 @@ class Batch:
             spectra_input(os.path.join(self.spectra_path, current), current) for current in self.spectra_names
         ]
 
-        print("\t\t batch: what is spectra_array - ", self.spectra_array)
+        logger.info(f"\t\t batch: what is spectra_array - {self.spectra_array}")
+
         self.length = len(self.spectra_array)
 
         return
@@ -149,7 +158,8 @@ class Batch:
             AssertionError: If a filename in the parameter file does not match the corresponding Spectrum.
         """
 
-        print("\n... setting spectra parameters")
+        logger.info("\n... setting spectra parameters")
+
         for i, row in self.param_file.iterrows():
             spec = self.spectra_array[i]
 
@@ -191,11 +201,12 @@ class Batch:
             ValueError: If RV is missing or cannot be converted to float.
         """
 
-        print("\n... correcting radial velocities")
+        logger.info("\n... correcting radial velocities")
+
         for sequence, spec in zip(self.sequence, self.spectra_array):
             radial_velocity = float(self.param_file[self.param_file["sequence"] == sequence]["RV"])
             spec.radial_correction(radial_velocity)
-            print("\t For {:s},  RV = {:7.2f} km/s".format(sequence + ": " + spec.filename, radial_velocity))
+            logger.info(f"\t For {sequence + ': ' + spec.filename},  RV = {radial_velocity:7.2f} km/s")
 
     def build_frames(self, bounds: tuple = config.WAVE_BOUNDS) -> None:
         """
@@ -210,7 +221,8 @@ class Batch:
                 Defaults to config.WAVE_BOUNDS.
         """
 
-        print("\n ... build dataframes")
+        logger.info("\n ... build dataframes")
+
         [spec.set_frame(wave=spec.get_wave(), flux=spec.get_flux()) for spec in self.spectra_array]
         [spec.trim_frame(bounds) for spec in self.spectra_array]
         return
@@ -230,14 +242,16 @@ class Batch:
                 Custom normalization is not yet implemented. Defaults to True.
         """
 
-        print("\n... normalizing spectra batch")
-        print("... iterating convolution sigma")
+        logger.info("\n... normalizing spectra batch")
+
+        logger.info("... iterating convolution sigma")
+
         start_time = time.time()
         if default:
             for spec in self.spectra_array:
                 cont_array = []
                 for SIGMA in config.SIGMA:
-                    _, norm, cont = GISIC.normalize(
+                    _, norm, cont = normalize(
                         spec.get_frame_wave(),
                         spec.get_frame_flux(),
                         sigma=SIGMA,
@@ -258,12 +272,13 @@ class Batch:
 
                 spec.set_frame_norm(norm)
                 spec.set_frame_cont(cont)
-                print("\t {:20s}".format(spec.filename), ":  okay")
+                logger.info(f"\t {spec.filename:20s} :  okay")
 
         else:
-            print("\t Sorry - can't customize GISIC normalization yet...")
+            logger.warning("\t Sorry - can't customize GISIC normalization yet...")
 
-        print("\t\t batch: Time spent normalizing the observed spectra is {0:.1f}".format(time.time() - start_time))
+        logger.info(f"\t\t batch: Time spent normalizing the observed spectra is {time.time() - start_time:.1f}")
+
         return
 
     def ebv_correction(self) -> None:
@@ -274,7 +289,8 @@ class Batch:
         to each corresponding spectrum in the batch using its row values.
         """
 
-        print("\n... correcting photometry")
+        logger.info("\n... correcting photometry")
+
         for i, row in self.param_file.iterrows():
             spec = self.spectra_array[i]
             spec.ebv_correct(row)
@@ -300,12 +316,13 @@ class Batch:
         - Writes a temperature summary table to an output file.
         """
 
-        print("\n... determining temperature for archetype classification")
+        logger.info("\n... determining temperature for archetype classification")
+
         for i, row in self.param_file.iterrows():
             spec = self.spectra_array[i]
 
             assert spec.filename == row["filename"], "Parameter error in calibrate_temperatures()"
-            print("\t setting input temperature sigma: ", spec.T_SIGMA)
+            logger.info(f"\t setting input temperature sigma: {spec.T_SIGMA}")
 
             CLASS = row["class"].strip()
 
@@ -317,11 +334,12 @@ class Batch:
                 spec.TEMP_FRAME.loc["HARD_TEFF", "VALUE"] = spec.HARD_TEFF
                 spec.TEMP_FRAME.loc["ADOPTED", "VALUE"] = spec.HARD_TEFF
                 spec.set_temperature(spec.HARD_TEFF, spec.T_SIGMA)
-                print("\t setting and adopting hard teff:   ", spec.HARD_TEFF)
+                logger.info(f"\t setting and adopting hard teff: {spec.HARD_TEFF}")
+
             else:
                 spec.TEMP_FRAME.loc["HARD_TEFF", "VALUE"] = np.nan
                 spec.set_temperature(spec.TEMP_FRAME.loc["ADOPTED", "VALUE"], sigma=spec.T_SIGMA)
-                print("\t setting and adopting photo teff:   ", spec.TEMP_FRAME.loc["ADOPTED", "VALUE"])
+                logger.info(f"\t setting and adopting photo teff: {spec.TEMP_FRAME.loc['ADOPTED', 'VALUE']}")
 
         HEADER = ["NAME", "Bergeat", "Hernandez", "Casagrande", "Fukugita", "HARD_TEFF", "ADOPTED"]
         output_table = HEADER
@@ -338,11 +356,15 @@ class Batch:
         table = Texttable()
         table.add_rows(output_table)
 
-        print(" ------ TEMPERATURES (PHOTOMETRIC + HARD + ADOPTED)-------")
+        logger.info(" ------ TEMPERATURES (PHOTOMETRIC + HARD + ADOPTED)-------")
+
         if len(self.spectra_array) < 30:
-            print(table.draw())
+            logger.info("\n" + table.draw())
+
         else:
-            print("Too long table to print; only save the temp table in a file in " + self.io_params["output_dir_path"])
+            logger.info(
+                "Too long table to print; only saving the temp table in a file at " + self.io_params["output_dir_path"]
+            )
 
         print(table.draw(), file=open(self.output_name + "_temp_cal_table.txt", "a"))
         return
@@ -359,7 +381,8 @@ class Batch:
         - Updates each spectrum's KP_bounds attribute.
         """
 
-        print("\n... setting KP bandwidth")
+        logger.info("\n... setting KP bandwidth")
+
         [spec.set_KP_bounds(EW.get_KP_band(spec)) for spec in self.spectra_array]
         return
 
@@ -375,7 +398,8 @@ class Batch:
         - Updates each spectrum's carbon_mode attribute.
         """
 
-        print("\n... setting carbon mode")
+        logger.info("\n... setting carbon mode")
+
         [EW.set_CH_procedure(spec) for spec in self.spectra_array]
         return
 
@@ -392,7 +416,8 @@ class Batch:
         - Updates each spectrum's SN_DICT with estimated S/N values.
         """
 
-        print("\n... estimating S/N")
+        logger.info("\n... estimating S/N")
+
         [spec.estimate_sn() for spec in self.spectra_array]
         return
 
@@ -435,7 +460,7 @@ class Batch:
         - These are used later during coarse and refined MCMC runs.
         """
 
-        print("\n... building mcmc_args dict")
+        logger.info("\n... building mcmc_args dict")
         [spec.set_mcmc_args() for spec in self.spectra_array]
         return
 
@@ -459,7 +484,8 @@ class Batch:
         - Assumes that likelihoods for GI, GII, and GIII have been correctly computed and stored.
         """
 
-        print("\n... determining archetype classification")
+        logger.info("\n... determining archetype classification")
+
         start_time = time.time()
 
         [interface_main.archetype_classify_MC(spec) for spec in self.spectra_array]
@@ -474,13 +500,14 @@ class Batch:
 
         table = Texttable()
         table.add_rows(output_table)
-        print(" ------  ARCHETYPE LIKELIHOODS -------")
+        logger.info(" ------  ARCHETYPE LIKELIHOODS -------")
+
         if len(self.spectra_array) < 30:
-            print(table.draw())
+            logger.info("\n" + table.draw())
+
         print(table.draw(), file=open(self.output_name + "_archetype_likelihood_table.txt", "a"))
-        print(
-            "\t\t interface_main: Time spent for archetype classification is {0:.1f}".format(time.time() - start_time)
-        )
+        logger.info(f"\t\t interface_main: Time spent for archetype classification is {time.time() - start_time:.1f}")
+
         return
 
     def mcmc_determination(self) -> None:
@@ -501,23 +528,24 @@ class Batch:
         - Prints progress messages and total time taken.
         """
 
-        print("\n... performing MCMC determinations")
+        logger.info("\n... performing MCMC determinations")
         start_time = time.time()
         [spec.prepare_regions() for spec in self.spectra_array]
 
         [interface_main.mcmc_determination(spec, mode="COARSE") for spec in self.spectra_array]
 
-        print("... performing kde determinations")
+        logger.info("... performing kde determinations")
         [interface_main.generate_kde_params(spec, mode="COARSE") for spec in self.spectra_array]
 
-        print("... running refined mcmc")
+        logger.info("... running refined mcmc")
         [interface_main.mcmc_determination(spec, mode="REFINE") for spec in self.spectra_array]
 
-        print("... finalizing kde determinations")
+        logger.info("... finalizing kde determinations")
         [interface_main.generate_kde_params(spec, mode="REFINE") for spec in self.spectra_array]
 
-        print("\t\t batch: Time spent for mcmc determination is {0:.1f}".format(time.time() - start_time))
-        print("... complete")
+        logger.info(f"\t\t batch: Time spent for mcmc determination is {time.time() - start_time:.1f}")
+        logger.info("... complete")
+
         return
 
     def estimate_logg(self) -> None:
@@ -534,7 +562,8 @@ class Batch:
         - Prints log g and its uncertainty for each spectrum.
         """
 
-        print("\n... estimating log g")
+        logger.info("\n... estimating log g")
+
         [interface_main.estimate_logg(spec) for spec in self.spectra_array]
         return
 
@@ -553,7 +582,8 @@ class Batch:
         - Handles edge cases where interpolation fails due to invalid parameters.
         """
 
-        print("\n... generating synthetic spectra")
+        logger.info("\n... generating synthetic spectra")
+
         [interface_main.generate_synthetic(spec) for spec in self.spectra_array]
         return
 
@@ -570,13 +600,16 @@ class Batch:
         ------
         Saves plots to output directory as defined in `self.output_name`.
         """
-        print("... generating corner plots")
+        logger.info("... generating corner plots")
+
         plot_functions.plot_corner_array(self)
 
-        print("... generating mcmc trace plots")
+        logger.info("... generating mcmc trace plots")
+
         plot_functions.plot_mcmc_trace_array(self)
 
-        print("\n... generating plots")
+        logger.info("\n... generating plots")
+
         plot_functions.plot_spectra(self)
         return
 
@@ -595,7 +628,8 @@ class Batch:
         - A `.csv` file for tabular review; backup is saved with "1" appended if the first fails.
         """
 
-        print("\n... generating outputs")
+        logger.info("\n... generating outputs")
+
         final = pd.concat([spec.get_output_row() for spec in self.spectra_array])
 
         with open(os.path.join(NPSAVE_DIR, self.io_params["output_file_name"] + "parameters_output.npy"), "wb") as f:
@@ -622,7 +656,8 @@ class Batch:
         - A `.csv` file for tabular review; backup is saved with a suffix if the first attempt fails.
         """
 
-        print("\n... generating output spectra")
+        logger.info("\n... generating output spectra")
+
         final_spectra = pd.concat([spec.get_spectra_row() for spec in self.spectra_array])
 
         with open(os.path.join(NPSAVE_DIR, self.io_params["output_file_name"] + "spectra_output.npy"), "wb") as f:

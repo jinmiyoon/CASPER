@@ -212,3 +212,31 @@ def feh_cfe_param_edges(feh: float, carbon: float, mcmc_bounds: Optional[dict], 
         if (carbon < mcmc_bounds["cfe"][0]) or (carbon > mcmc_bounds["cfe"][1]):
             return -np.inf
     return default_feh_cfe_param_edges(feh, carbon)
+
+
+def ln_chi_square_sigma(obs: np.ndarray, model: np.ndarray, sigma: float) -> float:
+    """
+    Compute the log-likelihood based on chi-squared with constant uncertainty (sigma).
+
+    Parameters
+    ----------
+    obs : np.ndarray
+        Observed flux values.
+    model : np.ndarray
+        Model or synthetic flux values.
+    sigma : float
+        Constant inverse signal-to-noise ratio (e.g., 1/SNR).
+
+    Returns
+    -------
+    float
+        The log-likelihood score. Returns -np.inf if inputs are invalid.
+    """
+    if not np.isfinite(sigma) or sigma <= 0:
+        return -np.inf
+
+    if not (np.all(np.isfinite(obs)) and np.all(np.isfinite(model))):
+        return -np.inf
+
+    chi_squared = np.sum(((obs - model) / sigma) ** 2)
+    return -0.5 * chi_squared

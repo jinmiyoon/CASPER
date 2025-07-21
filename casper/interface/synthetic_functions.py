@@ -1,10 +1,10 @@
 import pickle as pkl
 from typing import Dict, Tuple
 
-import config
-import GISIC_C as GISIC
 import numpy as np
 import pandas as pd
+from interface import config
+from interface.GISIC_C.normalize import normalize
 from numpy.typing import ArrayLike
 from scipy.interpolate import interp1d
 
@@ -47,7 +47,7 @@ def get_grav_interp():
         return GRAV_INTERP
 
 
-def normalize(synth_wave: ArrayLike, synth_flux: ArrayLike) -> np.ndarray:
+def normalize_synth_spectrum(synth_wave: ArrayLike, synth_flux: ArrayLike) -> np.ndarray:
     """
     Normalize a synthetic spectrum using GISIC continuum fitting.
 
@@ -72,7 +72,7 @@ def normalize(synth_wave: ArrayLike, synth_flux: ArrayLike) -> np.ndarray:
     """
     cont_array = []
     for SIGMA in config.SIGMA:
-        _, _, cont_synth_flux = GISIC.normalize(
+        _, _, cont_synth_flux = normalize(
             synth_wave,
             synth_flux,
             sigma=SIGMA,

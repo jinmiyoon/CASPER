@@ -1,12 +1,15 @@
 from typing import List, Tuple
 
-import GISIC_C.norm_functions as norm_functions
 import numpy as np
 import pandas as pd
 import scipy.interpolate as interp
 from astropy.table import Table
-from GISIC_C.segment import Segment
+from interface.GISIC_C.segment import Segment
+
+# from interface.GISIC_C.spectrum import Spectrum
 from scipy.ndimage.filters import gaussian_filter
+
+from . import norm_functions
 
 
 class Spectrum:
@@ -241,12 +244,25 @@ class Spectrum:
 
         return
 
-    def define_cont_points(self, boost):
-        ### just runs define_cont_point in the Segment class, which boosts median
-        ### by a scale estimate normalized to the distribution of mads from
-        ### each segment
+    def define_cont_points(self, boost: float) -> None:
+        """
+        Define continuum points for all segments using a boosted MAD-normalized strategy.
 
-        ### Precondition: must run assess_segment_variation
+        This method loops over all Segment objects in `self.segments` and calls their
+        `define_cont_point()` method. The boost value scales the clipped median flux
+        based on the MAD distribution across segments.
+
+        Precondition
+        -----------
+        `self.assess_segment_variation()` must be called beforehand to ensure
+        `self.mad_min` and `self.mad_range` are initialized.
+
+        Parameters
+        ----------
+        boost : float
+            A scaling factor applied to adjust the continuum point above the median
+            flux, based on signal variation.
+        """
         [segment.define_cont_point(self.mad_min, self.mad_range, boost=boost) for segment in self.segments]
 
     def set_segment_midpoints(self) -> np.ndarray:

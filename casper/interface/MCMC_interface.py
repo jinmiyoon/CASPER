@@ -1,13 +1,17 @@
 from typing import Any, Callable, Dict, Literal, Tuple
 
-import config
-import MLE_priors
 import numpy as np
 import pandas as pd
 import scipy
+from interface import MLE_priors, config
+from interface.synthetic_functions import get_interp, normalize_synth_spectrum
 from scipy.interpolate import interp1d
 from statsmodels.nonparametric.kde import KDEUnivariate
-from synthetic_functions import get_interp, normalize
+from utils.logger_config import setup_logger
+
+# from .MCMC_interface import kde_param
+
+logger = setup_logger(__name__)
 
 INTERPOLATOR = get_interp()
 
@@ -74,12 +78,14 @@ def interp1d_synth_flux(
     """
     if np.isfinite(INTERPOLATOR[G_CLASS]([teff, feh, carbon])).all():
         synth_flux = INTERPOLATOR[G_CLASS]([teff, feh, carbon])[0]
-        norm_synth_flux = normalize(synth_wave, synth_flux[config.id_start_wave : config.id_end_wave + 1])
+        norm_synth_flux = normalize_synth_spectrum(
+            synth_wave, synth_flux[config.id_start_wave : config.id_end_wave + 1]
+        )
 
         return interp1d(synth_wave, norm_synth_flux, kind="linear")
 
     else:
-        print("\t\t MCMC_interface: interp1d_synth_flux: Interpolated synthetic flux is not finite")
+        logger.warning("MCMC_interface: interp1d_synth_flux: Interpolated synthetic flux is not finite")
 
 
 def likelihood_params(theta: Tuple[float, ...], include_C2: bool = False) -> Tuple[float, ...]:
@@ -169,10 +175,8 @@ def chi_likelihood(
     synth_flux_region = interp1d_synth_flux(synth_wave, G_CLASS, teff, feh, carbon)
 
     if not synth_flux_region:
-        print(
-            "\t\t MCMC_interface: chi_likelihood: synth_flux_region (teff={}, feh={}, carbon={})  return -np.inf".format(
-                teff, feh, carbon
-            )
+        logger.warning(
+            f"MCMC_interface: chi_likelihood: synth_flux_region (teff={teff}, feh={feh}, carbon={carbon}) returned -np.inf"
         )
         return -np.inf
 
@@ -197,7 +201,7 @@ def chi_likelihood(
         return LL
 
     else:
-        print("\t\t MCMC_interface: chi_likelihood return -np.inf")
+        logger.warning("MCMC_interface: chi_likelihood returned -np.inf")
         return -np.inf
 
 
@@ -252,10 +256,8 @@ def chi_likelihood_C2(
     synth_flux_region = interp1d_synth_flux(synth_wave, G_CLASS, teff, feh, carbon)
 
     if not synth_flux_region:
-        print(
-            "\t\t MCMC_interface: chi_likelihood_C2: synth_flux_region (teff={}, feh={}, carbon={})  return -np.inf".format(
-                teff, feh, carbon
-            )
+        logger.warning(
+            f"MCMC_interface: chi_likelihood_C2: synth_flux_region (teff={teff}, feh={feh}, carbon={carbon}) returned -np.inf"
         )
         return -np.inf
 
@@ -340,10 +342,8 @@ def chi_ll_refine(
 
     synth_flux_region = interp1d_synth_flux(synth_wave, G_CLASS, teff, feh, carbon)
     if not synth_flux_region:
-        print(
-            "\t\t MCMC_interface: chi_ll_refine: synth_flux_region (teff={}, feh={}, carbon={})  return -np.inf".format(
-                teff, feh, carbon
-            )
+        logger.warning(
+            f"MCMC_interface: chi_ll_refine: synth_flux_region (teff={teff}, feh={feh}, carbon={carbon}) returned -np.inf"
         )
         return -np.inf
 
@@ -419,10 +419,8 @@ def chi_ll_refine_C2(
     synth_flux_region = interp1d_synth_flux(synth_wave, G_CLASS, teff, feh, carbon)
 
     if not synth_flux_region:
-        print(
-            "\t\t MCMC_interface: chi_11_refine_C2: synth_flux_region (teff={}, feh={}, carbon={}) return -np.inf".format(
-                teff, feh, carbon
-            )
+        logger.warning(
+            f"MCMC_interface: chi_11_refine_C2: synth_flux_region (teff={teff}, feh={feh}, carbon={carbon}) returned -np.inf"
         )
         return -np.inf
 
