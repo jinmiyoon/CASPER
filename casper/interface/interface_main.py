@@ -24,8 +24,7 @@ from scipy.optimize import minimize
 from statsmodels.nonparametric.kde import KDEUnivariate
 from utils.logger_config import setup_logger
 
-from .synthetic_functions import CAII_CH_CHI_LH, get_grav_interp, get_interp
-from .synthetic_functions import normalize as norm_syth
+from .synthetic_functions import CAII_CH_CHI_LH, get_grav_interp, get_interp, normalize_synth_spectrum
 
 logger = setup_logger(__name__)
 
@@ -72,7 +71,7 @@ def synth_normalize(spectrum, group: str, temp: float) -> np.ndarray:
         temp, ARCHETYPE_PARAMS[spectrum.MODE][group]["FEH"], ARCHETYPE_PARAMS[spectrum.MODE][group]["CFE"]
     )
     if np.isfinite(interp_flux).all():
-        return norm_syth(SYNTH_WAVE, interp_flux[config.id_start_wave : config.id_end_wave + 1])
+        return normalize_synth_spectrum(SYNTH_WAVE, interp_flux[config.id_start_wave : config.id_end_wave + 1])
     else:
         logger.warning(
             f"Interpolated synthetic flux is not finite, params = {temp}, "
@@ -385,7 +384,9 @@ def generate_synthetic(spectrum: object) -> None:
     )
 
     if np.isfinite(interp_flux).all():
-        NORM_SYNTH_FLUX = norm_syth(SYNTH_WAVE, interp_flux[config.id_start_wave : config.id_end_wave + 1])
+        NORM_SYNTH_FLUX = normalize_synth_spectrum(
+            SYNTH_WAVE, interp_flux[config.id_start_wave : config.id_end_wave + 1]
+        )
         spectrum.set_synth_spectrum(pd.DataFrame({"wave": SYNTH_WAVE, "norm": NORM_SYNTH_FLUX.T}))
     else:
         logger.warning(
