@@ -7,7 +7,7 @@ from scipy.interpolate import interp1d
 from statsmodels.nonparametric.kde import KDEUnivariate
 
 from casper.interface import MLE_priors, config
-from casper.interface.synthetic_functions import get_interp
+from casper.interface.synthetic_functions import get_interp, normalize_synth_spectrum
 from casper.utils.logger_config import setup_logger
 
 logger = setup_logger(__name__)
