@@ -84,7 +84,7 @@ def interp1d_synth_flux(
         return interp1d(synth_wave, norm_synth_flux, kind="linear")
 
     else:
-        logger.warning("MCMC_interface: interp1d_synth_flux: Interpolated synthetic flux is not finite")
+        logger.warning("interp1d_synth_flux: Interpolated synthetic flux is not finite")
 
 
 def likelihood_params(theta: Tuple[float, ...], include_C2: bool = False) -> Tuple[float, ...]:
@@ -174,9 +174,7 @@ def chi_likelihood(
     synth_flux_region = interp1d_synth_flux(synth_wave, G_CLASS, teff, feh, carbon)
 
     if not synth_flux_region:
-        logger.warning(
-            f"MCMC_interface: chi_likelihood: synth_flux_region (teff={teff}, feh={feh}, carbon={carbon}) returned -np.inf"
-        )
+        logger.warning(f"chi_likelihood: synth_flux_region (teff={teff}, feh={feh}, carbon={carbon}) returned -np.inf")
         return -np.inf
 
     LL = (
@@ -200,7 +198,7 @@ def chi_likelihood(
         return LL
 
     else:
-        logger.warning("MCMC_interface: chi_likelihood returned -np.inf")
+        logger.warning("chi_likelihood returned -np.inf")
         return -np.inf
 
 
@@ -256,7 +254,7 @@ def chi_likelihood_C2(
 
     if not synth_flux_region:
         logger.warning(
-            f"MCMC_interface: chi_likelihood_C2: synth_flux_region (teff={teff}, feh={feh}, carbon={carbon}) returned -np.inf"
+            f"chi_likelihood_C2: synth_flux_region (teff={teff}, feh={feh}, carbon={carbon}) returned -np.inf"
         )
         return -np.inf
 
@@ -341,9 +339,7 @@ def chi_ll_refine(
 
     synth_flux_region = interp1d_synth_flux(synth_wave, G_CLASS, teff, feh, carbon)
     if not synth_flux_region:
-        logger.warning(
-            f"MCMC_interface: chi_ll_refine: synth_flux_region (teff={teff}, feh={feh}, carbon={carbon}) returned -np.inf"
-        )
+        logger.warning(f"chi_ll_refine: synth_flux_region (teff={teff}, feh={feh}, carbon={carbon}) returned -np.inf")
         return -np.inf
 
     LL = (
@@ -419,7 +415,7 @@ def chi_ll_refine_C2(
 
     if not synth_flux_region:
         logger.warning(
-            f"MCMC_interface: chi_11_refine_C2: synth_flux_region (teff={teff}, feh={feh}, carbon={carbon}) returned -np.inf"
+            f"chi_11_refine_C2: synth_flux_region (teff={teff}, feh={feh}, carbon={carbon}) returned -np.inf"
         )
         return -np.inf
 

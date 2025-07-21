@@ -167,7 +167,7 @@ def get_KP_band(spectrum) -> Tuple[float, float]:
         return KP_BOUNDS["K18"]
 
     else:
-        logger.warning("Warning: error in CAII_KP")
+        logger.warning("Error in CAII_KP")
         return np.nan
 
 
@@ -248,5 +248,5 @@ def CAII_KP(wave: np.ndarray, flux: np.ndarray) -> Union[float, np.float64]:
         return K18
 
     else:
-        logger.warning("Warning: error in CAII_KP")
+        logger.warning("Error in CAII_KP")
         return np.nan
