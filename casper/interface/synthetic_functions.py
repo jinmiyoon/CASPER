@@ -47,7 +47,7 @@ def get_grav_interp():
         return GRAV_INTERP
 
 
-def normalize(synth_wave: ArrayLike, synth_flux: ArrayLike) -> np.ndarray:
+def normalize_syth_spectrum(synth_wave: ArrayLike, synth_flux: ArrayLike) -> np.ndarray:
     """
     Normalize a synthetic spectrum using GISIC continuum fitting.
 
