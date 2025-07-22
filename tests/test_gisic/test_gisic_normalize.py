@@ -46,6 +46,7 @@ def test_normalize_with_defaults(return_points):
         wl_out, flux_norm, continuum = result
 
     # verifies that each of the returned arrays has the same shape as the original flux array
-    # this ensures nothing got truncated, padded, or reshaped incorrectly.    assert wl_out.shape == flux.shape
+    # this ensures nothing got truncated, padded, or reshaped incorrectly.    
+    assert wl_out.shape == flux.shape
     assert flux_norm.shape == flux.shape
     assert continuum.shape == flux.shape
