@@ -104,6 +104,8 @@ Once you run CASPER, you will have several output files.
 ### Pytest
 This project uses pytest for writing and running unit tests. Pytest is a lightweight testing framework that makes it easy to write simple test functions using plain Python and assert statements.
 
+More information on pytest can be found at: https://docs.pytest.org/en/stable/
+
 Install pytest via pip.
 ```shell
 pip install pytest
@@ -124,7 +126,7 @@ Before setting up Sphinx, users must install the required documentation dependen
 ```shell
 pip install sphinx sphinx_rtd_theme myst-parser
 ```
-After dependencies are installed, run this command to initialize a new Sphinx documentation project in a folder called "docs"
+After dependencies are installed, run this command to initialize a new Sphinx documentation project in a folder called "docs".
 1. It will prompt you for your project info (project name, author, version, etc.).
 2. Creates a docs/ folder (if it doesn’t exist).
 3. Generates starter config files inside docs/, including:
