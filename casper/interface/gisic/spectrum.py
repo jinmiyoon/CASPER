@@ -426,7 +426,7 @@ class Spectrum:
         self.flux_norm = np.divide(self.flux, self.continuum)
 
         if len(self.flux_norm[self.flux_norm < 0.0]) > 1:
-            self.flux_norm[self.flux_norm < 0.0] = 1.0
+            self.flux_norm[self.flux_norm < 0.0] = 0.0
 
         if len(self.flux_norm[self.flux_norm > 2.0]) > 1:
             self.flux_norm[self.flux_norm > 2.0] = 1.0
