@@ -25,7 +25,7 @@ def test_normalize_with_defaults(return_points):
     result = normalize(
         wavelength=wavelength,
         flux=flux,
-        sigma=5,  # lsess smoothing to preserve dips
+        sigma=5,  # less smoothing to preserve dips
         k=2,  # spline degree: safer if few anchor points
         s=12,
         cahk=False,
