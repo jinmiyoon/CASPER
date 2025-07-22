@@ -7,7 +7,7 @@ from casper.interface.gisic import normalize
 @pytest.mark.parametrize("return_points", [False, True])
 def test_normalize_with_defaults(return_points):
     # Synthetic spectrum with multiple features for extrema detection
-    wavelength = np.linspace(3900, 4000, 100)  # linearly spaced array of 100 wavelengths from 3900A to 4000A
+    wavelength = np.linspace(3900., 4000., 100)  # linearly spaced array of 100 wavelengths from 3900A to 4000A
 
     # Constructs synthetic flux data with two Gaussian dips centered at 3950 and 3970.
     # -0.3 * and -0.2 * simulate abosrption lines
