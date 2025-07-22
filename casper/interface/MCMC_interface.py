@@ -1,3 +1,4 @@
+import os
 from typing import Any, Callable, Dict, Literal, Tuple
 
 import numpy as np
@@ -11,8 +12,6 @@ from casper.interface.synthetic_functions import get_interp, normalize_synth_spe
 from casper.utils.logger_config import setup_logger
 
 logger = setup_logger(__name__)
-
-INTERPOLATOR = get_interp()
 
 
 def kde_param(distribution: np.ndarray, x0: float) -> Dict[str, Any]:
@@ -378,21 +377,28 @@ def chi_ll_refine_C2(
     Parameters
     ----------
     theta : np.ndarray
-        MCMC parameter array where:
-        - theta[0] = [Fe/H] metallicity
-        - theta[1] = [C/Fe] carbon abundance
+        MCMC parameter array where::
+
+            - theta[0] = [Fe/H] metallicity
+            - theta[1] = [C/Fe] carbon abundance
+
     observed_spec_regions : dict
         Dictionary with keys "CA", "CH", and "C2", each mapping to a DataFrame
         containing observed spectral data with columns "wave" and "norm".
+
     synth_wave : np.ndarray
         Wavelength grid for the synthetic spectra.
+
     PARAMS : dict
         Dictionary of stellar parameters and inverse noise terms.
-        Must contain:
+        Must contain::
+
             - "TEFF": np.ndarray of effective temperature
             - "XI_CA", "XI_CH", "XI_C2": np.ndarrays of inverse noise (1/SNR)
+
     G_CLASS : str
         The stellar class used to identify the appropriate synthetic model.
+
     bounds : str, optional
         Bound checking mode. Defaults to "default".
 
@@ -445,3 +451,9 @@ def chi_ll_refine_C2(
 
     else:
         return -np.inf
+
+
+if os.environ.get("SPHINX_BUILD") != "1":
+    INTERPOLATOR = get_interp()
+else:
+    INTERPOLATOR = None

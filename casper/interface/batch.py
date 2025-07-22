@@ -51,6 +51,7 @@ class Batch:
             self.param_path (str): Absolute path to the input parameter file.
             self.spectra_path (str): Absolute path to the directory containing spectra files.
             self.output_name (str): Full output file path including filename, saved under OUTPUT_DIR.
+
         """
 
         logger.info(f"\nloading io_paths: {self.io_paths}")
@@ -430,12 +431,13 @@ class Batch:
 
         Output
         ------
-        - Saves a CSV file containing the S/N data to the specified output path.
+        Saves a CSV file containing the S/N data to the specified output path.
 
         Notes
         -----
-        - If the first attempt to save fails (e.g., due to file permissions or naming issues),
+        If the first attempt to save fails (e.g., due to file permissions or naming issues),
         it attempts to save the file with an alternate name ending in "1_snr.csv".
+
         """
 
         snr = pd.concat([spec.get_sn() for spec in self.spectra_array])

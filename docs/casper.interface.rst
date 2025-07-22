@@ -79,14 +79,6 @@ casper.interface.interface\_main module
 casper.interface.io\_functions module
 -------------------------------------
 
-.. automodule:: casper.interface.io_functions
-   :members:
-   :show-inheritance:
-   :undoc-members:
-
-casper.interface.io\_paths module
----------------------------------
-
 .. automodule:: casper.interface.io_paths
    :members:
    :show-inheritance:
