@@ -1,6 +1,6 @@
 ###  CEMP Group Assignment and Stellar Parameter Estimation Routine (CASPER)
-#### Main Developers: Devin D. Whitten, Jinmi Yoon
-#### Email: devin.d.whitten@gmail.com, jinmi.yoon@gmail.com
+#### Main Developers: Devin D. Whitten, Jinmi Yoon, Taylor A. Webb
+#### Email: devin.d.whitten@gmail.com, jinmi.yoon@gmail.com, taylorw0525@gmail.com
 
 This script package, CASPER, is designed to determine reliable stellar parameters (temperature, metallicity, surface gravity, and carbon abundance) of low/medium-resolution stellar spectra for cool Carbon-Enhanced Metal-Poor (CEMP) stars (Teff < 5000K). This package is under development for public use and thus needs more testings and refinements (Whitten, Yoon, et al. in prep). The description of the CASPER methodology can be found in Yoon, Whitten, et al. 2020 (The Astrophysical Journal, 894,7). The detailed documentation, along with the codes, will be available for public use in the near future.
 
@@ -101,9 +101,56 @@ Once you run CASPER, you will have several output files.
 - `*_spectra_output.csv`: an extracted output of observed and synthetic spectra
 - `*_temp_cal_table.txt`: a table of temperature calibration
 
+### Pytest
+This project uses pytest for writing and running unit tests. Pytest is a lightweight testing framework that makes it easy to write simple test functions using plain Python and assert statements.
+
+Install pytest via pip.
+```shell
+pip install pytest
+```
+Next, add a tests/ directory at the root of your project and place your test files there.
+
+To run the pytest
+```shell
+pytest <your/file/path.py>
+```
+
+### Sphinx Documentation Setup
+This project uses Sphinx (a documentation generator) to generate clean, readable documentation from Python docstrings. Sphinx supports both .rst and .md formats and can automatically extract and format documentation from your code using the extensions.
+
+More information about Sphinx can be found at: https://www.sphinx-doc.org/en/master/usage/quickstart.html
+
+Before setting up Sphinx, users must install the required documentation dependencies via pip.
+```shell
+pip install sphinx sphinx_rtd_theme myst-parser
+```
+After dependencies are installed, run this command to initialize a new Sphinx documentation project in a folder called "docs"
+1. It will prompt you for your project info (project name, author, version, etc.).
+2. Creates a docs/ folder (if it doesn’t exist).
+3. Generates starter config files inside docs/, including:
+    - conf.py: your main configuration file
+    - index.rst: the root page of your docs (serves as the welcome page)
+    - makefile and make.bat: shortcuts to build docs on Linux/macOS or Windows
+NOTE: Make sure to add any missing extensions and Sphinx configuration options to your conf.py if it differs from the repo's conf.py.
+```shell
+sphinx-quickstart docs
+```
+Next, this command auto-generates .rst files for your Python package so Sphinx can build documentation from your code. It finds all modules and sub-packages and generates .rst stub files (like casper.interface.rst, casper.utils.rst, etc.) in the docs/ folder.
+Each .rst file includes .. automodule:: directives to tell Sphinx to pull in the docstrings from your code.
+```shell
+sphinx-apidoc -o docs casper #replace casper with project folder name if needed
+```
+Lastly, run this command to build your Sphinx documentation as a static website (in HTML format). It will create a build/html folder in docs that stores the HTML code for the website.
+```shell
+sphinx-build -b html docs docs/_build/html
+```
+To run or rebuild Sphinx after edits:
+```shell
+python -m sphinx -b html docs docs/_build/html
+```
 
 ### Collaboration, Scientific Use
-If you want to use this package for your scientific use and/or help to complete the development, please contact first both Devin Whitten (devin.d.whitten@gmail.com) and Jinmi Yoon (jinmi.yoon@gmail.com).
+If you want to use this package for your scientific use and/or help to complete the development, please contact first Devin Whitten (devin.d.whitten@gmail.com), Jinmi Yoon (jinmi.yoon@gmail.com), or Taylor Webb (taylorw0525@gmail.com).
 
 ### Stellar Parameters Space for CASPER
 [Fe/H] = [-4.5, -1.0], Teff = [4000, 5500] K, [C/Fe] = [-0.5. 4.5] , logg =[0.0, 5.5]

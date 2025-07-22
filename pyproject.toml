@@ -27,10 +27,6 @@ dependencies = [
     "matplotlib==3.10.3",
     "corner==2.2.3",
     "tqdm>=4.67.1",
-    "myst-parser>=2.0.0",
-    "sphinx_rtd_theme>=3.0.2",
-    "sphinx>=8.2.3",
-
 ]
 dynamic = ["version"]
 
@@ -50,6 +46,9 @@ test = [
 docs = [
     "sphinx",
     "sphinx-automodapi",
+    "myst-parser>=2.0.0",
+    "sphinx_rtd_theme>=3.0.2",
+    "sphinx>=8.2.3",
 ]
 
 all = ["casper[dev, test, docs]"]
