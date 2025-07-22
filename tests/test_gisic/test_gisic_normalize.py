@@ -14,8 +14,8 @@ def test_normalize_with_defaults(return_points):
 
     flux = (
         1.0
-        - 0.3 * np.exp(-0.5 * ((wavelength - 3950) / 4) ** 2)
-        - 0.2 * np.exp(-0.5 * ((wavelength - 3970) / 2.5) ** 2)
+        - 0.3 * np.exp(-0.5 * ((wavelength - 3950.) / 4.0) ** 2)
+        - 0.2 * np.exp(-0.5 * ((wavelength - 3970.) / 2.5) ** 2)
     )
 
     # adds a small amount of noise to the flux values
