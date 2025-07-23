@@ -20,7 +20,7 @@ flux_data = 1000.0 * (
 def test_segment_init(wl, flux, expected_wl, expected_flux, expected_midpoint):
     seg = Segment(wl=wl, flux=flux)
 
-    assert seg.wl == expected_wl
+    assert np.array_equal(seg.wl, expected_wl)
     assert np.array_equal(seg.flux, expected_flux)
 
     if np.isnan(expected_midpoint):
