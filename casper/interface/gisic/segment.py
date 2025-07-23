@@ -1,6 +1,10 @@
 import numpy as np
 from numpy.typing import ArrayLike
 
+from casper.utils.logger_config import setup_logger
+
+logger = setup_logger(__name__)
+
 
 class Segment:
     def __init__(self, wl: list = [], flux: ArrayLike = []):
@@ -53,7 +57,7 @@ class Segment:
             self.midpoint = np.array(self.wl)[-1]
 
         else:
-            print("Error in edge definition")
+            logger.error("Error in edge definition")
 
     def get_statistics(self, flux_min: float = 70) -> None:
         """

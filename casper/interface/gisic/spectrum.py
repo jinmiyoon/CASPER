@@ -8,6 +8,9 @@ from scipy.ndimage.filters import gaussian_filter
 
 from casper.interface.gisic import norm_functions
 from casper.interface.gisic.segment import Segment
+from casper.utils.logger_config import setup_logger
+
+logger = setup_logger(__name__)
 
 
 class Spectrum:
@@ -352,7 +355,7 @@ class Spectrum:
         """
 
         for i in range(len(self.midpoints)):
-            print(i, ": ", self.midpoints[i], self.fluxpoints[i])
+            logger.info(f"{i}: {self.midpoints[i]} {self.fluxpoints[i]}")
 
     def set_wavelength(self, wavelength: list[float]) -> None:
         """

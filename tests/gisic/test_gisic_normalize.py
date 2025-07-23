@@ -50,3 +50,6 @@ def test_normalize_with_defaults(return_points):
     assert wl_out.shape == flux.shape
     assert flux_norm.shape == flux.shape
     assert continuum.shape == flux.shape
+
+    # flux_norm values should be [0,2]
+    assert np.all((flux_norm >= 0) & (flux_norm <= 2))

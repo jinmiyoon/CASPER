@@ -25,13 +25,8 @@ if __name__ == "__main__":
     freeze_support()
     start_time = time.time()
 
-    # log_filename = f"casper_run_{time.strftime('%Y-%m-%d-%H-%M-%S')}.log"
-    # sys.stdout = open(os.path.join(LOG_DIR, log_filename), "wt")
-    # print("Started CASPER and logging! \n\n")
     logger.info("Started CASPER and logging!")
 
-    # print("### CASPER starts now: ###")
-    # print("\n ... initializing spectra batch")
     logger.info("CASPER starts now:")
     logger.info("... initializing spectra batch")
 
@@ -40,7 +35,7 @@ if __name__ == "__main__":
     spec_batch.set_io_paths()
 
     spec_batch.load_params()
-    # print("spectra name:  ", spec_batch.param_file["filename"])
+
     logger.info(f"spectra name: {spec_batch.param_file['filename']}")
 
     spec_batch.load_spectra()
@@ -81,8 +76,6 @@ if __name__ == "__main__":
     spec_batch.generate_output_files()
 
     spec_batch.generate_plots()
-
-    # print("The total time for this CASPER run is {:.2f}s".format(time.time() - start_time))
 
     total_time = time.time() - start_time
     logger.info(f"The total time for this CASPER run is {total_time:.2f} seconds.")

@@ -40,9 +40,10 @@ def test_is_edge(wl, which, expected_midpoint, valid, capsys):
     if valid:
         assert seg.midpoint == expected_midpoint
     else:
+        # Check that midpoint was not changed
         assert seg.midpoint == np.median(wl)
 
-        # Check that the error message was printed
+        # Check that error was printed
         captured = capsys.readouterr()
         assert "Error in edge definition" in captured.out
 
