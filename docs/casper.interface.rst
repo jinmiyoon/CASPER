@@ -76,7 +76,7 @@ casper.interface.interface\_main module
    :show-inheritance:
    :undoc-members:
 
-casper.interface.io\_functions module
+casper.interface.io\_paths module
 -------------------------------------
 
 .. automodule:: casper.interface.io_paths
@@ -92,16 +92,8 @@ casper.interface.plot\_functions module
    :show-inheritance:
    :undoc-members:
 
-casper.interface.segment module
--------------------------------
-
-.. automodule:: casper.interface.segment
-   :members:
-   :show-inheritance:
-   :undoc-members:
-
 casper.interface.spectrum module
---------------------------------
+-------------------------------
 
 .. automodule:: casper.interface.spectrum
    :members:

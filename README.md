@@ -1,14 +1,15 @@
-###  CEMP Group Assignment and Stellar Parameter Estimation Routine (CASPER)
+## CASPER
+### CEMP Group Assignment and Stellar Parameter Estimation Routine (CASPER)
 #### Main Developers: Devin D. Whitten, Jinmi Yoon, Taylor A. Webb
 #### Email: devin.d.whitten@gmail.com, jinmi.yoon@gmail.com, taylorw0525@gmail.com
 
 This script package, CASPER, is designed to determine reliable stellar parameters (temperature, metallicity, surface gravity, and carbon abundance) of low/medium-resolution stellar spectra for cool Carbon-Enhanced Metal-Poor (CEMP) stars (Teff < 5000K). This package is under development for public use and thus needs more testings and refinements (Whitten, Yoon, et al. in prep). The description of the CASPER methodology can be found in Yoon, Whitten, et al. 2020 (The Astrophysical Journal, 894,7). The detailed documentation, along with the codes, will be available for public use in the near future.
 
-## Installation
-### Required packages and versions
+### Installation
+#### Required packages and versions
 - See required packages found in the [pyproject.toml](pyproject.toml) or [caper311.yml](casper311.yml).
 
-### Python environment installation
+#### Python environment installation
 You can use `conda` to create and activate the CASPER environment.
 Change `env_name` below to your preferred name, run these commands on your terminal.
 
@@ -24,14 +25,14 @@ micromamba create -n env_name python=3.11
 micromamba activate env_name
 ```
 
-### CASPER installation
-#### Installation for users
+#### CASPER installation
+##### Installation for users
 The **casper** directory contains the python package itself, installable via pip. This will install the core dependencies defined in `pyproject.toml` fur running `casper`.
 
 ```shell
 pip install .
 ```
-#### Installation for developers
+##### Installation for developers
 If you are interested in developing and contributing to **casper**, you should install this package with `-e`, it allows you to work on the package's source code and see changes reflected immediately without needing to reinstall.
 
 ```shell
@@ -47,11 +48,11 @@ or
 pip install .[all] # "all" includes the dependencies of dev, test, docs
 ```
 
-## pre-commit for development
+### pre-commit for development
 
 [pre-commit](https://pre-commit.com/) allows all collaborators push their commits compliant with the same set of lint and format rules in **pyproject.toml** by checking all files in the project at different stages of the git workflow. It runs commands specified in the **.pre-commit-config.yaml** config file and runs checks before committing or pushing, to catch errors that would have caused a build failure before they reach CI.
 
-### Install pre-commit
+#### Install pre-commit
 You will need to install `pre-commit` manually.
 ```bash
 pip install pre-commit # if you haven't already installed the package
@@ -71,7 +72,9 @@ pre-commit autoupdate
 ```
 For other configuration options and more detailed information, check out at the [pre-commit](https://pre-commit.com/) page.
 
-### How to run CASPER
+### Setup
+
+#### How to run CASPER
 
 First, you can set up your custom input parameters and spectra and the output directory and file name prefix in [io_paths.py](interface/io_paths.py).
 
@@ -89,7 +92,7 @@ To run CASPER, run this command on your terminal.
 python main.py
 ```
 
-### Output files
+#### Output files
 Once you run CASPER, you will have several output files.
 
 - `*_archetype_likelihood_table.txt`: a table of CEMP group archetype likelihood
@@ -101,7 +104,7 @@ Once you run CASPER, you will have several output files.
 - `*_spectra_output.csv`: an extracted output of observed and synthetic spectra
 - `*_temp_cal_table.txt`: a table of temperature calibration
 
-### Pytest
+#### When testing with pytest
 This project uses pytest for writing and running unit tests. Pytest is a lightweight testing framework that makes it easy to write simple test functions using plain Python and assert statements.
 
 More information on pytest can be found at: https://docs.pytest.org/en/stable/
@@ -117,7 +120,7 @@ To run the pytest
 pytest <your/file/path.py>
 ```
 
-### Sphinx Documentation Setup
+#### Building the Documentation with Sphinx
 This project uses Sphinx (a documentation generator) to generate clean, readable documentation from Python docstrings. Sphinx supports both .rst and .md formats and can automatically extract and format documentation from your code using the extensions.
 
 More information about Sphinx can be found at: https://www.sphinx-doc.org/en/master/usage/quickstart.html
@@ -146,7 +149,6 @@ Lastly, run this command at root level to build your Sphinx documentation as a s
 ```shell
 sphinx-build -b html docs docs/_build/html
 ```
-
 
 ### Collaboration, Scientific Use
 If you want to use this package for your scientific use and/or help to complete the development, please contact first Devin Whitten (devin.d.whitten@gmail.com), Jinmi Yoon (jinmi.yoon@gmail.com), or Taylor Webb (taylorw0525@gmail.com).

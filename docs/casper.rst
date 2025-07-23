@@ -1,4 +1,4 @@
-casper package
+CASPER package
 ==============
 
 Subpackages

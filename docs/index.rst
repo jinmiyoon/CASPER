@@ -1,14 +1,14 @@
-Casper Documentation
+CASPER Documentation
 ====================
 
-This is the documentation for Casper.
+This is the documentation for CASPER.
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 3
    :caption: Getting Started
 
-   ../README.md
-   ../CHANGELOG.md
+   readme
+   changelog
 
 .. toctree::
    :maxdepth: 2
