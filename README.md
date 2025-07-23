@@ -140,14 +140,11 @@ Each .rst file includes .. automodule:: directives to tell Sphinx to pull in the
 ```shell
 sphinx-apidoc -o docs casper #replace casper with project folder name if needed
 ```
-Lastly, run this command to build your Sphinx documentation as a static website (in HTML format). It will create a build/html folder in docs that stores the HTML code for the website.
+Lastly, run this command at root level to build your Sphinx documentation as a static website (in HTML format). It will create a build/html folder in docs that stores the HTML code for the website.
 ```shell
 sphinx-build -b html docs docs/_build/html
 ```
-To run or rebuild Sphinx after edits:
-```shell
-python -m sphinx -b html docs docs/_build/html
-```
+
 
 ### Collaboration, Scientific Use
 If you want to use this package for your scientific use and/or help to complete the development, please contact first Devin Whitten (devin.d.whitten@gmail.com), Jinmi Yoon (jinmi.yoon@gmail.com), or Taylor Webb (taylorw0525@gmail.com).
