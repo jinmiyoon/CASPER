@@ -3,11 +3,18 @@ import pytest
 
 from casper.interface.gisic import Segment
 
+wave_data = np.linspace(4050.0, 4070.0, 21)
+flux_data = 1000.0 * (
+    1.0
+    - 0.3 * np.exp(-0.25 * ((wave_data - 4054.0) / 4) ** 2)
+    - 0.2 * np.exp(-0.25 * ((wave_data - 4070.0) / 2.5) ** 2)
+)
+
 
 @pytest.mark.parametrize(
     "wl, flux, expected_wl, expected_flux, expected_midpoint",
     [
-        ([4000, 5000, 6000], [1.0, 1.2, 1.1], [4000, 5000, 6000], [1.0, 1.2, 1.1], 5000.0),
+        (wave_data, flux_data, wave_data, flux_data, np.median(wave_data)),
     ],
 )
 def test_segment_init(wl, flux, expected_wl, expected_flux, expected_midpoint):

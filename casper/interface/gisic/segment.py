@@ -57,7 +57,8 @@ class Segment:
             self.midpoint = np.array(self.wl)[-1]
 
         else:
-            logger.error("Error in edge definition")
+            logger.error(f"Invalid value for 'which': {which}. Must be 'left' or 'right'.")
+            raise ValueError(f"Invalid value for 'which': {which}. Must be 'left' or 'right'.")
 
     def get_statistics(self, flux_min: float = 70) -> None:
         """
