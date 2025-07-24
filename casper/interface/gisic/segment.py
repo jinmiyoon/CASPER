@@ -7,7 +7,7 @@ logger = setup_logger(__name__)
 
 
 class Segment:
-    def __init__(self, wl: list = [], flux: ArrayLike = []):
+    def __init__(self, wl: ArrayLike = [], flux: ArrayLike = []):
         """
         Initialize a Segment object with wavelength and flux arrays.
 
