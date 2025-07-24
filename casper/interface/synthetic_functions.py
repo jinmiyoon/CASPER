@@ -3,10 +3,11 @@ from typing import Dict, Tuple
 
 import numpy as np
 import pandas as pd
-from interface import config
-from interface.GISIC_C.normalize import normalize
 from numpy.typing import ArrayLike
 from scipy.interpolate import interp1d
+
+from casper.interface import config
+from casper.interface.gisic.normalize import normalize
 
 
 def get_interp():

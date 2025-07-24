@@ -2,8 +2,9 @@ from typing import Any, Dict, Tuple
 
 import numpy as np
 import pandas as pd
-from interface import MAD, config
-from utils.logger_config import setup_logger
+
+from casper.interface import MAD, config
+from casper.utils.logger_config import setup_logger
 
 logger = setup_logger(__name__)
 

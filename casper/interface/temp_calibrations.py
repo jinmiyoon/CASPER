@@ -2,7 +2,8 @@ from typing import Optional
 
 import numpy as np
 import pandas as pd
-from utils.logger_config import setup_logger
+
+from casper.utils.logger_config import setup_logger
 
 logger = setup_logger(__name__)
 
@@ -34,18 +35,14 @@ def Hernandez(JK: float, FEH: float = -2.5, CLASS: Optional[str] = None) -> floa
     Reference: J-Ks in Table 5 and Eq. (10)
     """
     if CLASS == "GIANT":
-        # print("\t\t using GIANT calibration in Hernandez")
         logger.info("Using GIANT calibration in Hernandez")
         A0 = [0.6517, 0.6312, 0.0168, -0.0381, 0.0256, 0.0013]
 
     elif CLASS == "DWARF":
-        # print("\t\t using DWARF calibration in Hernandez")
         logger.info("Using DWARF calibration in Hernandez")
         A0 = [0.6524, 0.5813, 0.1225, -0.0646, 0.0370, 0.0016]
 
     else:
-        # print("\t\t Can't handle input class:  ", CLASS)
-        # print("\t\t Defaulting to GIANT")
         logger.warning(f"Can't handle input class: {CLASS}. Defaulting to GIANT.")
         A0 = [0.6517, 0.6312, 0.0168, -0.0381, 0.0256, 0.0013]
 
@@ -106,7 +103,6 @@ def Casagrande(JK: float, FEH: float = -2.5, CLASS: Optional[str] = None) -> flo
         T_JK = 5040.0 / Teff
 
     else:
-        # print("\t\t Casagrande Calibration out of bounds")
         T_JK = np.nan
         logger.warning("Casagrande Calibration out of bounds")
 
@@ -117,12 +113,12 @@ def Bergeat(JK: float) -> float:
     """
     Estimate effective temperature using the Bergeat calibration.
 
-    This function calculates Teff using the J-Ks color and [Fe/H], following the approach from Bergeat et al.
+    This function calculates Teff using the $(J-K)_{0}$ color and [Fe/H], following the approach from Bergeat et al.
 
     Parameters
     ----------
     JK : float
-        The J-Ks color index.
+        The $(J-K)_{0}$ color index.
 
     Returns
     -------
@@ -131,12 +127,12 @@ def Bergeat(JK: float) -> float:
 
     Notes
     -----
-    Based on the calibration from Bergeat et al. (2001).
+    Based on the calibration from Bergeat et al. (2001), Eq.(19) and Table 5.
     """
     CIj0 = JK
     if CIj0 <= 2.1:
         logT_JK = -0.184 * CIj0 + 3.74
-    elif CIj0 >= 2.1:
+    elif CIj0 > 2.1:
         logT_JK = -0.109 * CIj0 + 3.59
 
     return np.power(10, logT_JK)

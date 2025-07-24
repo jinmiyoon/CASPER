@@ -1,31 +1,34 @@
 import numpy as np
+from numpy.typing import ArrayLike
+
+from casper.utils.logger_config import setup_logger
+
+logger = setup_logger(__name__)
 
 
 class Segment:
-    def __init__(self, wl: list = [], flux: list = []):
+    def __init__(self, wl: ArrayLike = None, flux: ArrayLike = None):
         """
-        Initialize a Segment object with wavelength and flux arrays.
+        Initialize a Segment object with wavelength and flux values.
 
         Parameters
         ----------
-        wl : list, optional
-            List of wavelength values. Defines the x-axis of the segment.
-        flux : list, optional
-            List of corresponding flux values for each wavelength. Defines the y-axis of the segment.
+        wl : array_like
+            Wavelength values that define the x-axis of the segment.
+        flux : array_like
+            Flux values corresponding to each wavelength in `wl`, defining the y-axis
+            of the segment.
 
-        Sets
-        ----
-        self.wl : list
-            The wavelength values.
-        self.flux : list
-            The flux values.
-        self.midpoint : float
-            The median wavelength value, used as the segment’s midpoint.
+        Attributes
+        ----------
+        midpoint : float
+            The median value of the wavelength array, used to represent the segment's center.
         """
-
-        self.wl = wl
-        self.flux = flux
+        self.wl = np.array([]) if wl is None else np.array(wl)
+        self.flux = np.array([]) if flux is None else np.array(flux)
         self.midpoint = np.median(self.wl)
+        print("wl type:", type(self.wl))
+        print("flux type:", type(self.flux))
 
     def is_edge(self, which: str) -> None:
         """
@@ -52,7 +55,8 @@ class Segment:
             self.midpoint = np.array(self.wl)[-1]
 
         else:
-            print("Error in edge definition")
+            logger.error(f"Invalid value for 'which': {which}. Must be 'left' or 'right'.")
+            raise ValueError(f"Invalid value for 'which': {which}. Must be 'left' or 'right'.")
 
     def get_statistics(self, flux_min: float = 70) -> None:
         """

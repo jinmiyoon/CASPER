@@ -1,0 +1,112 @@
+import numpy as np
+import pytest
+
+from casper.interface.gisic import Segment
+
+wave_data = np.linspace(4050.0, 4070.0, 21)
+flux_data = 1000.0 * (
+    1.0
+    - 0.3 * np.exp(-0.25 * ((wave_data - 4054.0) / 4) ** 2)
+    - 0.2 * np.exp(-0.25 * ((wave_data - 4070.0) / 2.5) ** 2)
+)
+
+
+@pytest.mark.parametrize(
+    "wl, flux, expected_wl, expected_flux, expected_midpoint",
+    [
+        (wave_data, flux_data, wave_data, flux_data, np.median(wave_data)),
+    ],
+)
+def test_segment_init(wl, flux, expected_wl, expected_flux, expected_midpoint):
+    seg = Segment(wl=wl, flux=flux)
+
+    assert np.array_equal(seg.wl, expected_wl)
+    assert np.array_equal(seg.flux, expected_flux)
+
+    if np.isnan(expected_midpoint):
+        assert np.isnan(seg.midpoint)
+    else:
+        assert seg.midpoint == expected_midpoint
+
+
+# Valid cases
+@pytest.mark.parametrize(
+    "wl, which, expected_midpoint",
+    [
+        ([4000, 5000, 6000], "left", 4000),
+        ([4000, 5000, 6000], "right", 6000),
+    ],
+)
+def test_is_edge_valid(wl, which, expected_midpoint):
+    seg = Segment(wl=wl, flux=[1.0] * len(wl))
+    seg.midpoint = np.median(wl)
+
+    seg.is_edge(which)
+
+    assert seg.midpoint == expected_midpoint
+
+
+# Invalid cases
+@pytest.mark.parametrize(
+    "wl, which",
+    [
+        ([4000, 5000, 6000], "top"),
+        ([4000, 5000, 6000], ""),
+    ],
+)
+def test_is_edge_invalid(wl, which, caplog):
+    seg = Segment(wl=wl, flux=[1.0] * len(wl))
+    seg.midpoint = np.median(wl)
+
+    with pytest.raises(ValueError) as error:  # noqa: F841
+        seg.is_edge(which)
+
+    # Check that midpoint was not changed
+    assert seg.midpoint == np.median(wl)
+
+    # Check that error was logged
+    assert f"Invalid value for 'which': {which}" in caplog.text
+
+
+@pytest.mark.parametrize(
+    "flux, flux_min_percentile, expected_mad, expected_mad_normal, expected_flux_min, expected_flux_max",
+    [
+        ([1, 2, 3, 4, 5], 70, 1.0, 1.0 / 3.0, 3.8, 4.92),
+    ],
+)
+def test_get_statistics(
+    flux, flux_min_percentile, expected_mad, expected_mad_normal, expected_flux_min, expected_flux_max
+):
+    seg = Segment(wl=np.arange(len(flux)), flux=flux)
+    seg.get_statistics(flux_min=flux_min_percentile)
+
+    assert np.isclose(seg.mad, expected_mad, atol=0.01)
+    assert np.isclose(seg.mad_normal, expected_mad_normal, atol=0.01)
+    assert np.isclose(seg.flux_min, expected_flux_min, atol=0.01)
+    assert np.isclose(seg.flux_max, expected_flux_max, atol=0.01)
+
+    if not np.isnan(seg.flux_med):
+        assert seg.flux_min <= seg.flux_med <= seg.flux_max
+
+
+@pytest.mark.parametrize(
+    "mad_normal, flux_med, flux_max, mad_min, mad_range, boost, expected_mad_relative, expected_cont_point",
+    [
+        # boost=True
+        (0.5, 10.0, 20.0, 0.0, 1.0, True, 0.5, 15.0),
+        # boost=False
+        (0.75, 12.0, 25.0, 0.0, 1.0, False, 0.75, 12.0),
+    ],
+)
+def test_define_cont_point(
+    mad_normal, flux_med, flux_max, mad_min, mad_range, boost, expected_mad_relative, expected_cont_point
+):
+    seg = Segment(wl=[], flux=[])
+    seg.mad_normal = mad_normal
+    seg.flux_med = flux_med
+    seg.flux_max = flux_max
+
+    seg.define_cont_point(mad_min=mad_min, mad_range=mad_range, boost=boost)
+
+    assert np.isclose(seg.mad_relative, expected_mad_relative, atol=0.01)
+    assert np.isclose(seg.continuum_point, expected_cont_point, atol=0.01)

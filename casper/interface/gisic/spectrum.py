@@ -4,12 +4,13 @@ import numpy as np
 import pandas as pd
 import scipy.interpolate as interp
 from astropy.table import Table
-from interface.GISIC_C.segment import Segment
-
-# from interface.GISIC_C.spectrum import Spectrum
 from scipy.ndimage.filters import gaussian_filter
 
-from . import norm_functions
+from casper.interface.gisic import norm_functions
+from casper.interface.gisic.segment import Segment
+from casper.utils.logger_config import setup_logger
+
+logger = setup_logger(__name__)
 
 
 class Spectrum:
@@ -354,7 +355,7 @@ class Spectrum:
         """
 
         for i in range(len(self.midpoints)):
-            print(i, ": ", self.midpoints[i], self.fluxpoints[i])
+            logger.info(f"{i}: {self.midpoints[i]} {self.fluxpoints[i]}")
 
     def set_wavelength(self, wavelength: list[float]) -> None:
         """
@@ -428,7 +429,7 @@ class Spectrum:
         self.flux_norm = np.divide(self.flux, self.continuum)
 
         if len(self.flux_norm[self.flux_norm < 0.0]) > 1:
-            self.flux_norm[self.flux_norm < 0.0] = 1.0
+            self.flux_norm[self.flux_norm < 0.0] = 0.0
 
         if len(self.flux_norm[self.flux_norm > 2.0]) > 1:
             self.flux_norm[self.flux_norm > 2.0] = 1.0

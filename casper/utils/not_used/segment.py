@@ -1,6 +1,7 @@
 import numpy as np
 from numpy.typing import ArrayLike
-from utils.logger_config import setup_logger
+
+from casper.utils.logger_config import setup_logger
 
 logger = setup_logger(__name__)
 
@@ -23,9 +24,11 @@ class Segment:
         midpoint : float
             The median value of the wavelength array, used to represent the segment's center.
         """
-        self.wl = np.array([] if wl is None else wl)
-        self.flux = np.array([] if flux is None else flux)
+        self.wl = np.array([]) if wl is None else np.array(wl)
+        self.flux = np.array([]) if flux is None else np.array(flux)
         self.midpoint = np.median(self.wl)
+        print("wl type:", type(self.wl))
+        print("flux type:", type(self.flux))
 
     def is_edge(self, which: str) -> None:
         """

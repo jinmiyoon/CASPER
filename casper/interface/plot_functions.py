@@ -2,13 +2,13 @@ import corner
 import matplotlib.pyplot as plt
 import numpy as np
 from astropy import units as u
-from interface import config
 from matplotlib.backends.backend_pdf import PdfPages
 from matplotlib.figure import Figure
 from scipy.interpolate import interp1d
-from utils.logger_config import setup_logger
 
-from .MCMC_interface import kde_param
+from casper.interface import config
+from casper.interface.MCMC_interface import kde_param
+from casper.utils.logger_config import setup_logger
 
 logger = setup_logger(__name__)
 
