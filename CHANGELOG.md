@@ -1,8 +1,6 @@
 # Change Log
 
 ### Unreleased
-- CASPER to do list
-
 
 ### Removed
 - Removed all unnecessary comments from files
