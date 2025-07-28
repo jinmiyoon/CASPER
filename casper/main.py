@@ -49,6 +49,8 @@ if __name__ == "__main__":
     spec_batch.radial_correct()
     spec_batch.build_frames()
 
+    # Continuum normalization with GISIC
+
     spec_batch.normalize()
 
     # Set preliminary setting
