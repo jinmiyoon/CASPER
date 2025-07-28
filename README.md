@@ -1,7 +1,5 @@
 ## CASPER
 ### CEMP Group Assignment and Stellar Parameter Estimation Routine (CASPER)
-#### Main Developers: Devin D. Whitten, Jinmi Yoon, Taylor A. Webb
-#### Email: devin.d.whitten@gmail.com, jinmi.yoon@gmail.com, taylorw0525@gmail.com
 
 This script package, CASPER, is designed to determine reliable stellar parameters (temperature, metallicity, surface gravity, and carbon abundance) of low/medium-resolution stellar spectra for cool Carbon-Enhanced Metal-Poor (CEMP) stars (Teff < 5000K). This package is under development for public use and thus needs more testings and refinements (Whitten, Yoon, et al. in prep). The description of the CASPER methodology can be found in Yoon, Whitten, et al. 2020 (The Astrophysical Journal, 894,7). The detailed documentation, along with the codes, will be available for public use in the near future.
 
@@ -129,9 +127,9 @@ This project uses Sphinx (a documentation generator) to generate clean, readable
 
 More information about Sphinx can be found at: https://www.sphinx-doc.org/en/master/usage/quickstart.html
 
-Before setting up Sphinx, users must install the required documentation dependencies via pip.
+Before setting up Sphinx, users must install the required documentation dependencies (`sphinx` ,`sphinx_rtd_theme`, `myst-parser`) via pip. These packages are installed when you install CASPER. If you only installed `[dev,test]` dependencies in `pyproject.toml`, run the following command to install `[doc]` dependencies.
 ```shell
-pip install sphinx sphinx_rtd_theme myst-parser
+pip install sphinx sphinx_rtd_theme myst-parser linkify-it-py
 ```
 After dependencies are installed, run this command to initialize a new Sphinx documentation project in a folder called "docs".
 1. It will prompt you for your project info (project name, author, version, etc.).
@@ -155,7 +153,7 @@ sphinx-build -b html docs docs/_build/html
 ```
 
 ### Collaboration, Scientific Use
-If you want to use this package for your scientific use and/or help to complete the development, please contact first Devin Whitten (devin.d.whitten@gmail.com), Jinmi Yoon (jinmi.yoon@gmail.com), or Taylor Webb (taylorw0525@gmail.com).
+If you want to use this package for your scientific use and/or help to complete the development, please contact Jinmi Yoon (jinmi.yoon@gmail.com).
 
 ### Stellar Parameters Space for CASPER
 [Fe/H] = [-4.5, -1.0], Teff = [4000, 5500] K, [C/Fe] = [-0.5. 4.5] , logg =[0.0, 5.5]
