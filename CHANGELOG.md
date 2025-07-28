@@ -19,7 +19,7 @@
 - When CASPER runs, `logs/`, `npsave/`, and `outputs/` are automatically created, and data is stored within the appropriate files
 - Added docstrings to each function
 - Added type hints to each function
-- Installed the Open Astronomy cookiecutter package
+- Utilized the Open Astronomy cookiecutter package template for the CASPER package
 - Added pytest to most functions in `tests/`
 - Set up Sphinx autodoc
 - Added pytest and Sphinx autodoc installation instructions to the readme
