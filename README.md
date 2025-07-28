@@ -115,7 +115,11 @@ pip install pytest
 ```
 Next, add a tests/ directory at the root of your project and place your test files there.
 
-To run the pytest
+To run the pytest, cd to the `tests` folder and run the command below. This command will run all relevant tests.
+```shell
+pytest 
+```
+If you want to run a single pytest, cd to the directory where the test is found and run
 ```shell
 pytest <your/file/path.py>
 ```
