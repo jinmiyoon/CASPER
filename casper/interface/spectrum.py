@@ -808,10 +808,8 @@ class Spectrum:
         -------
         tuple[float, float]
             A tuple containing:
-
             - logg : float
             Estimated surface gravity.
-
             - logg_err : float
             Uncertainty in the surface gravity estimate.
         """
