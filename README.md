@@ -127,7 +127,7 @@ This project uses Sphinx (a documentation generator) to generate clean, readable
 
 More information about Sphinx can be found at: https://www.sphinx-doc.org/en/master/usage/quickstart.html
 
-Before setting up Sphinx, users must install the required documentation dependencies via pip.
+Before setting up Sphinx, users must install the required documentation dependencies (`sphinx` ,`sphinx_rtd_theme`, `myst-parser`) via pip. These packages are installed when you install CASPER. If you only installed `[dev,test]` dependencies in `pyproject.toml`, run the following command to install `[doc]` dependencies.
 ```shell
 pip install sphinx sphinx_rtd_theme myst-parser linkify-it-py
 ```
