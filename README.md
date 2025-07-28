@@ -131,7 +131,7 @@ More information about Sphinx can be found at: https://www.sphinx-doc.org/en/mas
 
 Before setting up Sphinx, users must install the required documentation dependencies via pip.
 ```shell
-pip install sphinx sphinx_rtd_theme myst-parser
+pip install sphinx sphinx_rtd_theme myst-parser linkify-it-py
 ```
 After dependencies are installed, run this command to initialize a new Sphinx documentation project in a folder called "docs".
 1. It will prompt you for your project info (project name, author, version, etc.).
