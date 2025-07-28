@@ -153,7 +153,7 @@ sphinx-build -b html docs docs/_build/html
 ```
 
 ### Collaboration, Scientific Use
-If you want to use this package for your scientific use and/or help to complete the development, please contact first Devin Whitten (devin.d.whitten@gmail.com), Jinmi Yoon (jinmi.yoon@gmail.com), or Taylor Webb (taylorw0525@gmail.com).
+If you want to use this package for your scientific use and/or help to complete the development, please contact Jinmi Yoon (jinmi.yoon@gmail.com).
 
 ### Stellar Parameters Space for CASPER
 [Fe/H] = [-4.5, -1.0], Teff = [4000, 5500] K, [C/Fe] = [-0.5. 4.5] , logg =[0.0, 5.5]
