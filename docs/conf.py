@@ -21,8 +21,8 @@ os.environ["SPHINX_BUILD"] = "1"
 release = ".version_"
 
 
-project = "Casper"
-author = "Taylor Webb"
+project = "CASPER"
+author = "Devin Whitten, Jinmi Yoon, Taylor Webb"
 copyright = f"{datetime.datetime.now().year}, {author}"
 
 # -- General configuration ---------------------------------------------------
