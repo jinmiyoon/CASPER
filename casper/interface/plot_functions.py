@@ -102,10 +102,7 @@ def plot_spectra(spectra_batch) -> None:
     logger.info(f"Saving as: {spectra_batch.output_name}")
     rows, columns = 8, 5
 
-    # pages = int(np.ceil(spectra_batch.length / (rows * columns)))
-
     pp = PdfPages(spectra_batch.output_name + "_spec.pdf")
-    # count = 0
 
     for i, spec in enumerate(spectra_batch.spectra_array):
         if i % rows == 0:

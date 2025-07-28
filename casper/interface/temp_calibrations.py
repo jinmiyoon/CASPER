@@ -113,12 +113,12 @@ def Bergeat(JK: float) -> float:
     """
     Estimate effective temperature using the Bergeat calibration.
 
-    This function calculates Teff using the J-Ks color and [Fe/H], following the approach from Bergeat et al.
+    This function calculates Teff using the $(J-K)_{0}$ color and [Fe/H], following the approach from Bergeat et al.
 
     Parameters
     ----------
     JK : float
-        The J-Ks color index.
+        The $(J-K)_{0}$ color index.
 
     Returns
     -------
@@ -127,12 +127,12 @@ def Bergeat(JK: float) -> float:
 
     Notes
     -----
-    Based on the calibration from Bergeat et al. (2001).
+    Based on the calibration from Bergeat et al. (2001), Eq.(19) and Table 5.
     """
     CIj0 = JK
     if CIj0 <= 2.1:
         logT_JK = -0.184 * CIj0 + 3.74
-    elif CIj0 >= 2.1:
+    elif CIj0 > 2.1:
         logT_JK = -0.109 * CIj0 + 3.59
 
     return np.power(10, logT_JK)

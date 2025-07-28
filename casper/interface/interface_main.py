@@ -23,7 +23,7 @@ from scipy.optimize import minimize
 from statsmodels.nonparametric.kde import KDEUnivariate
 
 from casper.interface import MAD, MCMC_interface, ac, config
-from casper.interface.synthetic_functions import CAII_CH_CHI_LH, get_grav_interp, get_interp
+from casper.interface.synthetic_functions import CAII_CH_CHI_LH, get_grav_interp, get_interp, normalize_synth_spectrum
 from casper.utils.logger_config import setup_logger
 
 logger = setup_logger(__name__)
@@ -114,7 +114,7 @@ def archetype_classify_MC(spectrum: object) -> None:
     GIII_NORM_SYNTH = [synth_normalize(spectrum, "GIII", temp) for temp in temp_values]
 
     end1 = time.time()
-    logger.info(f"interface_main: archetype_classify_MC SYNTH: took {end1 - start:.1f} seconds")
+    logger.info(f"archetype_classify_MC SYNTH: took {end1 - start:.1f} seconds")
 
     GI_LLs = np.array(
         [
@@ -170,7 +170,7 @@ def archetype_classify_MC(spectrum: object) -> None:
         }
     )
     end2 = time.time()
-    logger.info(f"interface_main: archetype_classify_MC LLs: took {end2 - end1:.1f} seconds")
+    logger.info(f"archetype_classify_MC LLs: took {end2 - end1:.1f} seconds")
 
     return
 
@@ -267,7 +267,7 @@ def mcmc_determination(spectrum: object, mode: str = "COARSE", burnin_factor: in
 
     # Gaussian distribution
     pos = initial + initial * (2e-2 * np.random.rand(64, len(initial)))
-    logger.info(f"interface_main: pos = {pos}")
+    logger.info(f"pos = {pos}")
 
     nwalkers, ndim = pos.shape
 
@@ -302,49 +302,43 @@ def mcmc_determination(spectrum: object, mode: str = "COARSE", burnin_factor: in
 
     num_valid_autocorr_time_value = len(tau) - np.isnan(tau).sum()
     logger.info(
-        "\t\t interface_main: tau's shape= {}, length ={}, how many nan values = {}".format(
-            tau.shape, len(tau), np.isnan(tau).sum()
-        )
+        "\t\t tau's shape= {}, length ={}, how many nan values = {}".format(tau.shape, len(tau), np.isnan(tau).sum())
     )
 
-    logger.info(
-        "\t\t interface_main: tau = {}, num_valid_autocorr_time_value ={} ".format(tau, num_valid_autocorr_time_value)
-    )
+    logger.info("\t\t tau = {}, num_valid_autocorr_time_value ={} ".format(tau, num_valid_autocorr_time_value))
 
     if num_valid_autocorr_time_value == 0:
-        logger.warning("\t\t interface_main: all autocorr_times are Nan!")
+        logger.warning("\t\t all autocorr_times are Nan!")
 
         max_auto_corr_time = 70
 
     elif num_valid_autocorr_time_value == 1:
-        logger.warning("\t\t interface_main: all except one dim autocorr_time are Nan")
+        logger.warning("\t\t all except one dim autocorr_time are Nan")
 
         for taulist in tau:
             if not np.isnan(taulist):
                 max_auto_corr_time = taulist
 
     else:
-        logger.info("\t\t interface_main: n >= 2 in tau array values are vaild numbers ")
+        logger.info("\t\t n >= 2 in tau array values are vaild numbers ")
 
         max_auto_corr_time = np.nanmax(tau)
-        logger.info(f"\t\t interface_main: maximum autocorrelation time = {max_auto_corr_time}")
+        logger.info(f"\t\t maximum autocorrelation time = {max_auto_corr_time}")
 
     n_discard = int(burnin_factor * max_auto_corr_time)
 
     if n_discard >= 0.5 * n_step:
-        logger.warning(
-            "\t\t interface_main: n_discard is larger than the mcmc iterations! Setting n_discard to half the iterations. "
-        )
+        logger.warning("\t\t n_discard is larger than the mcmc iterations! Setting n_discard to half the iterations. ")
 
         n_discard = int(0.5 * n_step)
     logger.info(f"\t\t mcmc mode = {mode}")
 
     mean_acc_fraction = np.mean(sampler.acceptance_fraction)
-    logger.info(f"\t\t interface_main: mean acceptance fraction: {mean_acc_fraction:.3f}")
+    logger.info(f"\t\t mean acceptance fraction: {mean_acc_fraction:.3f}")
 
-    logger.info(f"\t\t interface_main: max autocorrelation_time = {max_auto_corr_time}")
+    logger.info(f"\t\t max autocorrelation_time = {max_auto_corr_time}")
 
-    logger.info(f"\t\t interface_main: recommended n_discard = {n_discard}")
+    logger.info(f"\t\t recommended n_discard = {n_discard}")
 
     if mode == "COARSE":
         spectrum.mcmc_coarse_acc_frac = mean_acc_fraction
@@ -390,7 +384,7 @@ def generate_synthetic(spectrum: object) -> None:
         spectrum.set_synth_spectrum(pd.DataFrame({"wave": SYNTH_WAVE, "norm": NORM_SYNTH_FLUX.T}))
     else:
         logger.warning(
-            f"generate_synthetic: Interpolated synthetic flux is not finite, params = "
+            f"Interpolated synthetic flux is not finite, params = "
             f"{spectrum.MCMC_COARSE['TEFF'][0]}, {spectrum.MCMC_REFINE['FEH'][0]}, {spectrum.MCMC_REFINE['CFE'][0]}"
         )
 
@@ -425,7 +419,7 @@ def estimate_logg(spectrum: object) -> None:
     spectrum.logg = GRAV_INTERP[spectrum.get_gravity_class()](
         spectrum.MCMC_COARSE["TEFF"][0], spectrum.MCMC_REFINE["FEH"][0]
     )
-    logger.info(f"\t\t interface_main: logg = {spectrum.logg}")
+    logger.info(f"\t\t logg = {spectrum.logg}")
 
     samples_COARSE = spectrum.MCMC_COARSE_sampler.get_chain(discard=spectrum.mcmc_coarse_n_discard, thin=1, flat=True)
     teff_dist = samples_COARSE[:, 0]
@@ -435,9 +429,9 @@ def estimate_logg(spectrum: object) -> None:
     logg_err_std = np.std(logg_COARSE_dist)
     logg_err_mad = MAD.MAD(logg_COARSE_dist)
 
-    logger.info(f"\t\t interface_main: logg = {spectrum.logg} +/- {spectrum.logg_err}")
+    logger.info(f"\t\t logg = {spectrum.logg} +/- {spectrum.logg_err}")
 
-    logger.info(f"\t\t interface_main: logg_std = {logg_err_std}, logg_mad = {logg_err_mad}")
+    logger.info(f"\t\t logg_std = {logg_err_std}, logg_mad = {logg_err_mad}")
 
     return
 

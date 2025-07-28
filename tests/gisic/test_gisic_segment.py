@@ -3,17 +3,24 @@ import pytest
 
 from casper.interface.gisic import Segment
 
+wave_data = np.linspace(4050.0, 4070.0, 21)
+flux_data = 1000.0 * (
+    1.0
+    - 0.3 * np.exp(-0.25 * ((wave_data - 4054.0) / 4) ** 2)
+    - 0.2 * np.exp(-0.25 * ((wave_data - 4070.0) / 2.5) ** 2)
+)
+
 
 @pytest.mark.parametrize(
     "wl, flux, expected_wl, expected_flux, expected_midpoint",
     [
-        ([4000, 5000, 6000], [1.0, 1.2, 1.1], [4000, 5000, 6000], [1.0, 1.2, 1.1], 5000.0),
+        (wave_data, flux_data, wave_data, flux_data, np.median(wave_data)),
     ],
 )
 def test_segment_init(wl, flux, expected_wl, expected_flux, expected_midpoint):
     seg = Segment(wl=wl, flux=flux)
 
-    assert seg.wl == expected_wl
+    assert np.array_equal(seg.wl, expected_wl)
     assert np.array_equal(seg.flux, expected_flux)
 
     if np.isnan(expected_midpoint):
@@ -22,29 +29,43 @@ def test_segment_init(wl, flux, expected_wl, expected_flux, expected_midpoint):
         assert seg.midpoint == expected_midpoint
 
 
+# Valid cases
 @pytest.mark.parametrize(
-    "wl, which, expected_midpoint, valid",
+    "wl, which, expected_midpoint",
     [
-        ([4000, 5000, 6000], "left", 4000, True),
-        ([4000, 5000, 6000], "right", 6000, True),
-        ([4000, 5000, 6000], "top", 5000, False),
-        ([4000, 5000, 6000], "", 5000, False),
+        ([4000, 5000, 6000], "left", 4000),
+        ([4000, 5000, 6000], "right", 6000),
     ],
 )
-def test_is_edge(wl, which, expected_midpoint, valid, capsys):
+def test_is_edge_valid(wl, which, expected_midpoint):
     seg = Segment(wl=wl, flux=[1.0] * len(wl))
     seg.midpoint = np.median(wl)
 
     seg.is_edge(which)
 
-    if valid:
-        assert seg.midpoint == expected_midpoint
-    else:
-        assert seg.midpoint == np.median(wl)
+    assert seg.midpoint == expected_midpoint
 
-        # Check that the error message was printed
-        captured = capsys.readouterr()
-        assert "Error in edge definition" in captured.out
+
+# Invalid cases
+@pytest.mark.parametrize(
+    "wl, which",
+    [
+        ([4000, 5000, 6000], "top"),
+        ([4000, 5000, 6000], ""),
+    ],
+)
+def test_is_edge_invalid(wl, which, caplog):
+    seg = Segment(wl=wl, flux=[1.0] * len(wl))
+    seg.midpoint = np.median(wl)
+
+    with pytest.raises(ValueError) as error:  # noqa: F841
+        seg.is_edge(which)
+
+    # Check that midpoint was not changed
+    assert seg.midpoint == np.median(wl)
+
+    # Check that error was logged
+    assert f"Invalid value for 'which': {which}" in caplog.text
 
 
 @pytest.mark.parametrize(

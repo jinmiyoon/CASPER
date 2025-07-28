@@ -6,6 +6,7 @@ from numpy.typing import ArrayLike
 from scipy.interpolate import interp1d
 
 from casper.interface import config
+from casper.interface.spectrum import Spectrum
 from casper.utils.logger_config import setup_logger
 
 logger = setup_logger(__name__)
@@ -129,7 +130,7 @@ def CAII_K18(wave: ArrayLike, flux: ArrayLike) -> float:
     return integrate.quad(func, 3924.7, 3942.7, limit=200, points=wave[(wave > 3924.7) & (wave < 3942.7)])[0]
 
 
-def get_KP_band(spectrum) -> Tuple[float, float]:
+def get_KP_band(spectrum: Spectrum) -> Tuple[float, float]:
     """
     Return the Ca II K line wavelength range for chi-square fitting based on Beers (1999),
     using measurements K6, K12, and K18.
@@ -167,11 +168,11 @@ def get_KP_band(spectrum) -> Tuple[float, float]:
         return KP_BOUNDS["K18"]
 
     else:
-        logger.warning("Warning: error in CAII_KP")
+        logger.warning("Invalid CAII_KP bounds; returning np.nan")
         return np.nan
 
 
-def set_CH_procedure(spectrum) -> None:
+def set_CH_procedure(spectrum: Spectrum) -> None:
     """
     Set the carbon analysis mode for the given spectrum based on G-band strength.
 
@@ -248,5 +249,5 @@ def CAII_KP(wave: np.ndarray, flux: np.ndarray) -> Union[float, np.float64]:
         return K18
 
     else:
-        logger.warning("Warning: error in CAII_KP")
+        logger.warning("nvalid CAII_KP index value; returning np.nan")
         return np.nan
