@@ -167,7 +167,7 @@ def get_KP_band(spectrum) -> Tuple[float, float]:
         return KP_BOUNDS["K18"]
 
     else:
-        logger.warning("Error in CAII_KP")
+        logger.warning("Invalid CAII_KP bounds; returning np.nan")
         return np.nan
 
 
