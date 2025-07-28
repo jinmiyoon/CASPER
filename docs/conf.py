@@ -10,12 +10,9 @@ import sys
 
 sys.path.insert(0, os.path.abspath("../casper"))
 
-os.environ["SPHINX_BUILD"] = "1"
-
 
 # -- Project information -----------------------------------------------------
 # The full version, including alpha/beta/rc tags
-# from casper import __version__
 
 # release = __version__
 release = ".version_"

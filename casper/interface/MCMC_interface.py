@@ -1,4 +1,3 @@
-import os
 from typing import Any, Callable, Dict, Literal, Tuple
 
 import numpy as np
@@ -74,6 +73,7 @@ def interp1d_synth_flux(
         A 1D linear interpolating function over the synthetic spectrum,
         or None if the interpolated flux is not finite.
     """
+    INTERPOLATOR = get_interp()
     if np.isfinite(INTERPOLATOR[G_CLASS]([teff, feh, carbon])).all():
         synth_flux = INTERPOLATOR[G_CLASS]([teff, feh, carbon])[0]
         norm_synth_flux = normalize_synth_spectrum(
@@ -451,9 +451,3 @@ def chi_ll_refine_C2(
 
     else:
         return -np.inf
-
-
-if os.environ.get("SPHINX_BUILD") != "1":
-    INTERPOLATOR = get_interp()
-else:
-    INTERPOLATOR = None

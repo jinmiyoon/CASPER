@@ -1,11 +1,11 @@
-CASPER package
+casper package
 ==============
 
 Subpackages
 -----------
 
 .. toctree::
-   :maxdepth: 5
+   :maxdepth: 4
 
    casper.interface
 
