@@ -421,7 +421,7 @@ class Spectrum:
         sigma : float
             The uncertainty (standard deviation) associated with the effective temperature.
         """
-        logger.info(f"batch.set_temperature(): temp={input_temp}, sigma={sigma}")
+        logger.info(f"set_temperature(): temp={input_temp}, sigma={sigma}")
         self.teff_irfm = input_temp
         self.teff_irfm_err = sigma
 

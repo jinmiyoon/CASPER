@@ -506,7 +506,7 @@ class Batch:
             logger.info("\n" + table.draw())
 
         print(table.draw(), file=open(self.output_name + "_archetype_likelihood_table.txt", "a"))
-        logger.info(f"\t\t interface_main: Time spent for archetype classification is {time.time() - start_time:.1f}")
+        logger.info(f"\t\t Time spent for archetype classification is {time.time() - start_time:.1f}")
 
         return
 
