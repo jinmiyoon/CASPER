@@ -20,7 +20,7 @@
 - Added docstrings to each function
 - Added type hints to each function
 - Utilized the Open Astronomy cookiecutter package template for the CASPER package
-- Added pytest to most functions in `tests/`
+- Added pytest to many functions of `gisic` and `interface` in `tests/`
 - Set up Sphinx autodoc
 - Added pytest and Sphinx autodoc installation instructions to the readme
 - Updated readme instructions so they are releveant and accurate
