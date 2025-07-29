@@ -77,7 +77,7 @@ casper.interface.interface\_main module
    :undoc-members:
 
 casper.interface.io\_paths module
--------------------------------------
+---------------------------------
 
 .. automodule:: casper.interface.io_paths
    :members:
@@ -93,7 +93,7 @@ casper.interface.plot\_functions module
    :undoc-members:
 
 casper.interface.spectrum module
--------------------------------
+--------------------------------
 
 .. automodule:: casper.interface.spectrum
    :members:

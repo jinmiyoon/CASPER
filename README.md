@@ -116,6 +116,7 @@ Next, add a tests/ directory at the root of your project and place your test fil
 To run the pytest, cd to the `tests` folder and run the command below. This command will run all relevant tests.
 ```shell
 pytest
+pytest
 ```
 If you want to run a single pytest, cd to the directory where the test is found and run
 ```shell
@@ -127,27 +128,17 @@ This project uses Sphinx (a documentation generator) to generate clean, readable
 
 More information about Sphinx can be found at: https://www.sphinx-doc.org/en/master/usage/quickstart.html
 
-Before setting up Sphinx, users must install the required documentation dependencies (`sphinx` ,`sphinx_rtd_theme`, `myst-parser`) via pip. These packages are installed when you install CASPER. If you only installed `[dev,test]` dependencies in `pyproject.toml`, run the following command to install `[doc]` dependencies.
+Before setting up Sphinx, users must install the required documentation dependencies (`sphinx` ,`sphinx_rtd_theme`, `myst-parser`) via pip. These packages are installed when you install CASPER. If you only installed `[dev,test]` dependencies in `pyproject.toml`, run the following command to install `[docs]` dependencies.
 ```shell
-pip install sphinx sphinx_rtd_theme myst-parser linkify-it-py
+pip install .[docs]
 ```
-After dependencies are installed, run this command to initialize a new Sphinx documentation project in a folder called "docs".
-1. It will prompt you for your project info (project name, author, version, etc.).
-2. Creates a docs/ folder (if it doesn’t exist).
-3. Generates starter config files inside docs/, including:
-    - conf.py: your main configuration file
-    - index.rst: the root page of your docs (serves as the welcome page)
-    - makefile and make.bat: shortcuts to build docs on Linux/macOS or Windows
-NOTE: Make sure to add any missing extensions and Sphinx configuration options to your conf.py if it differs from the repo's conf.py.
-```shell
-sphinx-quickstart docs
-```
-Next, this command auto-generates .rst files for your Python package so Sphinx can build documentation from your code. It finds all modules and sub-packages and generates .rst stub files (like casper.interface.rst, casper.utils.rst, etc.) in the docs/ folder.
-Each .rst file includes .. automodule:: directives to tell Sphinx to pull in the docstrings from your code.
+The following command auto-generates .rst files for your Python package so Sphinx can build documentation from your code. It finds all modules and sub-packages and generates .rst stub files (like casper.interface.rst, casper.utils.rst, etc.) in the docs folder.
+
+Each .rst file includes .. automodule:: directives to tell Sphinx to pull in the docstrings from your code. Run the command below in the main project directory where the `docs` folder is found.
 ```shell
 sphinx-apidoc -o docs casper #replace casper with project folder name if needed
 ```
-Lastly, run this command at root level to build your Sphinx documentation as a static website (in HTML format). It will create a build/html folder in docs that stores the HTML code for the website.
+Next, run the following command at root level to build your Sphinx documentation as a static website (in HTML format). It will create a build/html folder in docs that stores the HTML code for the website.
 ```shell
 sphinx-build -b html docs docs/_build/html
 ```
@@ -171,12 +162,8 @@ If you want to use this package for your scientific use and/or help to complete 
 <img src="https://github.com/DevinWhitten/CCSLab/blob/master/images/continuum_animation.gif" width="80%"
 style="display:block;margin: 0 auto;">
 
+## License
 
-Stellar parameter estimation with CASPER
-----------------------------------------
-
-License
--------
 
 This project is Copyright (c) Devin Whitten, Jinmi Yoon, and Taylor Webb and licensed under
 the terms of the BSD 3-Clause license. This package is based upon
@@ -184,10 +171,7 @@ the `Openastronomy packaging guide <https://github.com/OpenAstronomy/packaging-g
 which is licensed under the BSD 3-clause licence. See the licenses folder for
 more information.
 
-Some portions of this project were developed with the assistance of [ChatGPT](https://openai.com/chatgpt)
-
-Contributing
-------------
+## Contributing
 
 We love contributions! Casper is open source,
 built on open source, and we'd love to have you hang out in our community.

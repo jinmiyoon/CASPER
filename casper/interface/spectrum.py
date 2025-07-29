@@ -807,7 +807,7 @@ class Spectrum:
         Returns
         -------
         tuple[float, float]
-            A tuple containing:
+            A tuple containing
             - logg : float
             Estimated surface gravity.
             - logg_err : float

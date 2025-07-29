@@ -27,8 +27,6 @@ class Segment:
         self.wl = np.array([]) if wl is None else np.array(wl)
         self.flux = np.array([]) if flux is None else np.array(flux)
         self.midpoint = np.median(self.wl)
-        print("wl type:", type(self.wl))
-        print("flux type:", type(self.flux))
 
     def is_edge(self, which: str) -> None:
         """

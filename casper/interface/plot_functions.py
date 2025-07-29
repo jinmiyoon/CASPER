@@ -1,3 +1,5 @@
+from typing import TYPE_CHECKING
+
 import corner
 import matplotlib.pyplot as plt
 import numpy as np
@@ -8,7 +10,11 @@ from scipy.interpolate import interp1d
 
 from casper.interface import config
 from casper.interface.MCMC_interface import kde_param
+from casper.interface.spectrum import Spectrum
 from casper.utils.logger_config import setup_logger
+
+if TYPE_CHECKING:
+    from casper.interface.batch import Batch
 
 logger = setup_logger(__name__)
 
@@ -21,7 +27,7 @@ plt.rcParams["ytick.labelsize"] = 5.5
 plt.rcParams["axes.linewidth"] = 0.5
 
 
-def produce_title(spectrum) -> str:
+def produce_title(spectrum: Spectrum) -> str:
     """
     Generate a formatted plot title string using spectrum metadata and MCMC results.
 
@@ -32,7 +38,7 @@ def produce_title(spectrum) -> str:
 
     Parameters
     ----------
-    spectrum : Spectrum
+    spectrum : Scasper.interface.spectrum.Spectrum
         An instance of the `Spectrum` class that contains stellar metadata,
         MCMC-derived parameters, and classification information.
 
@@ -69,21 +75,22 @@ def produce_title(spectrum) -> str:
     )
 
 
-def plot_spectra(spectra_batch) -> None:
+def plot_spectra(spectra_batch: "Batch") -> None:
     """
     Generate and save a multi-panel PDF of spectral plots for each spectrum in a batch.
 
     This function creates a multi-page PDF where each page displays several subplots
     showing the raw, normalized, and zoomed-in regions of each spectrum. For each spectrum,
     the following are plotted:
-        - Raw flux with continuum overlay
-        - Normalized spectrum
-        - Zoomed-in views of Ca II, CH, and C₂ bands with error shading
-        - Synthetic model overlay
+
+    - Raw flux with continuum overlay
+    - Normalized spectrum
+    - Zoomed-in views of Ca II, CH, and C₂ bands with error shading
+    - Synthetic model overlay
 
     Parameters
     ----------
-    spectra_batch : object
+    spectra_batch : Batch
         An object containing:
             - spectra_array : list of individual spectrum-like objects
             - output_name : str, base name for the saved PDF file
@@ -228,7 +235,7 @@ def plot_spectra(spectra_batch) -> None:
     # return
 
 
-def plot_mcmc_trace_array(spec_batch) -> None:
+def plot_mcmc_trace_array(spec_batch: "Batch") -> None:
     """
     Generate and save MCMC trace plots for all spectra in a batch.
 
@@ -239,8 +246,8 @@ def plot_mcmc_trace_array(spec_batch) -> None:
 
     Parameters
     ----------
-    spec_batch : object
-        An object with the following attributes:
+    spec_batch : Batch
+        An instance of the Batch class with the following attributes:
         - spectra_array : list of spectrum-like objects
         - output_name : str, used as the base name for the output PDF
 
@@ -264,7 +271,7 @@ def plot_mcmc_trace_array(spec_batch) -> None:
     # return
 
 
-def plot_single_mcmc_trace(spectrum, n_thin: int = 1) -> plt.Figure:
+def plot_single_mcmc_trace(spectrum: Spectrum, n_thin: int = 1) -> plt.Figure:
     """
     Plot the MCMC trace (walkers over steps) for a single spectrum object.
 
@@ -274,7 +281,7 @@ def plot_single_mcmc_trace(spectrum, n_thin: int = 1) -> plt.Figure:
 
     Parameters
     ----------
-    spectrum : object
+    spectrum : casper.interface.spectrum.Spectrum
         An object with the following attributes and methods:
         - MCMC_COARSE_sampler: the emcee sampler object
         - get_sequence(): returns an identifier string for the spectrum
@@ -339,7 +346,7 @@ def plot_single_mcmc_trace(spectrum, n_thin: int = 1) -> plt.Figure:
     return fig
 
 
-def plot_corner_array(spec_batch) -> None:
+def plot_corner_array(spec_batch: "Batch") -> None:
     """
     Generate and save corner plots for all spectra in a batch.
 
@@ -348,8 +355,8 @@ def plot_corner_array(spec_batch) -> None:
 
     Parameters
     ----------
-    spec_batch : object
-        An object containing:
+    spec_batch : Batch
+        An instance of the Batch class with the following attributes:
         - spectra_array : list of spectrum-like objects
         - output_name : str, base name for the output PDF
 
@@ -374,7 +381,7 @@ def plot_corner_array(spec_batch) -> None:
     # return
 
 
-def plot_single_corner(spectrum, io_path: str, n_thin: int = 1) -> Figure:
+def plot_single_corner(spectrum: Spectrum, io_path: str, n_thin: int = 1) -> Figure:
     """
     Generate a corner plot for MCMC samples from a single spectrum object.
 
@@ -385,7 +392,7 @@ def plot_single_corner(spectrum, io_path: str, n_thin: int = 1) -> Figure:
 
     Parameters
     ----------
-    spectrum : object
+    spectrum : casper.interface.spectrum.Spectrum
         An object with the following:
         - MCMC_COARSE_sampler : the emcee sampler object with `.get_chain()`
         - get_sequence() : returns spectrum sequence ID

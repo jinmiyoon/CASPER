@@ -44,11 +44,12 @@ test = [
     "pytest-cov"
 ]
 docs = [
+    "linkify-it-py",
+    "myst-parser",
     "sphinx",
+    "sphinx-autobuild",
     "sphinx-automodapi",
-    "myst-parser>=2.0.0",
-    "sphinx_rtd_theme>=3.0.2",
-    "sphinx>=8.2.3",
+    "sphinx_rtd_theme",
 ]
 
 all = ["casper[dev, test, docs]"]
