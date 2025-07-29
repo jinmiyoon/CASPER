@@ -13,9 +13,6 @@ from casper.utils.logger_config import setup_logger
 logger = setup_logger(__name__)
 
 
-def get_interpolator():
-    return get_interp()
-
 
 def kde_param(distribution: np.ndarray, x0: float) -> Dict[str, Any]:
     """
