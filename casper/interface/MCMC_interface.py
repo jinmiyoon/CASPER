@@ -381,7 +381,7 @@ def chi_ll_refine_C2(
     Parameters
     ----------
     theta : np.ndarray
-        MCMC parameter array where::
+        MCMC parameter array where:
             - theta[0] = [Fe/H] metallicity
             - theta[1] = [C/Fe] carbon abundance
 

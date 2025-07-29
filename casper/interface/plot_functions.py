@@ -38,7 +38,7 @@ def produce_title(spectrum: Spectrum) -> str:
 
     Parameters
     ----------
-    spectrum : Scasper.interface.spectrum.Spectrum
+    spectrum : casper.interface.spectrum.Spectrum
         An instance of the `Spectrum` class that contains stellar metadata,
         MCMC-derived parameters, and classification information.
 
@@ -91,7 +91,7 @@ def plot_spectra(spectra_batch: "Batch") -> None:
     Parameters
     ----------
     spectra_batch : Batch
-        An object containing:
+        An instance of the Batch class containing:
             - spectra_array : list of individual spectrum-like objects
             - output_name : str, base name for the saved PDF file
             - length : int, total number of spectra in the batch
@@ -282,7 +282,7 @@ def plot_single_mcmc_trace(spectrum: Spectrum, n_thin: int = 1) -> plt.Figure:
     Parameters
     ----------
     spectrum : casper.interface.spectrum.Spectrum
-        An object with the following attributes and methods:
+        An instance of the `Spectrum` class with the following attributes and methods:
         - MCMC_COARSE_sampler: the emcee sampler object
         - get_sequence(): returns an identifier string for the spectrum
         - get_filename(): returns the source filename
@@ -378,8 +378,6 @@ def plot_corner_array(spec_batch: "Batch") -> None:
 
     pp.close()
 
-    # return
-
 
 def plot_single_corner(spectrum: Spectrum, io_path: str, n_thin: int = 1) -> Figure:
     """
@@ -393,7 +391,7 @@ def plot_single_corner(spectrum: Spectrum, io_path: str, n_thin: int = 1) -> Fig
     Parameters
     ----------
     spectrum : casper.interface.spectrum.Spectrum
-        An object with the following:
+        An instance of the `Spectrum` class with the following:
         - MCMC_COARSE_sampler : the emcee sampler object with `.get_chain()`
         - get_sequence() : returns spectrum sequence ID
         - get_starname() : returns star name

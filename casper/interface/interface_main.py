@@ -85,7 +85,7 @@ def archetype_classify_MC(spectrum: Spectrum) -> None:
     Parameters
     ----------
     spectrum : casper.interface.spectrum.Spectrum
-        Spectrum object with required attributes including:
+        An instance of the `Spectrum` class with required attributes including:
         - teff_irfm and teff_irfm_err
         - normalized frame as a DataFrame with "wave" and "norm"
         - KP_bounds and SN_DICT
@@ -180,7 +180,7 @@ def mcmc_determination(spectrum: Spectrum, mode: str = "COARSE", burnin_factor: 
     Parameters
     ----------
     spectrum : casper.interface.spectrum.Spectrum
-        Spectrum object that must contain:
+        An instance of the `Spectrum` class that must contain:
         - Spectral regions
         - Photometric temperature and error
         - Signal-to-noise dictionary
@@ -356,7 +356,7 @@ def generate_synthetic(spectrum: Spectrum) -> None:
     Parameters
     ----------
     spectrum : casper.interface.spectrum.Spectrum
-        Spectrum object that must contain:
+        An instance of the `Spectrum` class that must contain:
         - Gravity class
         - MCMC_COARSE["TEFF"] value
         - MCMC_REFINE["FEH"] and ["CFE"] values
@@ -399,7 +399,7 @@ def estimate_logg(spectrum: Spectrum) -> None:
     Parameters
     ----------
     spectrum : casper.interface.spectrum.Spectrum
-        Spectrum object containing MCMC parameters and samplers.
+        An instance of the `Spectrum` class containing MCMC parameters and samplers.
         Must include:
         - Gravity class
         - MCMC_COARSE and MCMC_REFINE parameter dictionaries
