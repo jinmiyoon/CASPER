@@ -12,7 +12,6 @@ from casper.utils.logger_config import setup_logger
 
 logger = setup_logger(__name__)
 
-INTERPOLATOR = get_interp()
 
 
 def kde_param(distribution: np.ndarray, x0: float) -> Dict[str, Any]:
@@ -75,6 +74,7 @@ def interp1d_synth_flux(
         A 1D linear interpolating function over the synthetic spectrum,
         or None if the interpolated flux is not finite.
     """
+    INTERPOLATOR = get_interp()
     if np.isfinite(INTERPOLATOR[G_CLASS]([teff, feh, carbon])).all():
         synth_flux = INTERPOLATOR[G_CLASS]([teff, feh, carbon])[0]
         norm_synth_flux = normalize_synth_spectrum(
@@ -379,13 +379,16 @@ def chi_ll_refine_C2(
     ----------
     theta : np.ndarray
         MCMC parameter array where:
-        - theta[0] = [Fe/H] metallicity
-        - theta[1] = [C/Fe] carbon abundance
+            - theta[0] = [Fe/H] metallicity
+            - theta[1] = [C/Fe] carbon abundance
+
     observed_spec_regions : dict
         Dictionary with keys "CA", "CH", and "C2", each mapping to a DataFrame
         containing observed spectral data with columns "wave" and "norm".
+
     synth_wave : np.ndarray
         Wavelength grid for the synthetic spectra.
+
     PARAMS : dict
         Dictionary of stellar parameters and inverse noise terms.
         Must contain:

@@ -17,7 +17,7 @@ from typing import Any, Dict, Tuple, Union
 
 import numpy as np
 
-from .spectrum import Spectrum
+from casper.interface.gisic.spectrum import Spectrum
 
 
 def normalize(

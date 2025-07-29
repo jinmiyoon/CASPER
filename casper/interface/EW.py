@@ -137,8 +137,8 @@ def get_KP_band(spectrum: Spectrum) -> Tuple[float, float]:
 
     Parameters
     ----------
-    spectrum : Spectrum
-        A Spectrum object with a 'frame' dictionary containing "wave" and "norm" arrays.
+    spectrum : casper.interface.spectrum.Spectrum
+        An instance of the `Spectrum` class with a 'frame' dictionary containing "wave" and "norm" arrays.
 
     Returns
     -------
@@ -182,8 +182,8 @@ def set_CH_procedure(spectrum: Spectrum) -> None:
 
     Parameters
     ----------
-    spectrum : Spectrum
-        A Spectrum object containing a frame with "wave" and "norm",
+    spectrum : casper.interface.spectrum.Spectrum
+        An instance of the `Spectrum` class containing a frame with "wave" and "norm",
         and methods for setting G-band and carbon mode.
 
     Returns
