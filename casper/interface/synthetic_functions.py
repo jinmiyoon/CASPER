@@ -1,4 +1,4 @@
-import pickle as pkl
+import pickle  # nosec B403
 from typing import Dict, Tuple
 
 import numpy as np
@@ -25,7 +25,7 @@ def get_interp():
 
     """
     with open("interface/libraries/SYNTHETIC_SPEC_R2000_INTERP.pkl", "rb") as master_lib:
-        INTERPOLATOR = pkl.load(master_lib)
+        INTERPOLATOR = pickle.load(master_lib)  # nosec B301
     return INTERPOLATOR
 
 
@@ -44,7 +44,7 @@ def get_grav_interp():
         ``interface/libraries/grav_interp.pkl``.
     """
     with open("interface/libraries/grav_interp.pkl", "rb") as grav_lib:
-        GRAV_INTERP = pkl.load(grav_lib)
+        GRAV_INTERP = pickle.load(grav_lib)  # nosec B301
         return GRAV_INTERP
 
 

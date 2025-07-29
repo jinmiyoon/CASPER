@@ -1,4 +1,4 @@
-CASPER
+casper
 ======
 
 .. toctree::

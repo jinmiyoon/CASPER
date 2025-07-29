@@ -253,16 +253,21 @@ class Spectrum:
         `define_cont_point()` method. The boost value scales the clipped median flux
         based on the MAD distribution across segments.
 
-        Precondition
-        -----------
-        `self.assess_segment_variation()` must be called beforehand to ensure
-        `self.mad_min` and `self.mad_range` are initialized.
-
         Parameters
         ----------
         boost : float
             A scaling factor applied to adjust the continuum point above the median
             flux, based on signal variation.
+
+        Returns
+        -------
+        None
+
+        Notes
+        -----
+        `self.assess_segment_variation()` must be called beforehand to ensure
+        `self.mad_min` and `self.mad_range` are initialized.
+
         """
         [segment.define_cont_point(self.mad_min, self.mad_range, boost=boost) for segment in self.segments]
 
