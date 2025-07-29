@@ -45,12 +45,16 @@ class Batch:
         parses the paths for the parameter file, spectra directory, and output file,
         and sets the corresponding attributes on the object.
 
-        Sets:
-            self.io_params (dict): Dictionary containing keys like 'param_path',
-                'spectra_dir_path', and 'output_file_name' loaded from the I/O parameter file.
-            self.param_path (str): Absolute path to the input parameter file.
-            self.spectra_path (str): Absolute path to the directory containing spectra files.
-            self.output_name (str): Full output file path including filename, saved under OUTPUT_DIR.
+        Notes
+        -----
+        This sets the following attributes:
+
+        - `self.io_params` (dict): Dictionary containing keys like 'param_path',
+            'spectra_dir_path', and 'output_file_name' loaded from the I/O parameter file.
+        - `self.param_path` (str): Absolute path to the input parameter file.
+        - `self.spectra_path` (str): Absolute path to the directory containing spectra files.
+        - `self.output_name` (str): Full output file path including filename, saved under OUTPUT_DIR.
+
         """
 
         logger.info(f"\nloading io_paths: {self.io_paths}")
@@ -430,12 +434,13 @@ class Batch:
 
         Output
         ------
-        - Saves a CSV file containing the S/N data to the specified output path.
+        Saves a CSV file containing the S/N data to the specified output path.
 
         Notes
         -----
-        - If the first attempt to save fails (e.g., due to file permissions or naming issues),
+        If the first attempt to save fails (e.g., due to file permissions or naming issues),
         it attempts to save the file with an alternate name ending in "1_snr.csv".
+
         """
 
         snr = pd.concat([spec.get_sn() for spec in self.spectra_array])
@@ -450,13 +455,13 @@ class Batch:
         Build and set MCMC argument dictionaries for all spectra.
 
         This method iterates over each Spectrum object in the batch and
-        calls set_mcmc_args(), which prepares the required arguments for
+        calls `set_mcmc_args()`, which prepares the required arguments for
         running MCMC parameter estimation.
 
         Notes
         -----
         - MCMC arguments typically include spectral regions, synthetic wavelength grids,
-        initial temperature estimates, and inverse S/N weights.
+          initial temperature estimates, and inverse S/N weights.
         - These are used later during coarse and refined MCMC runs.
         """
 
@@ -515,17 +520,23 @@ class Batch:
         Run MCMC parameter estimation and KDE post-processing for each spectrum in the batch.
 
         This method:
+
         1. Prepares spectral regions needed for MCMC.
         2. Performs a coarse MCMC run to estimate initial stellar parameters.
         3. Applies KDE smoothing to the coarse MCMC results.
         4. Performs a refined MCMC run based on the coarse outputs.
         5. Applies KDE smoothing to the refined MCMC results.
 
-        Output
-        ------
+        Returns
+        -------
+        None
+
+        Notes
+        -----
         - Updates each Spectrum object in `self.spectra_array` with MCMC chains, best-fit values,
         and KDE distributions.
         - Prints progress messages and total time taken.
+
         """
 
         logger.info("\n... performing MCMC determinations")

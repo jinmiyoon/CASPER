@@ -1,14 +1,13 @@
-###  CEMP Group Assignment and Stellar Parameter Estimation Routine (CASPER)
-#### Main Developers: Devin D. Whitten, Jinmi Yoon
-#### Email: devin.d.whitten@gmail.com, jinmi.yoon@gmail.com
+## CASPER
+### CEMP Group Assignment and Stellar Parameter Estimation Routine (CASPER)
 
 This script package, CASPER, is designed to determine reliable stellar parameters (temperature, metallicity, surface gravity, and carbon abundance) of low/medium-resolution stellar spectra for cool Carbon-Enhanced Metal-Poor (CEMP) stars (Teff < 5000K). This package is under development for public use and thus needs more testings and refinements (Whitten, Yoon, et al. in prep). The description of the CASPER methodology can be found in Yoon, Whitten, et al. 2020 (The Astrophysical Journal, 894,7). The detailed documentation, along with the codes, will be available for public use in the near future.
 
-## Installation
-### Required packages and versions
+### Installation
+#### Required packages and versions
 - See required packages found in the [pyproject.toml](pyproject.toml) or [caper311.yml](casper311.yml).
 
-### Python environment installation
+#### Python environment installation
 You can use `conda` to create and activate the CASPER environment.
 Change `env_name` below to your preferred name, run these commands on your terminal.
 
@@ -24,14 +23,14 @@ micromamba create -n env_name python=3.11
 micromamba activate env_name
 ```
 
-### CASPER installation
-#### Installation for users
+#### CASPER installation
+##### Installation for users
 The **casper** directory contains the python package itself, installable via pip. This will install the core dependencies defined in `pyproject.toml` fur running `casper`.
 
 ```shell
 pip install .
 ```
-#### Installation for developers
+##### Installation for developers
 If you are interested in developing and contributing to **casper**, you should install this package with `-e`, it allows you to work on the package's source code and see changes reflected immediately without needing to reinstall.
 
 ```shell
@@ -47,11 +46,11 @@ or
 pip install .[all] # "all" includes the dependencies of dev, test, docs
 ```
 
-## pre-commit for development
+### pre-commit for development
 
 [pre-commit](https://pre-commit.com/) allows all collaborators push their commits compliant with the same set of lint and format rules in **pyproject.toml** by checking all files in the project at different stages of the git workflow. It runs commands specified in the **.pre-commit-config.yaml** config file and runs checks before committing or pushing, to catch errors that would have caused a build failure before they reach CI.
 
-### Install pre-commit
+#### Install pre-commit
 You will need to install `pre-commit` manually.
 ```bash
 pip install pre-commit # if you haven't already installed the package
@@ -71,7 +70,9 @@ pre-commit autoupdate
 ```
 For other configuration options and more detailed information, check out at the [pre-commit](https://pre-commit.com/) page.
 
-### How to run CASPER
+### Setup
+
+#### How to run CASPER
 
 First, you can set up your custom input parameters and spectra and the output directory and file name prefix in [io_paths.py](interface/io_paths.py).
 
@@ -89,7 +90,7 @@ To run CASPER, run this command on your terminal.
 python main.py
 ```
 
-### Output files
+#### Output files
 Once you run CASPER, you will have several output files.
 
 - `*_archetype_likelihood_table.txt`: a table of CEMP group archetype likelihood
@@ -101,9 +102,49 @@ Once you run CASPER, you will have several output files.
 - `*_spectra_output.csv`: an extracted output of observed and synthetic spectra
 - `*_temp_cal_table.txt`: a table of temperature calibration
 
+#### When testing with pytest
+This project uses pytest for writing and running unit tests. Pytest is a lightweight testing framework that makes it easy to write simple test functions using plain Python and assert statements.
+
+More information on pytest can be found at: https://docs.pytest.org/en/stable/
+
+Install pytest via pip.
+```shell
+pip install pytest
+```
+Next, add a tests/ directory at the root of your project and place your test files there.
+
+To run the pytest, cd to the `tests` folder and run the command below. This command will run all relevant tests.
+```shell
+pytest
+pytest
+```
+If you want to run a single pytest, cd to the directory where the test is found and run
+```shell
+pytest <your/file/path.py>
+```
+
+#### Building the Documentation with Sphinx
+This project uses Sphinx (a documentation generator) to generate clean, readable documentation from Python docstrings. Sphinx supports both .rst and .md formats and can automatically extract and format documentation from your code using the extensions.
+
+More information about Sphinx can be found at: https://www.sphinx-doc.org/en/master/usage/quickstart.html
+
+Before setting up Sphinx, users must install the required documentation dependencies (`sphinx` ,`sphinx_rtd_theme`, `myst-parser`) via pip. These packages are installed when you install CASPER. If you only installed `[dev,test]` dependencies in `pyproject.toml`, run the following command to install `[docs]` dependencies.
+```shell
+pip install .[docs]
+```
+The following command auto-generates .rst files for your Python package so Sphinx can build documentation from your code. It finds all modules and sub-packages and generates .rst stub files (like casper.interface.rst, casper.utils.rst, etc.) in the docs folder.
+
+Each .rst file includes .. automodule:: directives to tell Sphinx to pull in the docstrings from your code. Run the command below in the main project directory where the `docs` folder is found.
+```shell
+sphinx-apidoc -o docs casper #replace casper with project folder name if needed
+```
+Next, run the following command at root level to build your Sphinx documentation as a static website (in HTML format). It will create a build/html folder in docs that stores the HTML code for the website.
+```shell
+sphinx-build -b html docs docs/_build/html
+```
 
 ### Collaboration, Scientific Use
-If you want to use this package for your scientific use and/or help to complete the development, please contact first both Devin Whitten (devin.d.whitten@gmail.com) and Jinmi Yoon (jinmi.yoon@gmail.com).
+If you want to use this package for your scientific use and/or help to complete the development, please contact Jinmi Yoon (jinmi.yoon@gmail.com).
 
 ### Stellar Parameters Space for CASPER
 [Fe/H] = [-4.5, -1.0], Teff = [4000, 5500] K, [C/Fe] = [-0.5. 4.5] , logg =[0.0, 5.5]
@@ -120,3 +161,43 @@ If you want to use this package for your scientific use and/or help to complete 
 
 <img src="https://github.com/DevinWhitten/CCSLab/blob/master/images/continuum_animation.gif" width="80%"
 style="display:block;margin: 0 auto;">
+
+## License
+
+
+This project is Copyright (c) Devin Whitten, Jinmi Yoon, and Taylor Webb and licensed under
+the terms of the BSD 3-Clause license. This package is based upon
+the `Openastronomy packaging guide <https://github.com/OpenAstronomy/packaging-guide>`_
+which is licensed under the BSD 3-clause licence. See the licenses folder for
+more information.
+
+## Contributing
+
+We love contributions! Casper is open source,
+built on open source, and we'd love to have you hang out in our community.
+
+**Imposter syndrome disclaimer**: We want your help. No, really.
+
+There may be a little voice inside your head that is telling you that you're not
+ready to be an open source contributor; that your skills aren't nearly good
+enough to contribute. What could you possibly offer a project like this one?
+
+We assure you - the little voice in your head is wrong. If you can write code at
+all, you can contribute code to open source. Contributing to open source
+projects is a fantastic way to advance one's coding skills. Writing perfect code
+isn't the measure of a good developer (that would disqualify all of us!); it's
+trying to create something, making mistakes, and learning from those
+mistakes. That's how we all improve, and we are happy to help others learn.
+
+Being an open source contributor doesn't just mean writing code, either. You can
+help out by writing documentation, tests, or even giving feedback about the
+project (and yes - that includes giving feedback about the contribution
+process). Some of these contributions may be the most valuable to the project as
+a whole, because you're coming to the project with fresh eyes, so you can see
+the errors and assumptions that seasoned contributors have glossed over.
+
+Note: This disclaimer was originally written by
+`Adrienne Lowe <https://github.com/adriennefriend>`_ for a
+`PyCon talk <https://www.youtube.com/watch?v=6Uj746j9Heo>`_, and was adapted by
+Casper based on its use in the README file for the
+`MetPy project <https://github.com/Unidata/MetPy>`_.

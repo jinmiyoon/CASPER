@@ -282,8 +282,6 @@ class Spectrum:
                 "FILENAME": [self.get_filename()],
                 "SN_AVG_CA": [round(self.SN_DICT["CA"]["SN_AVG"], 0)],
                 "SN_STD_CH": [round(self.SN_DICT["CA"]["SN_STD"], 0)],
-                "SN_AVG_CA": [round(self.SN_DICT["CH"]["SN_AVG"], 0)],
-                "SN_STD_CH": [round(self.SN_DICT["CH"]["SN_STD"], 0)],
                 "XI_AVG_CA": [round(self.SN_DICT["CA"]["XI_AVG"], 4)],
                 "XI_STD_CA": [round(self.SN_DICT["CA"]["XI_STD"], 4)],
                 "XI_AVG_CH": [round(self.SN_DICT["CH"]["XI_AVG"], 4)],
@@ -809,11 +807,11 @@ class Spectrum:
         Returns
         -------
         tuple[float, float]
-            A tuple containing:
+            A tuple containing
             - logg : float
-                Estimated surface gravity.
+            Estimated surface gravity.
             - logg_err : float
-                Uncertainty in the surface gravity estimate.
+            Uncertainty in the surface gravity estimate.
         """
 
         return self.logg.item(), self.logg_err

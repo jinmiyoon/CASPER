@@ -23,6 +23,7 @@ from scipy.optimize import minimize
 from statsmodels.nonparametric.kde import KDEUnivariate
 
 from casper.interface import MAD, MCMC_interface, ac, config
+from casper.interface.spectrum import Spectrum
 from casper.interface.synthetic_functions import CAII_CH_CHI_LH, get_grav_interp, get_interp, normalize_synth_spectrum
 from casper.utils.logger_config import setup_logger
 
@@ -35,20 +36,16 @@ LL_FUNCTION_DICT = {
     "REFINE": {"CH": MCMC_interface.chi_ll_refine, "CH+C2": MCMC_interface.chi_ll_refine_C2},
 }
 
-
-INTERPOLATOR = get_interp()
-GRAV_INTERP = get_grav_interp()
-
 SYNTH_WAVE = config.SYNTH_WAVE
 
 
-def synth_normalize(spectrum, group: str, temp: float) -> np.ndarray:
+def synth_normalize(spectrum: Spectrum, group: str, temp: float) -> np.ndarray:
     """
     Normalize the synthetic flux for a given stellar spectrum.
 
     Parameters
     ----------
-    spectrum : object
+    spectrum : casper.interface.spectrum.Spectrum
         A spectrum object that includes gravity class (G_CLASS) and mode (MODE).
     group : str
         Archetype group label (e.g., GI, GII, GIII).
@@ -66,7 +63,7 @@ def synth_normalize(spectrum, group: str, temp: float) -> np.ndarray:
     If the interpolated flux contains non-finite values, a warning is printed and
     nothing is returned.
     """
-
+    INTERPOLATOR = get_interp()
     interp_flux = INTERPOLATOR[spectrum.G_CLASS](
         temp, ARCHETYPE_PARAMS[spectrum.MODE][group]["FEH"], ARCHETYPE_PARAMS[spectrum.MODE][group]["CFE"]
     )
@@ -80,15 +77,15 @@ def synth_normalize(spectrum, group: str, temp: float) -> np.ndarray:
         )
 
 
-def archetype_classify_MC(spectrum: object) -> None:
+def archetype_classify_MC(spectrum: Spectrum) -> None:
     """
     Classify the archetype group (GI, GII, GIII) for a given spectrum
     using Monte Carlo simulation and log-likelihood comparison.
 
     Parameters
     ----------
-    spectrum : object
-        Spectrum object with required attributes including:
+    spectrum : casper.interface.spectrum.Spectrum
+        An instance of the `Spectrum` class with required attributes including:
         - teff_irfm and teff_irfm_err
         - normalized frame as a DataFrame with "wave" and "norm"
         - KP_bounds and SN_DICT
@@ -175,15 +172,15 @@ def archetype_classify_MC(spectrum: object) -> None:
     return
 
 
-def mcmc_determination(spectrum: object, mode: str = "COARSE", burnin_factor: int = 7) -> None:
+def mcmc_determination(spectrum: Spectrum, mode: str = "COARSE", burnin_factor: int = 7) -> None:
     """
     Run a Markov Chain Monte Carlo (MCMC) procedure to estimate stellar parameters
     using the input spectrum and configuration mode.
 
     Parameters
     ----------
-    spectrum : object
-        Spectrum object that must contain:
+    spectrum : casper.interface.spectrum.Spectrum
+        An instance of the `Spectrum` class that must contain:
         - Spectral regions
         - Photometric temperature and error
         - Signal-to-noise dictionary
@@ -352,14 +349,14 @@ def mcmc_determination(spectrum: object, mode: str = "COARSE", burnin_factor: in
     return
 
 
-def generate_synthetic(spectrum: object) -> None:
+def generate_synthetic(spectrum: Spectrum) -> None:
     """
     Generate and set the best synthetic spectrum for a star based on MCMC parameters.
 
     Parameters
     ----------
-    spectrum : object
-        Spectrum object that must contain:
+    spectrum : casper.interface.spectrum.Spectrum
+        An instance of the `Spectrum` class that must contain:
         - Gravity class
         - MCMC_COARSE["TEFF"] value
         - MCMC_REFINE["FEH"] and ["CFE"] values
@@ -372,7 +369,7 @@ def generate_synthetic(spectrum: object) -> None:
     - Assigns the normalized synthetic spectrum to the spectrum object
     - Handles invalid or NaN flux cases gracefully by filling with NaNs
     """
-
+    INTERPOLATOR = get_interp()
     interp_flux = INTERPOLATOR[spectrum.get_gravity_class()](
         spectrum.MCMC_COARSE["TEFF"][0], spectrum.MCMC_REFINE["FEH"][0], spectrum.MCMC_REFINE["CFE"][0]
     )
@@ -395,14 +392,14 @@ def generate_synthetic(spectrum: object) -> None:
     return
 
 
-def estimate_logg(spectrum: object) -> None:
+def estimate_logg(spectrum: Spectrum) -> None:
     """
     Estimate and assign the surface gravity (logg) and its uncertainty for the input spectrum.
 
     Parameters
     ----------
-    spectrum : object
-        Spectrum object containing MCMC parameters and samplers.
+    spectrum : casper.interface.spectrum.Spectrum
+        An instance of the `Spectrum` class containing MCMC parameters and samplers.
         Must include:
         - Gravity class
         - MCMC_COARSE and MCMC_REFINE parameter dictionaries
@@ -415,7 +412,7 @@ def estimate_logg(spectrum: object) -> None:
     - Uncertainty is computed using the scaled MAD from the MCMC COARSE samples.
     - Standard deviation and raw MAD are also printed for reference.
     """
-
+    GRAV_INTERP = get_grav_interp()
     spectrum.logg = GRAV_INTERP[spectrum.get_gravity_class()](
         spectrum.MCMC_COARSE["TEFF"][0], spectrum.MCMC_REFINE["FEH"][0]
     )
@@ -492,27 +489,23 @@ def kde_param_reflection(distro: np.ndarray) -> Dict[str, Any]:
     }
 
 
-def generate_kde_params(spectrum, mode: Literal["COARSE", "REFINE"], n_thin: int = 1) -> None:
+def generate_kde_params(spectrum: Spectrum, mode: Literal["COARSE", "REFINE"], n_thin: int = 1) -> None:
     """
     Perform kernel density estimation (KDE) on the MCMC sampler chain to estimate
     parameter values and uncertainties for a given spectrum.
 
     Parameters
     ----------
-    spectrum : Spectrum
+    spectrum : casper.interface.spectrum.Spectrum
         An instance of the Spectrum class containing MCMC sampler results and configuration data.
-
     mode : Literal["COARSE", "REFINE"]
         Determines whether to use the coarse or refined MCMC sampler chain.
-
     n_thin : int, optional
         Thinning factor for the MCMC chain. Default is 1 (no thinning).
 
-    Sets
-    ----
-    - MCMC parameter estimates (e.g., effective temperature, iron to hydrogen ratio,
-      carbon to iron ratio, signal-to-noise based uncertainty terms)
-    - KDE objects for each parameter to support probability density evaluation
+    Return
+    ------
+    None
 
     Notes
     -----
@@ -520,6 +513,9 @@ def generate_kde_params(spectrum, mode: Literal["COARSE", "REFINE"], n_thin: int
     - For `ndim == 5` or `6`, it additionally estimates effective temperature and signal-to-noise terms.
     - The abundance of carbon (A(C)) is calculated from the iron and carbon ratios.
     - The KDE is reflected at the edges to reduce boundary artifacts.
+    - Sets MCMC parameter estimates (e.g., effective temperature, iron to hydrogen ratio,carbon to iron ratio, signal-to-noise based uncertainty terms)
+    - Sets KDE objects for each parameter to support probability density evaluation
+
     """
 
     if mode == "COARSE":
