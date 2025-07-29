@@ -247,7 +247,7 @@ def plot_mcmc_trace_array(spec_batch: "Batch") -> None:
     Parameters
     ----------
     spec_batch : Batch
-        An object with the following attributes:
+        An instance of the Batch class with the following attributes:
         - spectra_array : list of spectrum-like objects
         - output_name : str, used as the base name for the output PDF
 
@@ -356,7 +356,7 @@ def plot_corner_array(spec_batch: "Batch") -> None:
     Parameters
     ----------
     spec_batch : Batch
-        An object containing:
+        An instance of the Batch class with the following attributes:
         - spectra_array : list of spectrum-like objects
         - output_name : str, base name for the output PDF
 
