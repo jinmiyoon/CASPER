@@ -1,4 +1,3 @@
-import os
 from typing import Any, Callable, Dict, Literal, Tuple
 
 import numpy as np
@@ -12,6 +11,10 @@ from casper.interface.synthetic_functions import get_interp, normalize_synth_spe
 from casper.utils.logger_config import setup_logger
 
 logger = setup_logger(__name__)
+
+
+def get_interpolator():
+    return get_interp()
 
 
 def kde_param(distribution: np.ndarray, x0: float) -> Dict[str, Any]:
@@ -74,6 +77,7 @@ def interp1d_synth_flux(
         A 1D linear interpolating function over the synthetic spectrum,
         or None if the interpolated flux is not finite.
     """
+    INTERPOLATOR = get_interpolator()
     if np.isfinite(INTERPOLATOR[G_CLASS]([teff, feh, carbon])).all():
         synth_flux = INTERPOLATOR[G_CLASS]([teff, feh, carbon])[0]
         norm_synth_flux = normalize_synth_spectrum(
@@ -395,7 +399,6 @@ def chi_ll_refine_C2(
             - "XI_CA", "XI_CH", "XI_C2": np.ndarrays of inverse noise (1/SNR)
     G_CLASS : str
         The stellar class used to identify the appropriate synthetic model.
-
     bounds : str, optional
         Bound checking mode. Defaults to "default".
 
@@ -448,9 +451,3 @@ def chi_ll_refine_C2(
 
     else:
         return -np.inf
-
-
-if os.environ.get("SPHINX_BUILD") != "1":
-    INTERPOLATOR = get_interp()
-else:
-    INTERPOLATOR = None

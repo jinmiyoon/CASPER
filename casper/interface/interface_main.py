@@ -36,15 +36,8 @@ LL_FUNCTION_DICT = {
 }
 
 
-# INTERPOLATOR = get_interp()
-# GRAV_INTERP = get_grav_interp()
-
-if os.environ.get("SPHINX_BUILD") != "1":
-    INTERPOLATOR = get_interp()
-    GRAV_INTERP = get_grav_interp()
-else:
-    INTERPOLATOR = None
-    GRAV_INTERP = None
+INTERPOLATOR = get_interp()
+GRAV_INTERP = get_grav_interp()
 
 
 SYNTH_WAVE = config.SYNTH_WAVE
