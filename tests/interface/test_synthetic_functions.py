@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from casper.interface.synthetic_functions import CAII_CH_CHI_LH, ln_chi_square_sigma, normalize_syth_spectrum
+from casper.interface.synthetic_functions import CAII_CH_CHI_LH, ln_chi_square_sigma, normalize_synth_spectrum
 
 
 @pytest.mark.parametrize(
@@ -30,7 +30,7 @@ def test_normalize_syth_spectrum_mocked(synth_flux, fake_cont, expected_min, exp
 
     with patch("casper.interface.synthetic_functions.normalize", return_value=fake_return):
         with patch("casper.interface.synthetic_functions.config.SIGMA", [15.0]):
-            norm_flux = normalize_syth_spectrum(synth_wave, synth_flux)
+            norm_flux = normalize_synth_spectrum(synth_wave, synth_flux)
 
     assert norm_flux.shape == synth_flux.shape
 
