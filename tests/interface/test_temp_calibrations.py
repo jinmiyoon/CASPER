@@ -1,7 +1,10 @@
+import math
+
 import numpy as np
+import pandas as pd
 import pytest
 
-from casper.interface.temp_calibrations import Bergeat, Casagrande, Hernandez
+from casper.interface.temp_calibrations import Bergeat, Casagrande, Fukugita, Hernandez, calibrate_temp_frame
 
 
 # hernandez
@@ -48,3 +51,44 @@ def test_bergeat(jk, expected_teff):
     teff = Bergeat(JK=jk)
     assert isinstance(teff, float)
     assert round(teff) == expected_teff
+
+
+# fukugita
+@pytest.mark.parametrize(
+    "gr, expected_range",
+    [
+        (0.3, (5000, 7000)),  # Valid case
+        (-1.47, (np.nan, np.nan)),  # Divide by zero: np.nan expected
+        ("bad", (np.nan, np.nan)),  # Invalid input: np.nan expected
+    ],
+)
+def test_Fukugita(gr, expected_range):
+    result = Fukugita(gr)
+
+    if math.isnan(expected_range[0]):
+        assert math.isnan(result)
+    else:
+        assert expected_range[0] < result < expected_range[1]
+
+
+# calibrate_temp_frame
+@pytest.mark.parametrize(
+    "JK, gr, expected_non_nan_count",
+    [
+        (0.85, 0.55, 4),  # 3 valid + ADOPTED
+        (0.85, np.nan, 3),  # 2 valid + ADOPTED
+        (np.nan, 0.55, 2),  # 1 valid + ADOPTED
+        (np.nan, np.nan, 0),  # All NaN including ADOPTED
+    ],
+)
+def test_calibrate_temp_frame(JK, gr, expected_non_nan_count):
+    df = calibrate_temp_frame(JK, gr)
+
+    assert isinstance(df, pd.DataFrame)
+    assert "VALUE" in df.columns
+    assert "ADOPTED" in df.index
+
+    # Count how many temperature estimates (including ADOPTED) are not NaN
+    non_nan_count = df["VALUE"].notna().sum()
+
+    assert non_nan_count == expected_non_nan_count

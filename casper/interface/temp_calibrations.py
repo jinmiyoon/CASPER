@@ -250,6 +250,6 @@ def calibrate_temp_frame(JK: float, gr: float, FEH: float = -2.5, CLASS: Optiona
     try:
         TEMP_FRAME = determine_effective(TEMP_FRAME)
     except:
-        TEMP_FRAME["ADOPTED"] = np.nan
+        TEMP_FRAME.loc["ADOPTED"] = np.nan
 
     return TEMP_FRAME
