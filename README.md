@@ -38,12 +38,13 @@ pip install -e . # install editable mode
 ```
 To install the optional dependencies for pytest or Sphinx autodoc, run the command below in addition to pip install in editable mode above.
 
+- install the dependencies of dev, test, docs
 ```shell
-pip install .[dev,test,docs] # install the dependencies of dev, test, docs
+pip install .[dev,test,docs] 
 ```
-or
+- or "all" includes the dependencies of dev, test, docs
 ```shell
-pip install .[all] # "all" includes the dependencies of dev, test, docs
+pip install .[all] 
 ```
 
 ### pre-commit for development
@@ -51,13 +52,14 @@ pip install .[all] # "all" includes the dependencies of dev, test, docs
 [pre-commit](https://pre-commit.com/) allows all collaborators push their commits compliant with the same set of lint and format rules in **pyproject.toml** by checking all files in the project at different stages of the git workflow. It runs commands specified in the **.pre-commit-config.yaml** config file and runs checks before committing or pushing, to catch errors that would have caused a build failure before they reach CI.
 
 #### Install pre-commit
-You will need to install `pre-commit` manually.
+You will need to install `pre-commit` manually if you haven't already installed the package
 ```bash
-pip install pre-commit # if you haven't already installed the package
+pip install pre-commit 
 ```
 
+Install default hooks, `pre-commit`, `pre-push`, and `commit-msg`, as specified in the config file.
 ```bash
-pre-commit install # install default hooks, `pre-commit`, `pre-push`, and `commit-msg`, as specified in the config file.
+pre-commit install 
 ```
 
 If this is your first time running, you should run the hooks against for all files and it will fix all files based on your setting.
@@ -168,9 +170,9 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
 
 | 👤 | GitHub ID | Contributions |
 |----|------------|---------------|
-| <img src="https://avatars.githubusercontent.com/u/1234567?v=4" width="50px;" alt=""/> | [@jinmiyoon](https://github.com/jinmiyoon) | 💻 🚧 🖋️ |
-| <img src="https://avatars.githubusercontent.com/u/1234567?v=4" width="50px;" alt=""/> | [@taylorw0525](https://github.com/taylorw0525) | 💻 🖋️⚠️ |
-| <img src="https://avatars.githubusercontent.com/u/1234567?v=4" width="50px;" alt=""/> | [@DevinWhitten](https://github.com/DevinWhitten) | 💻|
+| <img src="https://avatars.githubusercontent.com/u/11411589?v=4" width="50px;" alt=""/> | [@jinmiyoon](https://github.com/jinmiyoon) | 💻 🚧 🖋️👀  |
+| <img src="https://avatars.githubusercontent.com/u/144720204?s=60&v=4" width="50px;" alt=""/> | [@taylorw0525](https://github.com/taylorw0525) | 💻 🖋️⚠️ 👀 |
+| <img src="https://avatars.githubusercontent.com/u/15004598?s=60&v=4" width="50px;" alt=""/> | [@DevinWhitten](https://github.com/DevinWhitten) | 💻👀 |
 
 <!-- <a href="https://github.com/jinmiyoon/CASPER/graphs/contributors">
   <img src="https://contrib.rocks/image?repo=jinmiyoon/CASPER" />
