@@ -153,23 +153,31 @@ If you want to use this package for your scientific use and/or help to complete 
 - [Placco, ..., Whitten, et al., 2020, ApJ, 897, 78 ](https://ui.adsabs.harvard.edu/abs/2020ApJ...897...78P/abstract)
 - [Yoon, Whitten, Beers, Lee, Masseron, and Placco, 2020, ApJ, 894, 7](https://ui.adsabs.harvard.edu/abs/2020ApJ...894....7Y/abstract)
 
-![Logo](https://github.com/DevinWhitten/CASPER/blob/master/images/CASPER_logo.png)
-![UMP Design](https://github.com/DevinWhitten/CCSLab/blob/master/images/UMP_Methodology_v3.png)
-![Arch Design](https://github.com/DevinWhitten/CCSLab/blob/master/images/arch_dir_schem.png)
-
-
-
-<img src="https://github.com/DevinWhitten/CCSLab/blob/master/images/continuum_animation.gif" width="80%"
-style="display:block;margin: 0 auto;">
 
 ## License
-
 
 This project is Copyright (c) Devin Whitten, Jinmi Yoon, and Taylor Webb and licensed under
 the terms of the BSD 3-Clause license. This package is based upon
 the `Openastronomy packaging guide <https://github.com/OpenAstronomy/packaging-guide>`_
 which is licensed under the BSD 3-clause licence. See the licenses folder for
 more information.
+
+## Contributors
+
+Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/docs/en/emoji-key)):
+
+| 👤 | GitHub ID | Contributions |
+|----|------------|---------------|
+| <img src="https://avatars.githubusercontent.com/u/1234567?v=4" width="50px;" alt=""/> | [@jinmiyoon](https://github.com/jinmiyoon) | 💻 🚧 🖋️ |
+| <img src="https://avatars.githubusercontent.com/u/1234567?v=4" width="50px;" alt=""/> | [@taylorw0525](https://github.com/taylorw0525) | 💻 🖋️⚠️ |
+| <img src="https://avatars.githubusercontent.com/u/1234567?v=4" width="50px;" alt=""/> | [@DevinWhitten](https://github.com/DevinWhitten) | 💻|
+
+<!-- <a href="https://github.com/jinmiyoon/CASPER/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=jinmiyoon/CASPER" />
+</a>
+
+Made with [contrib.rocks](https://contrib.rocks). -->
+
 
 ## Contributing
 
