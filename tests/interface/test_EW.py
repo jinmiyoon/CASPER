@@ -31,7 +31,7 @@ def test_CAII_K12():
     assert not np.isnan(ew)
 
 
-def test_caii_k18():
+def test_CAII_K18():
     wave = np.linspace(3920, 3945, 200)
     flux = np.ones_like(wave)
     flux[(wave > 3928) & (wave < 3938)] -= 0.12

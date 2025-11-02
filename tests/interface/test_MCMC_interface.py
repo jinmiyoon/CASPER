@@ -8,8 +8,6 @@ import pytest
 
 from casper.interface.MCMC_interface import chi_likelihood, chi_ll_refine, kde_param, likelihood_params
 
-sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), "../../..")))
-
 
 @pytest.mark.parametrize(
     "distribution, x0, expected_mode",
