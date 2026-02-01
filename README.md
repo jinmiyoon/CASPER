@@ -113,11 +113,8 @@ Install pytest via pip.
 ```shell
 pip install pytest
 ```
-Next, add a tests/ directory at the root of your project and place your test files there.
-
-To run the pytest, cd to the `tests` folder and run the command below. This command will run all relevant tests.
+To run the pytest, cd to the `casper/tests` folder and run the command below. This command will run all relevant tests.
 ```shell
-pytest
 pytest
 ```
 If you want to run a single pytest, cd to the directory where the test is found and run
@@ -138,7 +135,7 @@ The following command auto-generates .rst files for your Python package so Sphin
 
 Each .rst file includes .. automodule:: directives to tell Sphinx to pull in the docstrings from your code. Run the command below in the main project directory where the `docs` folder is found.
 ```shell
-sphinx-apidoc -o docs casper #replace casper with project folder name if needed
+sphinx-apidoc -o docs/api casper casper/tests #replace 'casper' with project folder name if needed
 ```
 Next, run the following command at root level to build your Sphinx documentation as a static website (in HTML format). It will create a build/html folder in docs that stores the HTML code for the website.
 ```shell

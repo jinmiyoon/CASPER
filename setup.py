@@ -1,4 +1,9 @@
 #!/usr/bin/env python
-from setuptools import setup
+from setuptools import find_packages, setup  # type: ignore
 
-setup()
+setup(
+    name="casper",
+    use_scm_version=True,
+    setup_requires=["setuptools_scm"],
+    packages=find_packages(),  # Other metadata like author, description, etc.
+)

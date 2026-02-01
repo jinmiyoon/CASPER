@@ -380,8 +380,8 @@ def chi_ll_refine_C2(
     ----------
     theta : np.ndarray
         MCMC parameter array where:
-            - theta[0] = [Fe/H] metallicity
-            - theta[1] = [C/Fe] carbon abundance
+        - theta[0] = [Fe/H] metallicity
+        - theta[1] = [C/Fe] carbon abundance
 
     observed_spec_regions : dict
         Dictionary with keys "CA", "CH", and "C2", each mapping to a DataFrame
@@ -393,8 +393,8 @@ def chi_ll_refine_C2(
     PARAMS : dict
         Dictionary of stellar parameters and inverse noise terms.
         Must contain:
-            - "TEFF": np.ndarray of effective temperature
-            - "XI_CA", "XI_CH", "XI_C2": np.ndarrays of inverse noise (1/SNR)
+        - "TEFF": np.ndarray of effective temperature
+        - "XI_CA", "XI_CH", "XI_C2": np.ndarrays of inverse noise (1/SNR)
     G_CLASS : str
         The stellar class used to identify the appropriate synthetic model.
     bounds : str, optional

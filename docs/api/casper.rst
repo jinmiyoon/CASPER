@@ -20,14 +20,6 @@ casper.main module
    :show-inheritance:
    :undoc-members:
 
-casper.version module
----------------------
-
-.. automodule:: casper.version
-   :members:
-   :show-inheritance:
-   :undoc-members:
-
 Module contents
 ---------------
 

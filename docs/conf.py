@@ -1,27 +1,37 @@
+## -*- coding: utf-8 -*-
+#
 # Configuration file for the Sphinx documentation builder.
 #
 # This file does only contain a selection of the most common options. For a
 # full list see the documentation:
 # http://www.sphinx-doc.org/en/master/config
 
-import datetime
 import os
-import sys
 
-sys.path.insert(0, os.path.abspath("../casper"))
+from packaging.version import Version
 
-
+import casper
+from datetime import datetime
 # -- Project information -----------------------------------------------------
-# The full version, including alpha/beta/rc tags
 
 
-# release = __version__
-release = ".version_"
+start_year = 2019
+current_year = datetime.now().year
+year_str = f"{start_year}–{current_year}" if current_year > start_year else str(start_year)
+
 
 
 project = "CASPER"
-author = "Devin Whitten, Jinmi Yoon, Taylor Webb"
-copyright = f"{datetime.datetime.now().year}, {author}"
+author = "Devin Whitten, Jinmi Yoon, and Taylor Webb"
+copyright = f"{year_str}, Project authors"
+release = casper.__version__  # the latest dev build full version
+# Shorter public version for Sphinx: keep dev tag, drop local part
+# e.g. "0.2.1.dev197+gcc347ee4b.d20260201" -> "0.2.1.dev197"
+try:
+    version = Version(release).public
+except Exception:
+    # Fallback if something weird happens: just use the full release
+    version = release
 
 # -- General configuration ---------------------------------------------------
 
@@ -29,18 +39,20 @@ copyright = f"{datetime.datetime.now().year}, {author}"
 # extensions coming with Sphinx (named "sphinx.ext.*") or your custom
 # ones.
 extensions = [
-    "myst_parser",
-    "sphinx.ext.autodoc",
-    "sphinx.ext.intersphinx",
-    "sphinx.ext.todo",
-    "sphinx.ext.coverage",
-    "sphinx.ext.inheritance_diagram",
-    "sphinx.ext.viewcode",
-    "sphinx.ext.napoleon",
-    "sphinx.ext.doctest",
-    "sphinx.ext.mathjax",
-    "sphinx_automodapi.automodapi",
-    "sphinx_automodapi.smart_resolver",
+    "myst_parser",  # enables Markdown (MyST)
+    "sphinx.ext.autodoc",  # Auto-generate API docs from Python docstrings
+    "sphinx.ext.intersphinx",  # Link cross-references to other projects' docs
+    "sphinx.ext.todo",  # Support for .. todo:: directives in docs
+    "sphinx.ext.coverage",  # Check doc coverage for modules/classes/functions
+    "sphinx_copybutton",  # Add a "copy" button to all code blocks
+    "sphinx.ext.viewcode",  # adds [source] links
+    "sphinx.ext.napoleon",  # for Google/NumPy style docstrings
+    "sphinx.ext.doctest",  # Run doctest examples in docs to verify they work
+    "sphinx.ext.mathjax",  # Render LaTeX-style math using MathJax in HTML
+    "sphinx_automodapi.automodapi",  # Astropy tool: auto-generate API docs with nice summaries
+    "sphinx_automodapi.smart_resolver",  # Astropy tool: smarter cross-references for API docs
+    # "sphinxcontrib.spelling",  # Spell checker for docs (uses `pyenchant`)
+    "sphinx_click",  # Generate docs automatically for click-based CLIs
 ]
 
 myst_enable_extensions = [
@@ -59,18 +71,21 @@ myst_enable_extensions = [
     "substitution",
     "tasklist",
 ]
-
+# napoleon_numpy_docstring = True
+# autodoc_typehints = "description"
 # Suppress unnecessary warnings
 suppress_warnings = [
     "myst.xref_missing",  # Suppress cross-reference missing warnings
     "myst.header",  # Suppress Non-consecutive header level increase; H1 to H3
 ]
-
 # Ensure relative links are supported
 myst_url_schemes = ("http", "https", "")
-
 # Add any paths that contain templates here, relative to this directory.
 # templates_path = ["_templates"]
+
+templates_path = [
+    os.path.abspath("../"),
+]
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
@@ -84,9 +99,6 @@ source_suffix = [".rst", ".md"]
 # The master toctree document.
 master_doc = "index"
 
-# Treat everything in single ` as a Python reference.
-default_role = "py:obj"
-
 # -- Options for intersphinx extension ---------------------------------------
 
 # Example configuration for intersphinx: refer to the Python standard library.
@@ -96,8 +108,15 @@ intersphinx_mapping = {"python": ("https://docs.python.org/", None)}
 
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
-html_theme = "sphinx_rtd_theme"  # "bootstrap-astropy" # "alabaster"
-
+html_theme = "sphinx_book_theme"  # "sphinx_rtd_theme"  # "bootstrap-astropy" # "alabaster" #
+html_theme_options = {
+    "repository_url": "https://github.com/spacetelescope/bibcat/",
+    "use_repository_button": True,  # shows the GitHub icon button
+    "use_edit_page_button": True,  # adds an "edit this page" link
+    "use_issues_button": True,  # adds a link to GitHub issues
+    "repository_branch": "dev",  #  default branch
+    "path_to_docs": "docs",  # <-- path to docs
+}
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
@@ -112,5 +131,3 @@ html_theme = "sphinx_rtd_theme"  # "bootstrap-astropy" # "alabaster"
 # the docs. For more options, see:
 # https://www.sphinx-doc.org/en/master/usage/extensions/autodoc.html#confval-autoclass_content
 autoclass_content = "both"
-
-# -- Other options ----------------------------------------------------------

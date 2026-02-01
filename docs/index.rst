@@ -1,3 +1,5 @@
+:ref:`genindex`  |  :ref:`modindex`  | :ref:`search`
+
 CASPER Documentation
 ====================
 
@@ -11,10 +13,10 @@ This is the documentation for CASPER.
    changelog
 
 .. toctree::
-   :maxdepth: 2
-   :caption: API Reference
+   :maxdepth: 3
+   :caption: Packages and Modules
 
-   modules
+   api/modules.rst
 
 * :ref:`genindex`
 * :ref:`modindex`
