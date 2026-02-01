@@ -40,11 +40,11 @@ To install the optional dependencies for pytest or Sphinx autodoc, run the comma
 
 - install the dependencies of dev, test, docs
 ```shell
-pip install .[dev,test,docs] 
+pip install .[dev,test,docs]
 ```
 - or "all" includes the dependencies of dev, test, docs
 ```shell
-pip install .[all] 
+pip install .[all]
 ```
 
 ### pre-commit for development
@@ -54,12 +54,12 @@ pip install .[all]
 #### Install pre-commit
 You will need to install `pre-commit` manually if you haven't already installed the package
 ```bash
-pip install pre-commit 
+pip install pre-commit
 ```
 
 Install default hooks, `pre-commit`, `pre-push`, and `commit-msg`, as specified in the config file.
 ```bash
-pre-commit install 
+pre-commit install
 ```
 
 If this is your first time running, you should run the hooks against for all files and it will fix all files based on your setting.
