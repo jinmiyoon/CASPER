@@ -7,18 +7,18 @@
 # http://www.sphinx-doc.org/en/master/config
 
 import os
+from datetime import datetime
 
 from packaging.version import Version
 
 import casper
-from datetime import datetime
+
 # -- Project information -----------------------------------------------------
 
 
 start_year = 2019
 current_year = datetime.now().year
 year_str = f"{start_year}–{current_year}" if current_year > start_year else str(start_year)
-
 
 
 project = "CASPER"
