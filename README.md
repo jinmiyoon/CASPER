@@ -1,5 +1,5 @@
 ## CASPER
-### CEMP Group Assignment and Stellar Parameter Estimation Routine (CASPER)
+### Chemical Abundance and Stellar Parameter Estimation Routine (CASPER)
 
 This script package, CASPER, is designed to determine reliable stellar parameters (temperature, metallicity, surface gravity, and carbon abundance) of low/medium-resolution stellar spectra for cool Carbon-Enhanced Metal-Poor (CEMP) stars (Teff < 5000K). This package is under development for public use and thus needs more testings and refinements (Whitten, Yoon, et al. in prep). The description of the CASPER methodology can be found in Yoon, Whitten, et al. 2020 (The Astrophysical Journal, 894,7). The detailed documentation, along with the codes, will be available for public use in the near future.
 
@@ -167,16 +167,9 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
 
 | 👤 | GitHub ID | Contributions |
 |----|------------|---------------|
-| <img src="https://avatars.githubusercontent.com/u/11411589?v=4" width="50px;" alt=""/> | [@jinmiyoon](https://github.com/jinmiyoon) | 💻 🚧 🖋️👀  |
-| <img src="https://avatars.githubusercontent.com/u/144720204?s=60&v=4" width="50px;" alt=""/> | [@taylorw0525](https://github.com/taylorw0525) | 💻 🖋️⚠️ 👀 |
-| <img src="https://avatars.githubusercontent.com/u/15004598?s=60&v=4" width="50px;" alt=""/> | [@DevinWhitten](https://github.com/DevinWhitten) | 💻👀 |
-
-<!-- <a href="https://github.com/jinmiyoon/CASPER/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=jinmiyoon/CASPER" />
-</a>
-
-Made with [contrib.rocks](https://contrib.rocks). -->
-
+| <img src="https://avatars.githubusercontent.com/u/11411589?v=4" width="50px;" alt=""/> | [@jinmiyoon](https://github.com/jinmiyoon) | 💻 🚧 ⚠️ 📖 👀 🧑‍🏫 |
+| <img src="https://avatars.githubusercontent.com/u/15004598?s=60&v=4" width="50px;" alt=""/> | [@DevinWhitten](https://github.com/DevinWhitten) | 💻 👀 🔣 |
+| <img src="https://avatars.githubusercontent.com/u/144720204?s=60&v=4" width="50px;" alt=""/> | [@taylorw0525](https://github.com/taylorw0525) | 💻 ⚠️ 📖 👀|
 
 ## Contributing
 
