@@ -79,7 +79,7 @@ select = [
 ignore = ["PLR"]  # Ignore specific Pylint refactor messages
 
 [project.urls]
-repository = "https://github.com/jinmiyoon/new-casper"
+repository = "https://github.com/jinmiyoon/casper"
 
 [tool.setuptools]
 zip-safe = false
@@ -93,7 +93,7 @@ version_file = "casper/_version.py"
 
 [tool.pytest.ini_options]
 testpaths = [
-  "casper",
+  "casper/tests",
   "docs",
 ]
 doctest_plus = "enabled"
