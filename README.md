@@ -167,9 +167,9 @@ Thanks goes to these wonderful people ([emoji key](https://allcontributors.org/d
 
 | 👤 | GitHub ID | Contributions |
 |----|------------|---------------|
-| <img src="https://avatars.githubusercontent.com/u/11411589?v=4" width="50px;" alt=""/> | [@jinmiyoon](https://github.com/jinmiyoon) | 💻 🚧 ⚠️ 📖 👀 🧑‍🏫 |
-| <img src="https://avatars.githubusercontent.com/u/15004598?s=60&v=4" width="50px;" alt=""/> | [@DevinWhitten](https://github.com/DevinWhitten) | 💻 👀 🔣 |
-| <img src="https://avatars.githubusercontent.com/u/144720204?s=60&v=4" width="50px;" alt=""/> | [@taylorw0525](https://github.com/taylorw0525) | 💻 ⚠️ 📖 👀|
+| <img src="https://avatars.githubusercontent.com/u/11411589?v=4" alt="" style="width:50px; border-radius:50%"/> | [@jinmiyoon](https://github.com/jinmiyoon) | 💻 🚧 ⚠️ 📖 👀 🧑‍🏫 |
+| <img src="https://avatars.githubusercontent.com/u/15004598?v=4" alt="" style="width:50px; border-radius:50%"/> | [@DevinWhitten](https://github.com/DevinWhitten) | 💻 👀 🔣 |
+| <img src="https://avatars.githubusercontent.com/u/144720204?v=4" alt="" style="width:50px; border-radius:50%"/> | [@taylorw0525](https://github.com/taylorw0525) | 💻 ⚠️ 📖 👀 |
 
 ## Contributing
 
