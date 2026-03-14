@@ -1,0 +1,17 @@
+{
+  "io_paths": {
+    "plot": true,
+    "normalize": true,
+    "spectra_dir_path": "$CASPER_INPUT_PATH/casper/inputs/spectra/test_spectra/",
+    "param_path": "$CASPER_INPUT_PATH/casper/inputs/params/param_file_test.dat",
+    "output_dir_path": "outputs/",
+    "output_file_name": "sample"
+  },
+  "dirs": {
+    "output_dir": "$CASPER_OUTPUT_PATH/outputs/",
+    "npsave_dir": "$CASPER_OUTPUT_PATH/npsave/"
+  },
+  "params": {
+    "PLOT_LINEWIDTH": 0.25
+  }
+}

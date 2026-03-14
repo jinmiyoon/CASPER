@@ -76,7 +76,11 @@ For other configuration options and more detailed information, check out at the 
 
 #### How to run CASPER
 
-First, you can set up your custom input parameters and spectra and the output directory and file name prefix in [io_paths.py](interface/io_paths.py).
+First, configure CASPER by editing `casper/user_config.json` (copy from `casper/user_config.example.json` to get started). Note that `dirs.output_dir` and `dirs.npsave_dir` should be absolute paths.
+
+Optionally, set the `CASPER_INPUT_PATH` and `CASPER_OUTPUT_PATH` environment variables for input and output directories (you can use `$CASPER_INPUT_PATH` and `$CASPER_OUTPUT_PATH` in the JSON file).
+
+> **Note:** If `CASPER_INPUT_PATH` is set to a directory that exists but does not contain the expected input files (`casper/inputs/params/param_file_test.dat`, etc.), CASPER will now exit with an error and instruct you to fix the path (or unset `CASPER_INPUT_PATH` to use repository defaults). To avoid this, ensure `CASPER_INPUT_PATH` points to a directory that contains the full set of CASPER input files.
 
 Then, you will need to pull the spectral library files from [Git Large File Storage (LFS)](https://git-lfs.com/).
 If you don't already haven't installed `git-lfs`, run

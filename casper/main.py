@@ -3,23 +3,12 @@ import time
 from multiprocessing import freeze_support
 
 from casper.interface.batch import Batch
+from casper.user_config import USER_CONFIG
 from casper.utils.logger_config import setup_logger
 
 logger = setup_logger(__name__)
 
-io_paths = "interface/io_paths.py"
-
-
-PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-
-LOG_DIR = os.path.join(PROJECT_ROOT, "logs")
-NPSAVE_DIR = os.path.join(PROJECT_ROOT, "npsave")
-OUTPUT_DIR = os.path.join(PROJECT_ROOT, "outputs")
-
-os.makedirs(LOG_DIR, exist_ok=True)
-os.makedirs(NPSAVE_DIR, exist_ok=True)
-os.makedirs(OUTPUT_DIR, exist_ok=True)
-
+io_paths = USER_CONFIG["io_paths"]
 
 if __name__ == "__main__":
     freeze_support()

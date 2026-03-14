@@ -12,6 +12,12 @@ start_time = time.strftime("%Y-%m-%d_%H-%M-%S")
 os.makedirs(LOG_DIR, exist_ok=True)
 
 
+class FlushingFileHandler(logging.FileHandler):
+    def emit(self, record):
+        super().emit(record)
+        self.flush()
+
+
 def setup_logger(name: str, level: int = logging.DEBUG) -> logging.Logger:
     """
     Set up a logger that logs messages to both console and a log file.

@@ -1,7 +1,7 @@
 default_install_hook_types: [pre-commit, pre-push, commit-msg]
 repos:
 -   repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: "v0.8.2"  # Use the ruff version you're working with
+    rev: "v0.15.5"  # Use the ruff version you're working with
     hooks:
     # Check (and apply) import sorting
     -   id: ruff
@@ -10,7 +10,7 @@ repos:
     -   id: ruff-format
         # entry: ruff format --force-exclude
 -   repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v5.0.0
+    rev: v6.0.0
     hooks:
       - id: end-of-file-fixer
       - id: trailing-whitespace
