@@ -35,8 +35,8 @@ open_astronomy_package_template_example = "casper.example_mod:main"
 
 [project.optional-dependencies]
 dev = [
-    "ruff == 0.11.13",
-    "pre-commit == 4.2.0"
+    "ruff == 0.15.5",
+    "pre-commit == 4.5.1"
 ]
 test = [
     "pytest",

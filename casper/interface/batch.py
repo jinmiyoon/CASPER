@@ -1,5 +1,6 @@
 import os
 import time
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -10,28 +11,26 @@ from casper.interface import EW, config, interface_main, plot_functions
 from casper.interface import temp_calibrations as TC
 from casper.interface.gisic.normalize import normalize
 from casper.interface.spectrum import Spectrum
+from casper.user_config import USER_CONFIG
 from casper.utils.logger_config import setup_logger
 
 logger = setup_logger(__name__)
 
-PROJECT_ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
-
-
-NPSAVE_DIR = os.path.join(PROJECT_ROOT, "npsave")
-OUTPUT_DIR = os.path.join(PROJECT_ROOT, "outputs")
-
+OUTPUT_DIR = Path(USER_CONFIG["dirs"]["output_dir"])
+NPSAVE_DIR = Path(USER_CONFIG["dirs"]["npsave_dir"])
 
 os.makedirs(NPSAVE_DIR, exist_ok=True)
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 
 class Batch:
-    def __init__(self, io_paths: dict[str, str]) -> None:
-        """
-        Initialize the Batch object with the input/output paths.
+    def __init__(self, io_paths: dict[str, str] | str) -> None:
+        """Initialize the Batch object with input/output path configuration.
 
         Args:
-            io_paths (dict[str, str]): Dictionary containing paths to spectra, parameter files, and output locations.
+            io_paths (dict[str, str] | str): Either a dict containing paths to spectra,
+                parameter files, and output locations, or a path to a legacy Python file
+                that defines those paths.
         """
 
         self.io_paths = io_paths
@@ -41,9 +40,8 @@ class Batch:
         """
         Load and configure I/O paths from a parameter file.
 
-        This method reads a configuration file specified by `self.io_paths`,
-        parses the paths for the parameter file, spectra directory, and output file,
-        and sets the corresponding attributes on the object.
+        This method reads a configuration dict (or legacy Python config file) and
+        parses the paths for the parameter file, spectra directory, and output file.
 
         Notes
         -----
@@ -59,13 +57,14 @@ class Batch:
 
         logger.info(f"\nloading io_paths: {self.io_paths}")
 
-        self.io_params = eval(open(self.io_paths, "r").read())
+        # io_paths is now a dict from user_config
+        self.io_params = self.io_paths
 
         logger.info("\nsetting io_paths:")
 
-        self.param_path = os.path.abspath(os.path.join(PROJECT_ROOT, self.io_params["param_path"]))
-        self.spectra_path = os.path.abspath(os.path.join(PROJECT_ROOT, self.io_params["spectra_dir_path"]))
-        self.output_name = os.path.join(OUTPUT_DIR, self.io_params["output_file_name"])
+        self.param_path = os.path.abspath(self.io_params["param_path"])
+        self.spectra_path = os.path.abspath(self.io_params["spectra_dir_path"])
+        self.output_name = os.path.join(str(OUTPUT_DIR), self.io_params["output_file_name"])
         logger.info(f"\t\t\t > input setting parameter    : {self.param_path}")
 
         logger.info(f"\t\t\t > input spectra directory    : {self.spectra_path}")
@@ -432,6 +431,11 @@ class Batch:
         This method calls get_sn() on each Spectrum object to gather S/N information,
         concatenates the results into a single DataFrame, and writes it to a CSV file.
 
+        Return
+        ------
+        snr: pd.DataFrame
+            signal to noise
+
         Output
         ------
         Saves a CSV file containing the S/N data to the specified output path.
@@ -444,11 +448,18 @@ class Batch:
         """
 
         snr = pd.concat([spec.get_sn() for spec in self.spectra_array])
+
+        base = self.output_name
+        primary = f"{base}_snr.csv"
+        fallback = f"{base}1_snr.csv"
+
         try:
-            snr.to_csv(self.output_name + "_snr.csv", index=False)
-        except:
-            snr.to_csv(self.output_name + "1_snr.csv", index=False)
-        return
+            snr.to_csv(primary, index=False)
+        except OSError as exec:
+            logger.warning("Failed to write SNR CSV to %s (%s). Falling back to %s", primary, exec, fallback)
+            snr.to_csv(fallback, index=False)
+
+        return snr
 
     def set_mcmc_args(self) -> None:
         """
@@ -646,10 +657,13 @@ class Batch:
         with open(os.path.join(NPSAVE_DIR, self.io_params["output_file_name"] + "parameters_output.npy"), "wb") as f:
             np.save(f, final)
 
+        primary = self.output_name + "_out.csv"
+        fallback = self.output_name + "1_out.csv"
         try:
-            final.to_csv(self.output_name + "_out.csv", index=False)
-        except:
-            final.to_csv(self.output_name + "1_out.csv", index=False)
+            final.to_csv(primary, index=False)
+        except OSError as exec:
+            logger.warning("Failed to write output CSV to %s (%s). Falling back to %s", primary, exec, fallback)
+            final.to_csv(fallback, index=False)
         return
 
     def generate_output_spectra(self) -> None:
@@ -674,8 +688,13 @@ class Batch:
         with open(os.path.join(NPSAVE_DIR, self.io_params["output_file_name"] + "spectra_output.npy"), "wb") as f:
             np.save(f, final_spectra)
 
+        primary = self.output_name + "_spectra_output.csv"
+        fallback = self.output_name + "spectra_output_1.csv"
+
         try:
-            final_spectra.to_csv(self.output_name + "_spectra_output.csv", index=False)
-        except:
-            final_spectra.to_csv(self.output_name + "spectra_output_1.csv", index=False)
+            final_spectra.to_csv(primary, index=False)
+        except OSError as exec:
+            logger.warning("Failed to write output spectra to %s (%s). Falling back to %s", primary, exec, fallback)
+
+            final_spectra.to_csv(fallback, index=False)
         return
