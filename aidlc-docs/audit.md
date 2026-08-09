@@ -181,3 +181,11 @@
 **Context**: CONSTRUCTION - Unit 1 Code Generation Part 1 (Planning). Awaiting user decision on io_paths.py and plan approval.
 
 ---
+
+## Unit 1 Code Generation — Complete
+**Timestamp**: 2026-08-09T00:00:00Z
+**User Input**: "A" (move io_paths.py to not_used/); then "Yes, you should proceed with the commits and you should track those AI-DLC framework/doc files."
+**AI Response**: Executed Unit 1 plan: moved io_paths.py to casper/utils/not_used/, added module docstring to config.py, refactored user_config.py for testability (config_path parameter), fixed a latent bug (_normalize_input_path calling _resolve_input_subpath with an invalid 'warn' kwarg), added 23 new unit tests (test_config.py, test_user_config.py). All 89 tests passed. Ran full 4-star regression gate against unit0_baseline: Tier 1 (deterministic) identical, Tier 2 (stochastic) within 2σ tolerance (max 1.40σ). Committed in 3 commits: Unit 0 fixes (ff90389), Unit 1 changes (d201a87, required amending due to a shell-escaping commit-message corruption caught and fixed), and AI-DLC framework/docs (5451af8). Encountered and resolved a git-hook failure caused by a stale PYTHONPATH in the terminal session.
+**Context**: CONSTRUCTION - Unit 1 complete. Ready to proceed to Unit 2 (Spectrum Loading & Preprocessing).
+
+---

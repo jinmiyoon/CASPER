@@ -3,7 +3,7 @@
 ## Project Information
 - **Project Type**: Brownfield
 - **Start Date**: 2026-08-08T00:00:00Z
-- **Current Stage**: INCEPTION - Units Generation (complete, awaiting approval)
+- **Current Stage**: CONSTRUCTION - Unit 1 complete, Unit 2 next
 
 ## Execution Plan Summary
 - **Total Stages**: 9 (2 completed pre-planning + Workflow Planning + Application Design + Units Generation + Code Generation x6 units + Build and Test)
@@ -42,6 +42,11 @@
 - [x] Workflow Planning — Approved by user
 - [x] Application Design — Approved by user
 - [x] Units Generation — Approved by user
-- [x] Unit 0 (pre-Construction baseline) — COMPLETE: caching fix + append-mode bugfix applied and verified safe; two-tier (deterministic/stochastic) regression tolerance established with empirical 2σ threshold; see regression_baseline/unit0_baseline/README.md and requirements.md NFR-1
-- [ ] Construction (per-unit, lightweight; 6 units, strictly sequential, one commit per unit — see unit-of-work.md)
+- [x] Unit 0 (pre-Construction baseline) — COMPLETE, committed (ff90389)
+- [x] Unit 1: I/O & Configuration — COMPLETE, committed (d201a87). 23 new tests, 89/89 passing, regression gate passed (Tier 1 exact, Tier 2 max 1.40σ)
+- [ ] Unit 2: Spectrum Loading & Preprocessing — NEXT
+- [ ] Unit 3: GISIC Normalization
+- [ ] Unit 4: Temperature Calibration & Extinction
+- [ ] Unit 5: Archetype Classification & MCMC
+- [ ] Unit 6: Output Generation & Plotting
 - [ ] Build and Test (comprehensive)
