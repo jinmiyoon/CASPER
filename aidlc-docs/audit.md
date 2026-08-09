@@ -1,0 +1,183 @@
+# AI-DLC Audit Log
+
+## Initial Request
+**Timestamp**: 2026-08-08T00:00:00Z
+**User Input**: "Can you describe this project and tell me if this project could get benefit from AI-DLC methodology?"
+**AI Response**: Described CASPER (stellar parameter estimation package for CEMP stars) and confirmed it is a strong AI-DLC candidate, citing scientific risk surface, pipeline complexity, reproducibility needs.
+**Context**: Pre-workflow discussion (AI-DLC not yet formally started)
+
+---
+
+## Coding Convention Rules (established before formal workflow start)
+**Timestamp**: 2026-08-08T00:00:00Z
+**User Input**: Requested (1) output-equivalence verification after refactors, (2) NumPy/astropy docstring style for all functions/methods, saved as an instructions file; (3) preserve existing docstrings/comments during refactors unless strong reason (ask before removing); (4) README updates mandatory for user-visible changes, optional for internal-only refactors.
+**AI Response**: Created `.github/instructions/casper-python-style.instructions.md` (applyTo: casper/**/*.py) covering all four rules, and recorded them in repo memory.
+**Context**: Pre-workflow discussion
+
+---
+
+## Rollout Approach Decision
+**Timestamp**: 2026-08-08T00:00:00Z
+**User Input**: Asked for AI-DLC rollout proposal; then asked for a fully-applied (non-scoped) AI-DLC proposal; then said "I am not sure which approach is the best."
+**AI Response**: Presented three options (Lightweight, Full AI-DLC, Hybrid) with trade-offs; recommended Hybrid (full rigor in Inception given multi-author, publication-tied scientific software; lightweight Construction since user's existing rules already cover the key risks).
+**User Response**: Selected "Hybrid (recommended)" via question tool.
+**Context**: INCEPTION - Workflow Planning decision, made ahead of formal Workflow Planning stage
+
+---
+
+## Workspace Detection
+**Timestamp**: 2026-08-08T00:00:00Z
+**AI Response**: Confirmed brownfield project (existing Python codebase under `casper/`, packaged via pyproject.toml/setup.py, tested via pytest/tox, CI via GitHub Actions). No prior `aidlc-docs/` artifacts found. Created `aidlc-docs/aidlc-state.md`.
+**Context**: INCEPTION - Workspace Detection (no approval required, informational)
+
+---
+
+## Reverse Engineering — Artifacts Generated
+**Timestamp**: 2026-08-08T00:00:00Z
+**AI Response**: Dispatched thorough codebase exploration, then generated 7 artifacts under `aidlc-docs/inception/reverse-engineering/`: business-overview.md, architecture.md, code-structure.md, component-inventory.md, technology-stack.md, dependencies.md, api-documentation.md.
+**Context**: INCEPTION - Reverse Engineering (Part 2 complete). Awaiting user approval before proceeding to Requirements Analysis.
+
+---
+
+## Reverse Engineering Approval
+**Timestamp**: 2026-08-08T00:00:00Z
+**User Input**: "approve and continue"
+**AI Response**: Recorded approval, marked Reverse Engineering as approved, and transitioned to Requirements Analysis.
+**Context**: INCEPTION - Reverse Engineering approval gate passed
+
+---
+
+## Requirements Analysis — Question File Issued
+**Timestamp**: 2026-08-08T00:00:00Z
+**AI Response**: Created `aidlc-docs/inception/requirements/requirement-verification-questions.md` with requirement clarification questions and extension opt-in prompts (security, property-based testing, resiliency) using `[Answer]:` tags.
+**Context**: INCEPTION - Requirements Analysis Step 6. Awaiting user answers before generating requirements.md.
+
+---
+
+## Requirements Analysis — Answers Received, Ambiguities Detected
+**Timestamp**: 2026-08-08T00:00:00Z
+**User Input**: Answered all 8 questions in `requirement-verification-questions.md`: Q1=C (Mixed goal), Q2=B, Q3=B, Q4=A, Q5=A (security Yes), Q6=A (property-based testing Yes, full), Q7=freeform request for more info on resiliency baseline, Q8=A.
+**AI Response**: Detected two issues requiring follow-up per mandatory ambiguity analysis: (1) Q1 "Mixed goal" is a vague pattern conflicting with Q2's "no output changes for existing workflows" framing — need to know what new features (if any) are actually in scope; (2) Q7 was a request for information, not a letter answer — provided a resiliency-baseline summary and recommendation (No/N/A, since CASPER has no deployed service) and re-asked. Created `aidlc-docs/inception/requirements/requirement-verification-clarification-questions.md`.
+**Context**: INCEPTION - Requirements Analysis Step 7 (mandatory ambiguity check). Awaiting user answers before generating requirements.md.
+
+---
+
+## Requirements Analysis — Clarifications Resolved, Requirements Document Generated
+**Timestamp**: 2026-08-08T00:00:00Z
+**User Input**: Answered clarification questions: Ambiguity 1 = C (not sure yet, treat as refactor-only for now, revisit later); Ambiguity 2 = A (No resiliency baseline).
+**AI Response**: Loaded full rule files for Security Baseline and Property-Based Testing (opted in). Generated `aidlc-docs/inception/requirements/requirements.md` with intent analysis, 5 functional requirements, and 6 non-functional requirements (output equivalence, code style, refactor prioritization, scoped security baseline, resiliency N/A, full property-based testing). Updated Extension Configuration table in `aidlc-state.md`.
+**Context**: INCEPTION - Requirements Analysis Step 7-9 complete. Awaiting user approval before proceeding to Workflow Planning (User Stories skipped — refactor-only cycle, no new user-facing feature).
+
+---
+
+## Requirements Analysis Approval
+**Timestamp**: 2026-08-08T00:00:00Z
+**User Input**: "**Approve & Continue**"
+**AI Response**: Recorded approval, marked Requirements Analysis complete, transitioned to Workflow Planning.
+**Context**: INCEPTION - Requirements Analysis approval gate passed
+
+---
+
+## Workflow Planning Complete
+**Timestamp**: 2026-08-08T00:00:00Z
+**AI Response**: Generated `aidlc-docs/inception/plans/execution-plan.md` — transformation scope/impact/risk analysis, workflow visualization (Mermaid), phase execute/skip decisions (Application Design + Units Generation EXECUTE; per-unit Functional/NFR/Infrastructure Design SKIP per hybrid rollout), and a 6-unit dependency-ordered change sequence prioritizing the untested high-risk modules (`batch.py`, `spectrum.py`, `interface_main.py`) per NFR-3. Updated `aidlc-state.md` with execution plan summary.
+**Context**: INCEPTION - Workflow Planning Steps 1-8 complete. Awaiting user approval before proceeding to Application Design.
+
+---
+
+## Workflow Planning Approval
+**Timestamp**: 2026-08-08T00:00:00Z
+**User Input**: "ok, I approve and continue"
+**AI Response**: Recorded approval, marked Workflow Planning complete, transitioned to Application Design.
+**Context**: INCEPTION - Workflow Planning approval gate passed
+
+---
+
+## Application Design — Question Plan Issued
+**Timestamp**: 2026-08-08T00:00:00Z
+**AI Response**: Created `aidlc-docs/inception/plans/application-design-plan.md` with 5 clarifying questions (component identification, method signature stability, orchestration layer, component dependencies, testability design patterns). Note: an initial draft was mistakenly created with pre-filled answers; this was caught and corrected — all [Answer]: tags left blank for the user.
+**Context**: INCEPTION - Application Design Steps 1-6. Awaiting user answers.
+
+---
+
+## Application Design — Answers Received, Artifacts Generated
+**Timestamp**: 2026-08-08T00:00:00Z
+**User Input**: Answered all 5 questions in `application-design-plan.md`: Q1=A (same 6 groupings), Q2=A (internal signatures may change freely), Q3=C (defer orchestration-structure decision to per-unit Construction based on invasiveness), Q4=A (new shared utilities allowed if no behavior change), Q5=A (introduce testability seams/DI where needed).
+**AI Response**: No blocking ambiguities (Q3's "Not sure" was a predefined option with a clear deferral criterion, not a freeform vague answer). Generated 5 artifacts under `aidlc-docs/inception/application-design/`: components.md, component-methods.md, services.md, component-dependency.md, application-design.md.
+**Context**: INCEPTION - Application Design Steps 8-12 complete. Awaiting user approval before proceeding to Units Generation.
+
+---
+
+## Application Design Approval
+**Timestamp**: 2026-08-09T00:00:00Z
+**User Input**: "approve design and proceed to **Units Generation**"
+**AI Response**: Recorded approval, marked Application Design complete, transitioned to Units Generation.
+**Context**: INCEPTION - Application Design approval gate passed. Session resumed on a new date (2026-08-09) — confirmed continuity via `aidlc-state.md`.
+
+---
+
+## Units Generation — Question Plan Issued
+**Timestamp**: 2026-08-09T00:00:00Z
+**AI Response**: Created `aidlc-docs/inception/plans/unit-of-work-plan.md` with 4 clarifying questions (unit boundary confirmation, testing checkpoint/update strategy, team alignment, rollback/checkpoint granularity). Noted the story-map artifact will map requirements.md items to units instead of user stories, since User Stories was skipped.
+**Context**: INCEPTION - Units Generation Part 1 (Planning) Steps 1-5. Awaiting user answers.
+
+---
+
+## Units Generation — Answers Received, Artifacts Generated
+**Timestamp**: 2026-08-09T00:00:00Z
+**User Input**: Answered all 4 questions in `unit-of-work-plan.md`: Q1=A (finalize 6 units as-is), Q2=A (strictly sequential), Q3=A (solo), Q4=A (one commit per unit).
+**AI Response**: No ambiguities detected (all answers consistent). Generated 3 artifacts under `aidlc-docs/inception/application-design/`: unit-of-work.md, unit-of-work-dependency.md, unit-of-work-story-map.md (requirement-map in place of story map, since User Stories was skipped).
+**Context**: INCEPTION - Units Generation Part 2 (Generation) complete. Awaiting user approval before proceeding to CONSTRUCTION PHASE (Unit 1: I/O & Configuration).
+
+---
+
+## Units Generation Approval / Model Discussion
+**Timestamp**: 2026-08-09T00:00:00Z
+**User Input**: Asked about model selection for AI-DLC work (GPT-5.3-Codex vs Claude Sonnet 5 vs auto); then "ok, go ahead start the next step."
+**AI Response**: Recommended staying on a pinned model for Construction given the high-risk scientific work; treated "go ahead" as approval to proceed past Units Generation into Construction preparation.
+**Context**: INCEPTION - Units Generation approval gate passed (implicitly, via "go ahead start the next step")
+
+---
+
+## Unit 0 — Pre-Construction Baseline Establishment
+**Timestamp**: 2026-08-09T00:00:00Z
+**AI Response**: Before starting Unit 1 Code Generation, captured the mandatory regression baseline per NFR-1 by running unmodified CASPER on the 4 test-spectra stars. Encountered and resolved 3 environment issues (stale `CASPER_INPUT_PATH`, `synthetic_functions.py`'s cwd-relative library path requiring `PYTHONPATH` + running from `casper/`, sandboxed terminal blocking `~/.condarc` needed for micromamba). Baseline run succeeded (819.42s). Archived to `regression_baseline/pre_refactor/`.
+**User Input**: Asked if there's a faster way to do Construction given MCMC runtime.
+**AI Response**: Diagnosed the actual bottleneck: `synthetic_functions.get_interp()`/`get_grav_interp()` had no caching, re-reading/unpickling a 125MB+62MB file on every call (thousands of times per MCMC run). Proposed a `functools.lru_cache` fix as a pure-performance, zero-behavior-change optimization, pending verification against baseline.
+**Context**: Pre-Construction preparation
+
+---
+
+## Caching Fix Applied and Verification Attempted
+**Timestamp**: 2026-08-09T00:00:00Z
+**AI Response**: Applied `functools.lru_cache(maxsize=1)` to `get_interp()`/`get_grav_interp()` in `synthetic_functions.py`. Re-ran pipeline (597.45s, ~27% faster) and diffed against baseline. Found `*_snr.csv` identical, but `*_out.csv`, `*_archetype_likelihood_table.txt`, `*_temp_cal_table.txt`, `*_spectra_output.csv` differed.
+**User Input**: Clarified that MCMC best-fit parameters will naturally differ between runs due to random sampling/optimization stochasticity.
+**AI Response**: Investigated root cause via grep — confirmed no random seed exists anywhere in the codebase. Also discovered (independently) that `batch.py` opens `_temp_cal_table.txt`/`_archetype_likelihood_table.txt` in append mode, causing duplicate-table accumulation across runs with the same output name — explaining part of the earlier diff noise.
+**Context**: Pre-Construction preparation — root-causing unexpected output differences before accepting the caching fix
+
+---
+
+## Append-Mode Bugfix Approved and Applied
+**Timestamp**: 2026-08-09T00:00:00Z
+**User Input**: Approved fixing the append-mode bug now. On the stochastic-tolerance question, asked to first try empirical scatter characterization (run several times) to see if a workable tolerance emerges, since MCMC may not "converge" to a clean answer.
+**AI Response**: Fixed `batch.py` to open both report files in overwrite mode (`"w"`) instead of append (`"a"`). Ran 2 additional full-pipeline runs (`scatter1`, `scatter2`) with both fixes applied, to characterize natural stochastic scatter across 3 independent runs total (baseline `sample` + `scatter1` + `scatter2`).
+**Context**: Pre-Construction preparation
+
+---
+
+## Scatter Characterization Results and Tolerance Decision
+**Timestamp**: 2026-08-09T00:00:00Z
+**AI Response**: Computed max|diff|/reported-error ratio across 3 runs, 4 stars, 5 parameters (20 data points): mean scatter 0.12σ-0.44σ per parameter, max observed 0.89σ (AC), 95th percentile ≤0.86σ for all parameters. Proposed adopting a 2σ tolerance for stochastic (MCMC-derived) outputs, and adopting the fixed-code state (caching + append-mode fixes) as the new "Unit 0" baseline superseding the raw pre-refactor baseline.
+**User Input**: "1. you can adopt 2 sigma for now, 2) yes, you should adopt this fixed code state as the new 'Unit 0'. Also, In the next runs, can you just run a single star instead of all 4 stars? It would cut down the time to quarter of all stars?"
+**AI Response**: Adopted 2σ tolerance. Created `casper/inputs/params/param_file_single_star.dat` (1 star, G77-61) for fast dev-loop iteration only — the official per-unit gate still requires all 4 test stars per requirements.md NFR-1 Q4=A. Established `regression_baseline/unit0_baseline/` with the `scatter2` run's outputs as the canonical reference point, documented the two-tier verification methodology and empirical scatter data in `regression_baseline/unit0_baseline/README.md`. Updated `requirements.md` NFR-1 with the revised two-tier tolerance policy. Cleaned up all intermediate test-run artifacts (`sample_cached*`, `scatter1*`, `scatter2*`) from `outputs/`/`npsave/`, reverted `user_config.json` to its default `output_file_name: "sample"`.
+**Context**: INCEPTION-to-CONSTRUCTION transition. Unit 0 complete. Ready to begin Unit 1 (I/O & Configuration) Code Generation.
+
+---
+
+## Unit 1 Code Generation — Plan Issued
+**Timestamp**: 2026-08-09T00:00:00Z
+**User Input**: "Yes, go ahead." (approval to proceed with Unit 1)
+**AI Response**: Created `aidlc-docs/construction/plans/unit1-io-configuration-code-generation-plan.md`. Flagged a finding requiring user input: `casper/interface/io_paths.py` is confirmed dead code (no module imports it) — asked how to handle it (move to `not_used/`, delete, or leave untouched) before proceeding with generation.
+**Context**: CONSTRUCTION - Unit 1 Code Generation Part 1 (Planning). Awaiting user decision on io_paths.py and plan approval.
+
+---
