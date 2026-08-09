@@ -369,7 +369,8 @@ class Batch:
                 "Too long table to print; only saving the temp table in a file at " + self.io_params["output_dir_path"]
             )
 
-        print(table.draw(), file=open(self.output_name + "_temp_cal_table.txt", "a"))
+        # overwrite (not append) so re-running doesn't accumulate duplicate tables
+        print(table.draw(), file=open(self.output_name + "_temp_cal_table.txt", "w"))
         return
 
     def set_KP_bounds(self) -> None:
@@ -521,7 +522,8 @@ class Batch:
         if len(self.spectra_array) < 30:
             logger.info("\n" + table.draw())
 
-        print(table.draw(), file=open(self.output_name + "_archetype_likelihood_table.txt", "a"))
+        # overwrite (not append) so re-running doesn't accumulate duplicate tables
+        print(table.draw(), file=open(self.output_name + "_archetype_likelihood_table.txt", "w"))
         logger.info(f"\t\t Time spent for archetype classification is {time.time() - start_time:.1f}")
 
         return

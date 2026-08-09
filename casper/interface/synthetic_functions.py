@@ -1,4 +1,5 @@
 import pickle  # nosec B403
+from functools import lru_cache
 from typing import Dict, Tuple
 
 import numpy as np
@@ -10,6 +11,7 @@ from casper.interface import config
 from casper.interface.gisic.normalize import normalize
 
 
+@lru_cache(maxsize=1)
 def get_interp():
     """
     Load and return the precomputed spectral interpolation library.
@@ -17,6 +19,11 @@ def get_interp():
     This function reads a pickled file containing a precomputed interpolator
     used for synthetic spectra at a resolution of R~2000. The interpolator is
     used to estimate model spectra at arbitrary stellar parameters.
+
+    The result is cached (``functools.lru_cache``) since this file is large
+    (~125 MB) and this function is called on every MCMC likelihood
+    evaluation; caching avoids re-reading and re-unpickling it from disk on
+    every call while returning the identical interpolator object.
 
     Returns
     -------
@@ -29,6 +36,7 @@ def get_interp():
     return INTERPOLATOR
 
 
+@lru_cache(maxsize=1)
 def get_grav_interp():
     """
     Load and return the pre-computed surface-gravity interpolator.
@@ -36,6 +44,10 @@ def get_grav_interp():
     This utility opens the pickled file that stores an isochrone-based
     interpolator for stellar surface gravity (log g) and returns the
     loaded object.
+
+    The result is cached (``functools.lru_cache``) to avoid re-reading the
+    pickle file from disk on every call, returning the identical
+    interpolator object each time.
 
     Returns
     -------
