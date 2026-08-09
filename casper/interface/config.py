@@ -1,3 +1,12 @@
+"""Scientific configuration constants for the CASPER pipeline.
+
+This module centralizes the wavelength bounds, line/band definitions,
+archetype reference parameters, and normalization/extinction constants used
+throughout ``casper.interface``. Values here are treated as fixed scientific
+parameters, not user-editable settings (for user-editable I/O configuration,
+see ``casper.user_config``).
+"""
+
 import numpy as np
 
 # Wavelength range of interest for analysis (in Angstroms)

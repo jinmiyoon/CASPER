@@ -122,8 +122,25 @@ def _deep_merge(base: Dict[str, Any], override: Dict[str, Any]) -> Dict[str, Any
     return merged
 
 
-def _load_user_config() -> Dict[str, Any]:
-    config_path = Path(__file__).resolve().parent / "user_config.json"
+def _load_user_config(config_path: Path | None = None) -> Dict[str, Any]:
+    """Load and merge the user config JSON file with the module defaults.
+
+    Parameters
+    ----------
+    config_path : Path, optional
+        Path to the user config JSON file. Defaults to ``user_config.json``
+        next to this module. Exposed as a parameter (rather than hardcoded)
+        so this function can be unit tested against arbitrary config files.
+
+    Returns
+    -------
+    dict
+        The merged configuration dictionary (``DEFAULTS`` deep-merged with
+        the contents of ``config_path``, if present and valid).
+    """
+
+    if config_path is None:
+        config_path = Path(__file__).resolve().parent / "user_config.json"
 
     if not config_path.exists():
         return dict(DEFAULTS)
@@ -162,7 +179,7 @@ def _load_user_config() -> Dict[str, Any]:
         # Only apply fallback for paths that begin with the resolved CASPER_INPUT_PATH.
         if path_str.startswith(str(CASPER_INPUT_PATH)):
             rel = os.path.relpath(path_str, start=str(CASPER_INPUT_PATH))
-            return _resolve_input_subpath(rel, warn=False)
+            return _resolve_input_subpath(rel)
 
         return path_str
 
