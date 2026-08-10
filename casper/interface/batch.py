@@ -23,6 +23,37 @@ os.makedirs(NPSAVE_DIR, exist_ok=True)
 os.makedirs(OUTPUT_DIR, exist_ok=True)
 
 
+def _load_spectrum_file(pathname: str, current: str) -> Spectrum:
+    """
+    Load a spectrum from a FITS or CSV file and return it as a Spectrum object.
+
+    Parameters
+    ----------
+    pathname : str
+        Full file path to the spectrum file.
+    current : str
+        Filename used to determine the file type and pass metadata.
+
+    Returns
+    -------
+    Spectrum
+        A Spectrum object initialized from the file contents.
+
+    Raises
+    ------
+    Exception
+        If the file extension is not '.fits' or '.csv'.
+    """
+    file_ext = current.split(".")[1]
+    if file_ext == "fits":
+        with fits.open(pathname) as hdu:
+            return Spectrum(hdu, filename=current, is_fits=True)
+    elif file_ext == "csv":
+        return Spectrum(pd.read_csv(pathname), filename=current, is_fits=False)
+    else:
+        raise Exception("Invalid file format extension. Currently only .fits and .csv files are supported")
+
+
 class Batch:
     def __init__(self, io_paths: dict[str, str] | str) -> None:
         """Initialize the Batch object with input/output path configuration.
@@ -115,32 +146,8 @@ class Batch:
 
         self.spectra_names = self.param_file["filename"].tolist()
 
-        def spectra_input(pathname: str, current: str) -> Spectrum:
-            """
-            Load a spectrum from a FITS or CSV file and return it as a Spectrum object.
-
-            Args:
-                pathname (str): Full file path to the spectrum file.
-                current (str): Filename used to determine the file type and pass metadata.
-
-            Returns:
-                Spectrum: A Spectrum object initialized from the file contents.
-
-            Raises:
-                Exception: If the file extension is not '.fits' or '.csv'.
-            """
-
-            file_ext = current.split(".")[1]
-            if file_ext == "fits":
-                with fits.open(pathname) as hdu:
-                    return Spectrum(hdu, filename=current, is_fits=True)
-            elif file_ext == "csv":
-                return Spectrum(pd.read_csv(pathname), filename=current, is_fits=False)
-            else:
-                raise Exception("Invalid file format extension. Currently only .fits and .csv files are supported")
-
         self.spectra_array = [
-            spectra_input(os.path.join(self.spectra_path, current), current) for current in self.spectra_names
+            _load_spectrum_file(os.path.join(self.spectra_path, current), current) for current in self.spectra_names
         ]
 
         logger.info(f"\t\t batch: what is spectra_array - {self.spectra_array}")

@@ -3,7 +3,7 @@
 ## Project Information
 - **Project Type**: Brownfield
 - **Start Date**: 2026-08-08T00:00:00Z
-- **Current Stage**: CONSTRUCTION - Unit 1 complete, Unit 2 next
+- **Current Stage**: CONSTRUCTION - Unit 2 complete, Unit 3 next
 
 ## Execution Plan Summary
 - **Total Stages**: 9 (2 completed pre-planning + Workflow Planning + Application Design + Units Generation + Code Generation x6 units + Build and Test)
@@ -44,7 +44,8 @@
 - [x] Units Generation — Approved by user
 - [x] Unit 0 (pre-Construction baseline) — COMPLETE, committed (ff90389)
 - [x] Unit 1: I/O & Configuration — COMPLETE, committed (d201a87). 23 new tests, 89/89 passing, regression gate passed (Tier 1 exact, Tier 2 max 1.40σ)
-- [ ] Unit 2: Spectrum Loading & Preprocessing — NEXT
+- [x] Unit 2: Spectrum Loading & Preprocessing — COMPLETE, committed. 40 new tests, 129/129 passing, regression gate passed on single-star run (Tier 1 exact, Tier 2 max 0.025σ; coverage caveat: 1 of 4 stars only, per user instruction)
+- [ ] Unit 3: GISIC Normalization — NEXT
 - [ ] Unit 3: GISIC Normalization
 - [ ] Unit 4: Temperature Calibration & Extinction
 - [ ] Unit 5: Archetype Classification & MCMC

@@ -1,3 +1,13 @@
+"""
+Single-spectrum data model and per-star processing state for the CASPER pipeline.
+
+This module defines the `Spectrum` class, which loads an observed spectrum from either
+a FITS file or a CSV file, applies radial-velocity and reddening corrections, tracks
+wavelength-trimmed and normalized frames, and accumulates the intermediate/final
+results (S/N statistics, temperature calibration, MCMC posteriors, archetype
+classification) produced by the rest of the `Batch` pipeline.
+"""
+
 from typing import Any, Dict, Tuple
 
 import numpy as np
@@ -580,23 +590,6 @@ class Spectrum:
         self.flux = input_flux
         return
 
-    def set_norm(self, input_flux: np.ndarray) -> None:
-        """
-        Set the normalized flux array for the spectrum.
-
-        Parameters
-        ----------
-        input_flux : np.ndarray
-            Array of normalized flux values.
-
-        Returns
-        -------
-        None
-        """
-        self.norm = input_flux
-
-        return
-
     def set_GBAND(self, input: float) -> None:
         """
         Set the G-band equivalent width (EW) measurement.
@@ -775,18 +768,6 @@ class Spectrum:
         """
 
         return self.frame["flux"]
-
-    def get_frame_norm(self) -> pd.Series:
-        """
-        Get the normalized flux values from the DataFrame used in CASPER analysis.
-
-        Returns
-        -------
-        pd.Series
-            Series containing the normalized flux values from the frame.
-        """
-
-        return self.norm["norm"]
 
     def get_gravity_class(self) -> str:
         """

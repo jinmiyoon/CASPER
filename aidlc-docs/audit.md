@@ -1,5 +1,37 @@
 # AI-DLC Audit Log
 
+## Unit 2: Spectrum Loading & Preprocessing — Code Generation Plan (Part 1) Approval Prompt
+**Timestamp**: 2026-08-10T00:00:00Z
+**User Input**: "Now let's move on to Unit 2."
+**AI Response**: Created `aidlc-docs/construction/plans/unit2-spectrum-loading-preprocessing-code-generation-plan.md`. Plan covers full `Spectrum` class (`casper/interface/spectrum.py`) plus `Batch` touchpoints (`load_params`, `load_spectra`, `set_params`, `radial_correct`, `build_frames`). Raised one finding requiring user decision: `get_frame_norm()`/`set_norm()` is dead/latent-broken code (returns `self.norm["norm"]` but `self.norm` is set as a plain ndarray by `set_norm()`, and neither method is called anywhere in the codebase) — presented options A (fix to match `self.frame["norm"]` intent), B (remove both), C (leave untouched, regression-pin current behavior), D (other). Asked user to resolve this question and approve the plan before Part 2 (Generation) begins.
+**Context**: CONSTRUCTION phase, Unit 2, Code Generation Part 1 (Planning) — awaiting approval
+
+---
+
+## Unit 2: Code Generation Plan — Finding Resolved + Approval
+**Timestamp**: 2026-08-10T00:05:00Z
+**User Input**: "My answer is B, and I want you to run one star in Step 6b."
+**AI Response**: Resolved the `get_frame_norm()`/`set_norm()` finding as Option B (remove both entirely as dead code). Updated Step 6b of the plan to run only `param_file_single_star.dat` (G77-61) as the gate run, per explicit instruction — flagged in the plan that this narrows coverage versus the documented official 4-star gate (`regression_baseline/unit0_baseline/README.md`, NFR-1 Q4 = A originally specified full 4-star `param_file_test.dat`). Treated this response as approval to proceed to Part 2 (Generation).
+**Context**: CONSTRUCTION phase, Unit 2, transition from Code Generation Part 1 (Planning) to Part 2 (Generation)
+
+---
+
+## Unit 2: Code Generation Part 2 (Generation) Complete
+**Timestamp**: 2026-08-10T00:30:00Z
+**User Input**: N/A (execution of approved plan)
+**AI Response**: Executed all Unit 2 plan steps. Code changes: added module docstring to `casper/interface/spectrum.py`; removed dead `set_norm()`/`get_frame_norm()`; extracted `Batch.load_spectra()`'s nested closure into module-level `_load_spectrum_file()` in `casper/interface/batch.py` (no behavior change). Added 41 new tests (`casper/tests/interface/test_spectrum.py`, `casper/tests/interface/test_batch.py`); full suite 130/130 passing. Ran regression gate per user instruction: single-star (`param_file_single_star.dat`, G77-61) run compared against the G77-61 row of `regression_baseline/unit0_baseline/scatter2_*` — Tier 1 exact match on all shared columns (snr.csv, temp_cal_table.txt), Tier 2 stochastic max ratio 0.025σ (well within 2σ). Noted coverage caveat: only 1 of 4 stars exercised (no GIANT-class or CH+C2-mode coverage), a deviation from the documented full 4-star official gate. Presented completion summary to user for review before committing.
+**Context**: CONSTRUCTION phase, Unit 2, Code Generation Part 2 (Generation) — awaiting user review/approval before commit
+
+---
+
+## Unit 2: Code Generation Approved for Commit
+**Timestamp**: 2026-08-10T01:00:00Z
+**User Input**: "Let's commit unit2 first"
+**AI Response**: Treated as final approval of Unit 2 code generation. Proceeding to commit `casper/interface/spectrum.py`, `casper/interface/batch.py`, `casper/tests/interface/test_spectrum.py`, `casper/tests/interface/test_batch.py`, and the AI-DLC docs (plan, state, audit) as one commit per Units Generation Q4 = A. Note: user manually removed one guardrail test (`test_get_frame_norm_and_set_norm_are_removed`) from `test_spectrum.py` before this commit; confirmed via search no other similar guardrail tests exist. Suite at 129/129 passing prior to commit.
+**Context**: CONSTRUCTION phase, Unit 2, Code Generation complete — committing
+
+---
+
 ## Initial Request
 **Timestamp**: 2026-08-08T00:00:00Z
 **User Input**: "Can you describe this project and tell me if this project could get benefit from AI-DLC methodology?"
