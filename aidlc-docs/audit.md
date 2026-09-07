@@ -1,5 +1,45 @@
 # AI-DLC Audit Log
 
+## Unit 4: Temperature Calibration & Extinction — Code Generation Plan (Part 1) Approval Prompt
+**Timestamp**: 2026-09-07T00:05:00Z
+**User Input**: (transition from Unit 3 completion) "let's move onto Unit 4"
+**AI Response**: Created `aidlc-docs/construction/plans/unit4-temperature-calibration-extinction-code-generation-plan.md`. Covers `temp_calibrations.py`, `EW.py`, `MAD.py`, `ac.py` (all already reasonably well-tested) plus 6 untested `Batch` touchpoints (`ebv_correction`, `calibrate_temperatures`, `set_KP_bounds`, `set_carbon_mode`, `estimate_sn`, `get_sn`). No blocking finding — noted (not fixed) that `calibrate_temperatures()`'s `teff_sigma` parameter is unused/vestigial. Plan adds two NFR-6 property-based tests: `ac()`/`cfe()` round-trip and `MAD`/`S_MAD` non-negativity invariant, both explicitly named for this unit. Proposed continuing the single-star regression gate scope. Asked user to approve the plan before Part 2 (Generation).
+**Context**: CONSTRUCTION phase, Unit 4, Code Generation Part 1 (Planning) — awaiting approval
+
+---
+
+## Unit 4: Code Generation Plan Approved
+**Timestamp**: 2026-09-07T00:10:00Z
+**User Input**: "I approve the plan."
+**AI Response**: Proceeding to Part 2 (Generation) per the approved plan.
+**Context**: CONSTRUCTION phase, Unit 4, transitioning to Code Generation Part 2
+
+---
+
+## Unit 4: Code Generation Part 2 Complete
+**Timestamp**: 2026-09-07T00:30:00Z
+**User Input**: N/A (execution of approved plan)
+**AI Response**: Executed all Unit 4 plan steps. No production code changes needed (no bugs/dead code found in `temp_calibrations.py`/`EW.py`/`MAD.py`/`ac.py`). Added 9 new tests: Hypothesis round-trip property test for `ac()`/`cfe()` (NFR-6), Hypothesis non-negativity invariant for `MAD`/`S_MAD` (NFR-6), and 7 new `Batch` touchpoint tests (`ebv_correction`, `calibrate_temperatures` x2 branches, `set_KP_bounds`, `set_carbon_mode`, `estimate_sn`, `get_sn`). Full suite: 155/155 passing. Ran single-star regression gate: Tier 1 identical, Tier 2 max 1.203σ (all within 2σ) — notably this unit made zero production code changes, so the ~1.1σ deviations are purely natural stochastic scatter, confirming the 2σ threshold correctly accounts for inherent MCMC noise. Presenting completion summary for review before commit.
+**Context**: CONSTRUCTION phase, Unit 4, Code Generation Part 2 complete — regression gate passed, pending user review before commit
+
+---
+
+## Unit 4: NFR-6 Descoping Decision (Option B)
+**Timestamp**: 2026-09-07T00:40:00Z
+**User Input**: "I've changed test_ac.py and test_mad.py differently from this file, can you update this file based on my changes?" followed by "B"
+**AI Response**: Found the user had replaced the Hypothesis property-based tests in `test_ac.py`/`test_MAD.py` with expanded example-based tests (single-element/constant-array edge cases). Flagged that this created an NFR-6 compliance gap (these were the two PBT candidates explicitly named for Unit 4). Presented options; user chose B — keep the example-based tests, formally record the descoping rather than silently dropping it. Updated `requirements.md` (NFR-6 section) and `unit-of-work-story-map.md` to document the descoping. Updated the Unit 4 plan to reflect actual test content and reference the decision. Full suite: 153/153 passing (2 fewer than 155, reflecting the 2 removed property tests — no production code impact).
+**Context**: CONSTRUCTION phase, Unit 4, Code Generation Part 2 — NFR-6 scope formally adjusted, pending user review before commit
+
+---
+
+## Unit 4: Committed, Proceeding to Unit 5
+**Timestamp**: 2026-09-07T00:45:00Z
+**User Input**: "Yes, let's commit it"
+**AI Response**: Confirmed suite passing (153/153), committed all Unit 4 changes. Proceeding to Unit 5 (Archetype Classification & MCMC) next.
+**Context**: CONSTRUCTION phase, Unit 4 complete and committed, transitioning to Unit 5
+
+---
+
 ## Unit 3: GISIC Normalization — Code Generation Plan (Part 1) Approval Prompt
 **Timestamp**: 2026-08-11T00:00:00Z
 **User Input**: "ok, let's move on to Unit 3"

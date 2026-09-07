@@ -244,3 +244,145 @@ def make_csv_spectrum_stub(filename: str, wave=None, flux=None) -> Spectrum:
         flux = [1.0, 2.0]
     frame = pd.DataFrame({"wave": wave, "flux": flux})
     return Spectrum(frame, filename=filename, is_fits=False)
+
+
+# ---------------------------------------------------------------------------
+# ebv_correction()
+# ---------------------------------------------------------------------------
+
+
+def test_ebv_correction_dispatches_row_to_matching_spectrum():
+    batch = make_batch()
+    batch.param_file = pd.DataFrame(
+        [
+            {"J-K": 1.0, "H-K": 0.5, "g-r": 0.8, "EBV_SFD": 0.0},
+            {"J-K": 2.0, "H-K": 1.0, "g-r": 1.6, "EBV_SFD": 0.0},
+        ]
+    )
+    spec_a = make_csv_spectrum_stub("a.csv")
+    spec_b = make_csv_spectrum_stub("b.csv")
+    batch.spectra_array = [spec_a, spec_b]
+
+    batch.ebv_correction()
+
+    assert spec_a.PHOTO_0["J-K"] == pytest.approx(1.0)
+    assert spec_b.PHOTO_0["J-K"] == pytest.approx(2.0)
+
+
+# ---------------------------------------------------------------------------
+# calibrate_temperatures()
+# ---------------------------------------------------------------------------
+
+
+def test_calibrate_temperatures_adopts_hard_teff_when_finite(tmp_path):
+    batch = make_batch()
+    batch.output_name = str(tmp_path / "unit4_test")
+    batch.param_file = pd.DataFrame([{"filename": "a.csv", "class": "DWARF"}])
+    spec = make_csv_spectrum_stub("a.csv")
+    spec.PHOTO_0 = {"J-K": 0.5, "H-K": 0.3, "g-r": 0.4}
+    spec.T_SIGMA = 250.0
+    spec.HARD_TEFF = 4127.0
+    batch.spectra_array = [spec]
+
+    batch.calibrate_temperatures()
+
+    assert spec.TEMP_FRAME.loc["HARD_TEFF", "VALUE"] == pytest.approx(4127.0)
+    assert spec.TEMP_FRAME.loc["ADOPTED", "VALUE"] == pytest.approx(4127.0)
+    assert spec.teff_irfm == pytest.approx(4127.0)
+    assert spec.teff_irfm_err == pytest.approx(250.0)
+    assert Path(batch.output_name + "_temp_cal_table.txt").exists()
+
+
+def test_calibrate_temperatures_adopts_photometric_teff_when_hard_teff_missing(tmp_path):
+    batch = make_batch()
+    batch.output_name = str(tmp_path / "unit4_test")
+    batch.param_file = pd.DataFrame([{"filename": "a.csv", "class": "DWARF"}])
+    spec = make_csv_spectrum_stub("a.csv")
+    spec.PHOTO_0 = {"J-K": 0.5, "H-K": 0.3, "g-r": 0.4}
+    spec.T_SIGMA = 250.0
+    spec.HARD_TEFF = np.nan
+    batch.spectra_array = [spec]
+
+    batch.calibrate_temperatures()
+
+    assert np.isnan(spec.TEMP_FRAME.loc["HARD_TEFF", "VALUE"])
+    adopted = spec.TEMP_FRAME.loc["ADOPTED", "VALUE"]
+    assert np.isfinite(adopted)
+    assert spec.teff_irfm == pytest.approx(adopted)
+
+
+# ---------------------------------------------------------------------------
+# set_KP_bounds()
+# ---------------------------------------------------------------------------
+
+
+def test_set_kp_bounds_dispatches_get_kp_band_result_to_each_spectrum():
+    batch = make_batch()
+    spec_a = make_csv_spectrum_stub("a.csv")
+    spec_b = make_csv_spectrum_stub("b.csv")
+    batch.spectra_array = [spec_a, spec_b]
+
+    with patch("casper.interface.batch.EW.get_KP_band", return_value=config.KP_BOUNDS["K6"]) as mock_get_kp_band:
+        batch.set_KP_bounds()
+
+    assert mock_get_kp_band.call_count == 2
+    assert spec_a.KP_bounds == config.KP_BOUNDS["K6"]
+    assert spec_b.KP_bounds == config.KP_BOUNDS["K6"]
+
+
+# ---------------------------------------------------------------------------
+# set_carbon_mode()
+# ---------------------------------------------------------------------------
+
+
+def test_set_carbon_mode_invokes_set_ch_procedure_per_spectrum():
+    batch = make_batch()
+    spec_a = make_csv_spectrum_stub("a.csv")
+    spec_b = make_csv_spectrum_stub("b.csv")
+    batch.spectra_array = [spec_a, spec_b]
+
+    with patch("casper.interface.batch.EW.set_CH_procedure") as mock_set_ch:
+        batch.set_carbon_mode()
+
+    assert mock_set_ch.call_count == 2
+    mock_set_ch.assert_any_call(spec_a)
+    mock_set_ch.assert_any_call(spec_b)
+
+
+# ---------------------------------------------------------------------------
+# estimate_sn()
+# ---------------------------------------------------------------------------
+
+
+def test_estimate_sn_invokes_estimate_sn_on_each_spectrum():
+    batch = make_batch()
+    spec_a = make_csv_spectrum_stub("a.csv")
+    spec_b = make_csv_spectrum_stub("b.csv")
+    batch.spectra_array = [spec_a, spec_b]
+
+    with patch.object(spec_a, "estimate_sn") as mock_a, patch.object(spec_b, "estimate_sn") as mock_b:
+        batch.estimate_sn()
+
+    mock_a.assert_called_once()
+    mock_b.assert_called_once()
+
+
+# ---------------------------------------------------------------------------
+# get_sn()
+# ---------------------------------------------------------------------------
+
+
+def test_get_sn_concatenates_and_writes_csv(tmp_path):
+    batch = make_batch()
+    batch.output_name = str(tmp_path / "unit4_test")
+    spec_a = make_csv_spectrum_stub("a.csv")
+    spec_b = make_csv_spectrum_stub("b.csv")
+    row_a = pd.DataFrame({"SEQUENCE": ["1"], "FILENAME": ["a.csv"]})
+    row_b = pd.DataFrame({"SEQUENCE": ["2"], "FILENAME": ["b.csv"]})
+    batch.spectra_array = [spec_a, spec_b]
+
+    with patch.object(spec_a, "get_sn", return_value=row_a), patch.object(spec_b, "get_sn", return_value=row_b):
+        result = batch.get_sn()
+
+    assert list(result["SEQUENCE"]) == ["1", "2"]
+    assert Path(batch.output_name + "_snr.csv").exists()

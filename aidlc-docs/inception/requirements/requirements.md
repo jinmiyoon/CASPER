@@ -63,8 +63,8 @@ Enabled per user decision (Q6 = A, full enforcement). Applicable opportunities i
 
 | PBT Category | Candidate(s) | Notes |
 |---|---|---|
-| Round-trip (PBT-02) | `ac.py`: `ac(cfe, feh)` ↔ `cfe(ac, feh)` | Exact mathematical inverses — ideal round-trip property test |
-| Invariant (PBT-03) | `MAD.py`: `MAD`/`S_MAD` non-negativity; GISIC `normalize()`: normalized flux stays within documented bounds; `temp_calibrations.py`: Teff within calibration's valid color range | |
+| Round-trip (PBT-02) | `ac.py`: `ac(cfe, feh)` ↔ `cfe(ac, feh)` | Exact mathematical inverses — ideal round-trip property test. **Descoped for Unit 4** (user decision, 2026-09-07): a Hypothesis round-trip test was implemented and passing, then replaced by the user with expanded example-based tests (added single-element/constant-array-style edge cases) instead of property-based coverage. |
+| Invariant (PBT-03) | `MAD.py`: `MAD`/`S_MAD` non-negativity; GISIC `normalize()`: normalized flux stays within documented bounds; `temp_calibrations.py`: Teff within calibration's valid color range | GISIC `normalize()` bounds invariant delivered via Hypothesis in Unit 3. **`MAD`/`S_MAD` non-negativity descoped for Unit 4** (user decision, 2026-09-07): same as above — replaced by example-based edge-case tests instead of a Hypothesis invariant test. |
 | Oracle (PBT-05) | Refactored implementations vs. current (pre-refactor) implementations of the same function, and — where relevant — vs. the deprecated `casper/utils/not_used/` originals | Directly supports NFR-1 output-equivalence goal |
 | Framework (PBT-09) | Hypothesis (Python) | To be added as a `test` extra dependency |
 | Complementary strategy (PBT-10) | Existing example-based tests in `casper/tests/` remain; PBT is additive | |
