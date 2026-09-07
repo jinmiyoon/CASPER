@@ -43,7 +43,8 @@ class Segment:
 
         Raises
         ------
-        Prints an error message if `which` is not "left" or "right".
+        ValueError
+            If `which` is not "left" or "right".
         """
 
         if which == "left":

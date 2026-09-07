@@ -261,13 +261,13 @@ class Batch:
             for spec in self.spectra_array:
                 cont_array = []
                 for SIGMA in config.SIGMA:
-                    _, norm, cont = normalize(
+                    _, _, cont = normalize(
                         spec.get_frame_wave(),
                         spec.get_frame_flux(),
                         sigma=SIGMA,
                         k=config.k,
                         cahk=config.cahk,
-                        band_check=config.cahk,
+                        band_check=config.band_check,
                         flux_min=config.flux_min,
                         boost=config.boost,
                     )

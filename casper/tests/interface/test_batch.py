@@ -1,9 +1,11 @@
 from pathlib import Path
+from unittest.mock import patch
 
 import numpy as np
 import pandas as pd
 import pytest
 
+from casper.interface import config
 from casper.interface.batch import Batch, _load_spectrum_file
 from casper.interface.spectrum import Spectrum
 
@@ -182,6 +184,56 @@ def test_build_frames_constructs_and_trims_each_spectrum():
     batch.build_frames(bounds=(3800.0, 5000.0))
 
     assert list(spec.frame["wave"]) == [4000.0, 4500.0]
+
+
+# ---------------------------------------------------------------------------
+# normalize()
+# ---------------------------------------------------------------------------
+
+
+def test_normalize_populates_frame_norm_and_cont():
+    # Use real sample spectrum data (trimmed to the analysis wavelength bounds), since
+    # Batch.normalize() smooths with much larger sigma values (config.SIGMA: 15-30) than
+    # a narrow synthetic test spectrum can survive without losing all inflection points.
+    df = pd.read_csv(TEST_SPECTRA_DIR / CSV_FILENAME)
+    frame = df[df["wave"].between(*config.WAVE_BOUNDS, inclusive="both")].reset_index(drop=True)
+    wave = frame["wave"].to_numpy(dtype=float)
+    flux = frame["flux"].to_numpy(dtype=float)
+
+    spec = make_csv_spectrum_stub(CSV_FILENAME, wave=wave, flux=flux)
+    spec.set_frame(wave=wave, flux=flux)
+    batch = make_batch()
+    batch.spectra_array = [spec]
+
+    batch.normalize()
+
+    assert "norm" in spec.frame.columns
+    assert "cont" in spec.frame.columns
+    assert len(spec.frame["norm"]) == len(wave)
+    assert len(spec.frame["cont"]) == len(wave)
+    assert np.all(np.isfinite(spec.frame["norm"]))
+
+
+def test_normalize_passes_correct_band_check_value():
+    # Regression test for the band_check/cahk wiring fix (2026-08-11): Batch.normalize()
+    # previously passed band_check=config.cahk (a copy-paste bug); now correctly passes
+    # band_check=config.band_check. config.cahk is True and config.band_check is False,
+    # so these must resolve to different values for this test to be meaningful.
+    assert config.band_check != config.cahk
+
+    spec = make_csv_spectrum_stub(CSV_FILENAME, wave=[4000.0, 4001.0], flux=[1.0, 2.0])
+    spec.set_frame(wave=np.array([4000.0, 4001.0]), flux=np.array([1.0, 2.0]))
+    batch = make_batch()
+    batch.spectra_array = [spec]
+
+    with patch("casper.interface.batch.normalize") as mock_normalize:
+        mock_normalize.return_value = (spec.frame["wave"].to_numpy(), np.array([1.0, 1.0]), np.array([1.0, 1.0]))
+        batch.normalize()
+
+    assert mock_normalize.called
+    _, kwargs = mock_normalize.call_args
+    assert kwargs["cahk"] == config.cahk
+    assert kwargs["band_check"] == config.band_check
 
 
 def make_csv_spectrum_stub(filename: str, wave=None, flux=None) -> Spectrum:

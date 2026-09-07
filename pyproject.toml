@@ -41,7 +41,8 @@ dev = [
 test = [
     "pytest",
     "pytest-doctestplus",
-    "pytest-cov"
+    "pytest-cov",
+    "hypothesis"
 ]
 docs = [
     "linkify-it-py",

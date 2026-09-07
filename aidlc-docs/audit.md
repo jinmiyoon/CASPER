@@ -1,5 +1,53 @@
 # AI-DLC Audit Log
 
+## Unit 3: GISIC Normalization — Code Generation Plan (Part 1) Approval Prompt
+**Timestamp**: 2026-08-11T00:00:00Z
+**User Input**: "ok, let's move on to Unit 3"
+**AI Response**: Created `aidlc-docs/construction/plans/unit3-gisic-normalization-code-generation-plan.md`. Plan covers `gisic/normalize.py`, `gisic/spectrum.py` (zero direct tests currently — main gap), `gisic/segment.py`, `gisic/norm_functions.py`, plus `Batch.normalize()`. No blocking dead-code finding this time; documented (not changed) an observed quirk where out-of-bounds flux is only clipped if >1 point violates the bound. Plan adds `hypothesis` as a test dependency to satisfy NFR-6 (property-based testing), explicitly named for this unit's normalize() bounds invariant. Proposed continuing the single-star regression gate scope from Unit 2 unless user prefers the full 4-star run. Asked user to approve the plan before Part 2 (Generation) begins.
+**Context**: CONSTRUCTION phase, Unit 3, Code Generation Part 1 (Planning) — awaiting approval
+
+---
+
+## Unit 3: Clipping Bug Finding Corrected and Resolved
+**Timestamp**: 2026-08-11T00:15:00Z
+**User Input**: "why do you think this is intentional looking behavior?" followed by "B"
+**AI Response**: Retracted the initial "intentional-looking" characterization after the user challenged it. Traced both call sites of `gisic.normalize()` (`Batch.normalize()`, `synthetic_functions.py`) and found both discard the `norm` return value entirely — the `>1` clipping guard in `gisic.spectrum.Spectrum.normalize()` is almost certainly a typo for `>0` but has zero effect on current pipeline output. Re-presented as a decision point (A/B/C); user chose B (fix `>1` → `>0`). Updated the plan accordingly.
+**Context**: CONSTRUCTION phase, Unit 3, Code Generation Part 1 (Planning) — finding resolved, proceeding to apply fix and continue generation
+
+---
+
+## Unit 3: Additional Cleanup — Unused Variable Rename
+**Timestamp**: 2026-08-11T00:20:00Z
+**User Input**: "Does does that mean `norm` should be discarded as well like wavelength?"
+**AI Response**: Confirmed yes — the per-`SIGMA` `norm` inside `Batch.normalize()`'s loop is assigned but never read (overwritten each iteration, discarded after the loop). Renamed it to `_` for clarity, matching the already-discarded `wavelength` return value. Purely cosmetic, zero behavior change; confirmed via full suite (129/129 passing). Added as Step 2d in the Unit 3 plan.
+**Context**: CONSTRUCTION phase, Unit 3, Code Generation in progress (Steps 2c, 2d complete)
+
+---
+
+## Unit 3: band_check/cahk Bug Found, Tests Written, Full Generation Complete
+**Timestamp**: 2026-08-11T00:40:00Z
+**User Input**: "B" (initial decision on the band_check/cahk finding), then later "Well, I changed my mind, can do you A instead?"
+**AI Response**: While writing `Batch.normalize()` test coverage, found `Batch.normalize()` passes `band_check=config.cahk` instead of `band_check=config.band_check` — unlike the earlier `>1` clipping bug, this one is NOT inert (it genuinely changes which segments are excluded from continuum fitting). Presented as a decision point; user initially chose B (leave as-is, regression-pin). Wrote `casper/tests/gisic/test_gisic_spectrum.py` (14 new tests, first direct coverage for the GISIC `Spectrum` class), extended `test_gisic_normalize.py` with a Hypothesis property test for the `normalize()` bounds invariant (NFR-6), and added `Batch.normalize()` coverage (2 tests) including one pinning the `band_check` bug per the B decision. User then reversed to Option A: applied the fix (`band_check=config.band_check`), updated the pinning test to assert the corrected wiring, re-ran the single-star regression gate to assess impact. Result: Tier 1 unaffected (identical to baseline); Tier 2 stochastic outputs shifted more than the earlier near-zero-deviation single-star run (TEFF 0.650σ, FEH 0.960σ, CFE 0.596σ, AC 1.104σ, LOGG 0.615σ) but all within the 2σ threshold — PASS. Full suite: 146/146 passing.
+**Context**: CONSTRUCTION phase, Unit 3, Code Generation Part 2 complete — regression gate passed, pending user review before commit
+
+---
+
+## Unit 3: Code Generation Approved, Commit Deferred
+**Timestamp**: 2026-08-11T00:45:00Z
+**User Input**: "I approve. let's commit next time."
+**AI Response**: Recorded approval of Unit 3 code generation. Commit deferred at user's request — no commit made this session. Confirmed suite still passes (146/146) after an external edit to `test_batch.py`. Working tree left with Unit 3 changes uncommitted for next session: `casper/interface/batch.py`, `casper/interface/gisic/spectrum.py`, `casper/tests/gisic/test_gisic_spectrum.py` (new), `casper/tests/gisic/test_gisic_normalize.py`, `casper/tests/interface/test_batch.py`, `pyproject.toml`, `aidlc-docs/construction/plans/unit3-gisic-normalization-code-generation-plan.md` (new), `aidlc-docs/aidlc-state.md`, `aidlc-docs/audit.md`.
+**Context**: CONSTRUCTION phase, Unit 3, approved — commit intentionally deferred to a future session
+
+---
+
+## Unit 3: Committed, Proceeding to Unit 4
+**Timestamp**: 2026-09-07T00:00:00Z
+**User Input**: "ok, never mind it. Now I want to git commit all the changes since the last commit then move onto Unit 4."
+**AI Response**: Confirmed full suite passing (146/146), committed all Unit 3 changes (including a docstring correction in `segment.py`'s `is_edge()` Raises section, found alongside other changes). Proceeding to Unit 4 (Temperature Calibration & Extinction).
+**Context**: CONSTRUCTION phase, Unit 3 complete and committed, transitioning to Unit 4
+
+---
+
 ## Unit 2: Spectrum Loading & Preprocessing — Code Generation Plan (Part 1) Approval Prompt
 **Timestamp**: 2026-08-10T00:00:00Z
 **User Input**: "Now let's move on to Unit 2."

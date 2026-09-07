@@ -119,13 +119,16 @@ class Spectrum:
             List of wavelength values where the second derivative crosses zero.
         """
 
+        # Smooth the flux to reduce high-frequency noise before taking derivatives.
         self.smooth = gaussian_filter(self.flux, sigma=sigma)
 
+        # Compute the first and second derivatives; normalize them so the signs are stable.
         self.d1 = np.gradient(self.smooth)
         self.d2 = np.gradient(self.d1)
         self.d1 = self.d1 / max(self.d1)
         self.d2 = self.d2 / max(self.d2)
 
+        # Assemble the working DataFrame: wavelength, flux, and derivative channels.
         hack = Table(
             [self.wavelength, self.flux, self.d1, self.d2],
             names=("wave", "flux", "d1", "d2"),
@@ -134,6 +137,7 @@ class Spectrum:
 
         self.frame = pd.DataFrame({"wave": hack["wave"], "flux": hack["flux"], "d1": hack["d1"], "d2": hack["d2"]})
 
+        # Identify zero-crossings in the second derivative; these are candidate inflection points.
         self.ZEROS = []
         for i in range(len(self.d2) - 1):
             if self.d2[i] * self.d2[i + 1] < 0.0:
@@ -141,6 +145,8 @@ class Spectrum:
             elif self.d2[i] == 0.0:
                 self.ZEROS.append(self.frame.wave[i])
 
+        # For each interval between adjacent zero crossings, keep the strongest local minimum
+        # if the second derivative is predominantly negative across the interval.
         MINIMUMS = []
 
         for i in range(len(self.ZEROS) - 1):
@@ -151,6 +157,8 @@ class Spectrum:
                 MIN.loc[:, "size"] = len(SEGMENT)
                 MINIMUMS.append(MIN)
 
+        # If requested, force the Ca H and Ca K absorption features into the set of extrema.
+        # This is a domain-specific override beyond the generic zero-crossing minima.
         if cahk:
             SEG1 = self.frame[self.frame["wave"].between(3916 - cahkwidth, 3916 + cahkwidth, inclusive="both")]
             SEG2 = self.frame[self.frame["wave"].between(3991 - cahkwidth, 3991 + cahkwidth, inclusive="both")]
@@ -168,6 +176,7 @@ class Spectrum:
         else:
             EXTREMA = pd.concat(MINIMUMS)
 
+        # Build one Segment for each selected extremum; optionally omit points in known molecular bands.
         self.segments = []
         if band_check:
             for i, row in EXTREMA.iterrows():
@@ -179,6 +188,7 @@ class Spectrum:
                     ].copy()
                     self.segments.append(Segment(np.array(SEGMENT["wave"]), np.array(SEGMENT["flux"])))
                 else:
+                    # Skip this extremum because it falls in a known molecular band.
                     pass
 
         else:
@@ -190,6 +200,7 @@ class Spectrum:
                 ].copy()
                 self.segments.append(Segment(np.array(SEGMENT["wave"]), np.array(SEGMENT["flux"])))
 
+        # Keep the leftmost and rightmost chunks as edge anchors, so the continuum model has fixed endpoints.
         self.segments.insert(
             0, Segment(np.array(self.frame["wave"].iloc[0:width]), np.array(self.frame["flux"].iloc[0:width]))
         )
@@ -433,8 +444,8 @@ class Spectrum:
 
         self.flux_norm = np.divide(self.flux, self.continuum)
 
-        if len(self.flux_norm[self.flux_norm < 0.0]) > 1:
+        if len(self.flux_norm[self.flux_norm < 0.0]) > 0:
             self.flux_norm[self.flux_norm < 0.0] = 0.0
 
-        if len(self.flux_norm[self.flux_norm > 2.0]) > 1:
+        if len(self.flux_norm[self.flux_norm > 2.0]) > 0:
             self.flux_norm[self.flux_norm > 2.0] = 1.0
